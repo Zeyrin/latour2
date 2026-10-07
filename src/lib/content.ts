@@ -104,3 +104,12 @@ export const contact = {
   locality: '33570 Lussac — Saint-Émilion',
   map: 'https://www.google.com/maps/search/?api=1&query=Ch%C3%A2teau+Latour+S%C3%A9gur+1+Latour+33570+Lussac',
 }
+
+export const SITE_URL = 'https://www.chateaulatoursegur.com'
+
+export const legal = {
+  company: 'Château Latour Ségur Suites & Spa TerreHappy®',
+  publisher: 'Corinne Dray',
+  designer: 'Macéo Bonalair',
+  host: 'Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis — vercel.com',
+}

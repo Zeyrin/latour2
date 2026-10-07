@@ -256,7 +256,7 @@ em{font-weight:300}
 .footer-map{display:flex;align-items:center;gap:14px;font-family:var(--sans);font-size:8px;letter-spacing:1.3px;text-transform:uppercase;margin-top:3px;color:var(--wine)}
 .footer-bottom{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #d4cec5;padding-top:23px;gap:20px;font-family:var(--sans);font-size:8px;letter-spacing:.5px;color:#71685c}
 .footer-bottom>div{display:flex;gap:25px}
-.footer-bottom button{font-size:8px}
+.footer-bottom button,.footer-bottom>div a{font-size:8px}
 .instagram-link{display:flex;align-items:center;gap:10px;text-transform:uppercase;font-size:7px;letter-spacing:1.2px}
 
 /* Dialogues et formulaires accessibles */
@@ -407,3 +407,9 @@ em{font-weight:300}
   .scroll-cue>span:first-child{font-size:7px}
   .date-control{font-size:15px;min-height:44px}
 }
+.legal-page{min-height:100vh;background:var(--cream)}
+.legal-page>header{background:var(--wine);color:var(--cream);padding:22px 0;display:flex;justify-content:center}
+.legal-page .legal-content{max-width:760px;padding-bottom:96px}
+.legal-page h1{font-size:clamp(38px,6vw,56px);font-weight:300;margin:12px 0 24px;color:var(--wine)}
+.legal-page h2{font-size:25px;margin:32px 0 10px;color:var(--wine);font-weight:400}
+.legal-page p{line-height:1.7;margin:0 0 12px}

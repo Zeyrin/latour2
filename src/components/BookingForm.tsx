@@ -12,6 +12,31 @@ function dateLabel(value: string) {
   return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(new Date(`${value}T12:00:00`))
 }
 
+async function saveRequest(values: FormData, universe?: UniverseId) {
+  const url = import.meta.env.VITE_SUPABASE_URL
+  const key = import.meta.env.VITE_SUPABASE_ANON_KEY
+  if (!url || !key || values.get('website')) return
+  try {
+    await fetch(`${url}/rest/v1/booking_requests`, {
+      method: 'POST',
+      headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({
+        name: String(values.get('name') || '').trim(),
+        email: String(values.get('email') || '').trim(),
+        phone: String(values.get('phone') || '').trim() || null,
+        universe: universe ?? null,
+        arrival: String(values.get('arrival') || '') || null,
+        departure: String(values.get('departure') || '') || null,
+        guests: Number(values.get('guests')) || null,
+        message: String(values.get('message') || '').trim() || null,
+      }),
+      keepalive: true,
+    })
+  } catch {
+    // ponytail: échec silencieux, le brouillon e-mail reste disponible
+  }
+}
+
 function DateControl({ name, value, min, onChange }: { name: string; value: string; min: string; onChange: (value: string) => void }) {
   return <div className="date-control">
     <span aria-hidden="true">{value ? new Intl.DateTimeFormat('fr-FR').format(new Date(`${value}T12:00:00`)) : 'jj/mm/aaaa'}</span>
@@ -35,6 +60,7 @@ export function BookingForm({ initialUniverse, initialMessage = '' }: BookingFor
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const values = new FormData(event.currentTarget)
+    void saveRequest(values, universe)
     setSavedValues(Object.fromEntries(Array.from(values.entries()).map(([key, value]) => [key, String(value)])))
     setCopied(false)
     setCopyError(false)
@@ -116,9 +142,10 @@ export function BookingForm({ initialUniverse, initialMessage = '' }: BookingFor
           {universe === 'suites' && <label className="form-field"><span>Votre téléphone</span><input type="tel" name="phone" autoComplete="tel" defaultValue={savedValues.phone || ''} placeholder="Votre numéro" /></label>}
           <label className="form-field form-field-wide"><span>Vos envies, en quelques mots</span><textarea name="message" rows={3} maxLength={2000} defaultValue={savedValues.message ?? initialMessage} placeholder="Une occasion particulière, un soin, une attention…" /></label>
         </div>
+        <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: 'absolute', left: '-9999px' }} />
         <label className="consent"><input type="checkbox" name="consent" required defaultChecked={savedValues.consent === 'on'} /><span>J’accepte que mes coordonnées soient utilisées pour répondre à cette demande. <span aria-hidden="true">*</span></span></label>
         <button className="button button-burgundy form-submit" type="submit">Préparer ma demande <ArrowRight size={17} /></button>
-        <p className="form-note">* Champs obligatoires. Demande sans engagement, à envoyer depuis votre messagerie. Aucune réservation à cette étape.</p>
+        <p className="form-note">* Champs obligatoires. Demande sans engagement, enregistrée pour que le château puisse vous répondre. Aucune réservation à cette étape.</p>
       </form>
       <a className="booking-phone" href={`tel:${contact.phoneLink}`}><Phone size={15} strokeWidth={1.25} /> Vous préférez nous appeler ? <span>{contact.phone}</span></a>
     </div>

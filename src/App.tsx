@@ -1,21 +1,21 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'framer-motion'
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, ChevronDown, Instagram, MapPin, Menu, Plus } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import { Brand, ChateauSketch } from './components/Brand'
 import { Modal } from './components/Modal'
 import { Picture } from './components/Picture'
 import { BookingForm } from './components/BookingForm'
-import { contact, escapes, galleryPhotos, universes, type GalleryFilter, type Universe, type UniverseId } from './lib/content'
+import { Seo } from './components/Seo'
+import { SITE_URL, contact, escapes, galleryPhotos, universes, type GalleryFilter, type Universe, type UniverseId } from './lib/content'
 
 type ModalState =
   | { type: 'booking'; universe?: UniverseId; message?: string }
   | { type: 'universe'; id: UniverseId }
   | { type: 'escape'; id: string }
   | { type: 'story' }
-  | { type: 'legal' }
-  | { type: 'privacy' }
   | null
 
 function Reveal({ children, className = '', delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
@@ -41,6 +41,21 @@ function Chapter({ universe, onDiscover }: { universe: Universe; onDiscover: () 
       </div>
     </section>
   )
+}
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Hotel',
+  name: 'Château Latour Ségur',
+  description: 'Demeure historique près de Saint-Émilion : suites de charme, Spa TerreHappy® et espaces de réception.',
+  url: SITE_URL,
+  image: [`${SITE_URL}/images/domaine.webp`, `${SITE_URL}/images/suites.webp`, `${SITE_URL}/images/spa-piscine.webp`],
+  telephone: contact.phoneLink,
+  email: contact.email,
+  address: { '@type': 'PostalAddress', streetAddress: '1 Lieu dit Latour', postalCode: '33570', addressLocality: 'Lussac', addressRegion: 'Gironde', addressCountry: 'FR' },
+  hasMap: contact.map,
+  sameAs: ['https://www.instagram.com/chateaulatoursegur/'],
+  amenityFeature: [{ '@type': 'LocationFeatureSpecification', name: 'Spa', value: true }, { '@type': 'LocationFeatureSpecification', name: 'Salle de séminaire et de réception', value: true }],
 }
 
 function App() {
@@ -110,6 +125,7 @@ function App() {
 
   return (
     <MotionConfig reducedMotion="user">
+      <Seo title="Château Latour Ségur — Suites, Spa & Événements à Saint-Émilion" description="Séjournez dans une demeure historique à Lussac Saint-Émilion : suites de charme, Spa TerreHappy® privatisable, séminaires et réceptions. Demandez votre venue." path="/"><script type="application/ld+json">{JSON.stringify(jsonLd)}</script></Seo>
       <AnimatePresence>
         {loading && <motion.div className="preloader" aria-hidden="true" initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reducedMotion ? 0.1 : 0.6 }}><ChateauSketch /><Brand /><span className="preloader-line" /></motion.div>}
       </AnimatePresence>
@@ -203,17 +219,15 @@ function App() {
         <div className="footer-column"><h3>La maison</h3><a href="#domaine">Le domaine</a><a href="#suites">Les suites</a><a href="#spa">Le Spa TerreHappy®</a><a href="#evenements">Séminaires & événements</a></div>
         <div className="footer-column"><h3>Vos instants</h3><a href="#echappees">Week-ends & cures</a><button onClick={() => book(undefined, 'Je souhaite offrir un bon cadeau. Pourriez-vous me renseigner ?')}>Offrir une parenthèse</button><a href="#galerie">La galerie</a><button onClick={() => book()}>Préparer votre venue</button></div>
         <div className="footer-column footer-contact"><h3>Retrouvons-nous</h3><address>{contact.address}<br />{contact.locality}</address><a href={`tel:${contact.phoneLink}`}>{contact.phone}</a><a className="footer-email" href={`mailto:${contact.email}`}>{contact.email}</a><a href={contact.map} target="_blank" rel="noopener noreferrer" className="footer-map">Itinéraire <ArrowUpRight size={14} /></a></div>
-      </div><div className="footer-bottom page-width"><p>© {new Date().getFullYear()} Château Latour Ségur</p><div><button onClick={() => setModal({ type: 'legal' })}>Mentions légales</button><button onClick={() => setModal({ type: 'privacy' })}>Confidentialité</button></div><a className="instagram-link" href="https://www.instagram.com/chateaulatoursegur/" target="_blank" rel="noopener noreferrer" aria-label="Le Château Latour Ségur sur Instagram"><Instagram size={17} strokeWidth={1.2} /><span>Au fil des jours</span><ArrowUpRight size={13} /></a></div></footer>
+      </div><div className="footer-bottom page-width"><p>© {new Date().getFullYear()} Château Latour Ségur</p><div><Link to="/mentions-legales">Mentions légales</Link><Link to="/confidentialite">Confidentialité</Link></div><a className="instagram-link" href="https://www.instagram.com/chateaulatoursegur/" target="_blank" rel="noopener noreferrer" aria-label="Le Château Latour Ségur sur Instagram"><Instagram size={17} strokeWidth={1.2} /><span>Au fil des jours</span><ArrowUpRight size={13} /></a></div></footer>
 
       {menuOpen && <Modal title="Menu de navigation" onClose={() => setMenuOpen(false)} className="mobile-menu"><Brand sketch /><p className="eyebrow">Bienvenue à la maison</p><nav aria-label="Navigation mobile">{[{ id: 'domaine', text: 'Le domaine' }, { id: 'suites', text: 'Les suites' }, { id: 'spa', text: 'Le Spa TerreHappy®' }, { id: 'evenements', text: 'Séminaires & événements' }, { id: 'echappees', text: 'Week-ends & cures' }, { id: 'galerie', text: 'La galerie' }].map((link, index) => <button key={link.id} onClick={() => navigateFromMenu(link.id)}><span>0{index + 1}</span>{link.text}<ArrowUpRight size={18} strokeWidth={1.2} /></button>)}</nav><button className="button button-burgundy" onClick={() => book()}>Préparer ma venue <ArrowUpRight size={17} /></button><a className="mobile-menu-phone" href={`tel:${contact.phoneLink}`}>{contact.phone}</a></Modal>}
 
-      {modal && <Modal key={modal.type} title={modal.type === 'booking' ? 'Préparer votre venue au château' : modal.type === 'legal' ? 'Mentions légales' : modal.type === 'privacy' ? 'Confidentialité' : 'Découvrir le Château Latour Ségur'} onClose={() => setModal(null)} className={`content-modal ${modal.type === 'booking' ? 'booking-modal' : ''}`}>
+      {modal && <Modal key={modal.type} title={modal.type === 'booking' ? 'Préparer votre venue au château' : 'Découvrir le Château Latour Ségur'} onClose={() => setModal(null)} className={`content-modal ${modal.type === 'booking' ? 'booking-modal' : ''}`}>
         {modal.type === 'booking' && <BookingForm initialUniverse={modal.universe} initialMessage={modal.message} />}
         {modal.type === 'universe' && (() => { const universe = universes.find((item) => item.id === modal.id)!; return <><div className="detail-image"><Picture name={universe.image} alt={universe.imageAlt} /></div><div className="detail-body"><p className="eyebrow">{universe.art}</p><h2>{universe.title[0]}<br /><em>{universe.title[1]}</em></h2><p>{universe.description}</p><div className="detail-options">{universe.options.map((option, index) => <details key={option.title} open={index === 0}><summary>{option.title}<ChevronDown size={18} strokeWidth={1.25} /></summary><p>{option.text}</p></details>)}</div><p className="detail-note">Chaque parenthèse se prépare ensemble. Disponibilités, prestations et tarifs sur demande.</p><button className="button button-burgundy" onClick={() => book(universe.id)}>Parlons de vos envies <ArrowRight size={17} /></button></div></> })()}
         {modal.type === 'escape' && (() => { const escape = escapes.find((item) => item.id === modal.id)!; return <><div className="detail-image"><Picture name={escape.image} alt={escape.alt} /></div><div className="detail-body"><p className="eyebrow">{escape.label}</p><h2>{escape.title}</h2><p>{escape.text}</p><p>Votre parenthèse ne ressemble qu’à vous. Partagez vos dates, le nombre de personnes et vos envies avec Corinne et André : nous composerons ensemble une proposition adaptée.</p><p className="detail-note">Formules, prestations et tarifs à confirmer directement avec le château.</p><button className="button button-burgundy" onClick={() => book(escape.universe, escape.request)}>Composer ma parenthèse <ArrowRight size={17} /></button></div></> })()}
         {modal.type === 'story' && <><div className="detail-image"><Picture name="domaine" alt="La façade historique du Château Latour Ségur" /></div><div className="detail-body"><p className="eyebrow">Une maison, une histoire</p><h2>Le goût des lieux.<br /><em>Le sens de l’accueil.</em></h2><p>Amoureux des belles bâtisses et des rencontres, Corinne Dray et André Nizet ont fait du Château Latour Ségur une maison ouverte aux voyageurs, aux épicuriens et à tous ceux qui aspirent à ralentir.</p><p>Dans son parc ombragé ponctué d’étangs, au cœur du vignoble de Lussac Saint-Émilion, cette demeure historique cultive un art de vivre simple et attentionné. Ses dépendances abritent les suites ; le Spa TerreHappy® invite au bien-être ; les espaces du domaine font place aux rencontres et aux événements.</p><p>Une même philosophie relie ces trois univers : vous accueillir personnellement et vous laisser repartir avec un peu de la douceur du lieu.</p><span className="story-signature">À très bientôt, Corinne & André</span><button className="button button-burgundy" onClick={() => book()}>Faisons connaissance <ArrowRight size={17} /></button></div></>}
-        {modal.type === 'legal' && <div className="detail-body legal-content"><p className="eyebrow">Informations</p><h2>Mentions <em>légales.</em></h2><h3>Le domaine</h3><p>Château Latour Ségur<br />{contact.address}, {contact.locality}<br />{contact.phone}<br /><a href={`mailto:${contact.email}`}>{contact.email}</a></p><h3>À propos de cette page</h3><p>Cette page est une proposition de refonte du site du Château Latour Ségur. Elle présente l’esprit du domaine et ses trois univers. Les prestations, disponibilités et tarifs doivent être confirmés directement auprès du château.</p><h3>Photographies</h3><p>Photographies du domaine : Château Latour Ségur. Photographies d’inspiration : Unsplash. Les images d’inspiration illustrent une atmosphère et ne sont pas contractuelles.</p><h3>Demandes de renseignements</h3><p>Le formulaire prépare un message à envoyer depuis votre messagerie personnelle. Il n’effectue aucune réservation et ne collecte aucun paiement.</p></div>}
-        {modal.type === 'privacy' && <div className="detail-body legal-content"><p className="eyebrow">Vos données</p><h2>En toute <em>confiance.</em></h2><h3>Un formulaire transparent</h3><p>Les informations saisies restent dans votre navigateur le temps de préparer votre demande. Elles ne sont ni enregistrées dans une base de données ni envoyées automatiquement.</p><p>Si vous choisissez « Envoyer par e-mail », votre messagerie s’ouvre avec le texte préparé. Vous restez libre de le modifier et de l’envoyer au château.</p><h3>Navigation et cookies</h3><p>Cette page n’installe aucun cookie publicitaire. Les polices et photographies sont hébergées avec le site. Les liens vers Instagram et Google Maps vous conduisent vers des services externes, soumis à leurs propres politiques.</p><h3>Nous contacter</h3><p>Pour toute question concernant un échange avec le domaine : <a href={`mailto:${contact.email}`}>{contact.email}</a>.</p></div>}
       </Modal>}
 
       {lightboxPhoto && lightbox !== null && <Modal title={`Photographie : ${lightboxPhoto.title}`} onClose={() => setLightbox(null)} className="lightbox"><div className="lightbox-image"><AnimatePresence mode="wait"><motion.img key={lightboxPhoto.id} src={`/images/${lightboxPhoto.image}.webp`} alt={lightboxPhoto.alt} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.22 }} /></AnimatePresence></div><div className="lightbox-bottom"><div><p>{lightboxPhoto.title}</p><span>{String(lightbox + 1).padStart(2, '0')} / {String(visiblePhotos.length).padStart(2, '0')}</span></div><div className="lightbox-controls"><button className="icon-button" aria-label="Photographie précédente" onClick={() => setLightbox((lightbox - 1 + visiblePhotos.length) % visiblePhotos.length)}><ArrowLeft size={22} strokeWidth={1.25} /></button><button className="icon-button" aria-label="Photographie suivante" onClick={() => setLightbox((lightbox + 1) % visiblePhotos.length)}><ArrowRight size={22} strokeWidth={1.25} /></button></div></div></Modal>}
