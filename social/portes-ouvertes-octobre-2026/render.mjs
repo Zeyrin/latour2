@@ -14,7 +14,7 @@ const tmp = mkdtempSync(join(tmpdir(), 'po-'))
 mkdirSync(out, { recursive: true })
 
 const asset = (p) => pathToFileURL(join(pub, p)).href
-const img = (name) => asset(`images/${name}.webp`)
+const img = (name) => name.startsWith('photos/') ? pathToFileURL(join(here, `${name}.jpg`)).href : asset(`images/${name}.webp`)
 
 const sketch = `<svg class="sketch" viewBox="0 0 110 68" fill="none" stroke="currentColor" stroke-width=".85" stroke-linecap="round" stroke-linejoin="round"><path d="M7 61h96M12 58h86M17 56V28h76v28M14 28h82M15 25h80M22 23V15h22M66 15h22v8M19 15h28M63 15h28M38 23 55 9l17 14H38ZM44 24h22M46 56V30h18v26M43 57h24M41 60h28"/><path d="M26 34h8v11h-8zM76 34h8v11h-8zM26 49h8v7h-8zM76 49h8v7h-8zM51 36a4 4 0 0 1 8 0v9h-8zM51 56V49h8v7M30 34v11m-4-6h8M80 34v11m-4-6h8M55 36v9m-4-5h8M23 15v-5m-2 0h4m62 5v-5m-2 0h4M55 9V4m-2 0h4"/><path d="M4 56c-6-11 2-19 6-15-2-10 5-16 9-12M3 61l4-14M99 61l3-15m-5 11c-6-8-2-16 3-15-2-10 6-16 9-8 3 5-1 9-4 11 6 3 3 10-6 12"/><circle cx="55" cy="19" r="2.3"/></svg>`
 
@@ -128,17 +128,63 @@ const visuals = {
       <div class="spacer"></div>
       <div class="contact">05 57 51 06 72<br>contact@chateaulatoursegur.com</div>
     </div><div class="border"></div>`, 'wine'),
+  // ——— Version « salle de réception & spa » (photos de la salle voûtée et du Spa TerreHappy®) ———
+  'salle-spa/carrousel-1-couverture': page(1080, 1350, `
+    <div class="photo" style="background-image:url('${img('photos/salle-voutee-cheminee-verticale')}');background-position:center 70%;filter:brightness(1.25)"></div><div class="shade"></div>
+    <div class="content on-photo">${brand()}<div class="spacer"></div>
+      <div class="kicker">Entreprises & particuliers</div><div class="rule"></div>
+      <h1>Portes<br><em>ouvertes</em></h1><div class="rule"></div>${datesBlock}
+    </div><div class="border"></div>`),
+  'salle-spa/carrousel-2-seminaires': split('01', 'photos/seminaire-conference', 'center 30%', '', 'Réunions <em>&</em><br>séminaires', 'Sous la voûte de pierre, un lieu qui donne envie d’écouter, d’échanger et d’avancer ensemble.'),
+  'salle-spa/carrousel-3-team-building': split('02', 'photos/salle-voutee-reception', 'center 55%', '', 'Team <em>building</em>', 'Une grande salle voûtée et un parc pour sortir du quotidien et resserrer les liens.'),
+  'salle-spa/carrousel-4-repas-affaires': split('03', 'photos/salle-cheminee-table', 'center center', '', 'Repas <em>d’affaires</em>', 'Une table au coin du feu, dans une salle de caractère, pour des échanges qui comptent.'),
+  'salle-spa/carrousel-5-evenements': split('04', 'photos/soiree-musiciens', 'center 35%', '', 'Vos <em>événements</em>', 'Soirées, anniversaires, réceptions privées : la salle se prête à toutes les célébrations.'),
+  'salle-spa/carrousel-6-spa': split('05', 'photos/spa-couloir-piscine', 'center 62%', '', 'Le Spa <em>TerreHappy®</em>', 'Un espace bien-être privatisable pour prolonger la journée en toute sérénité.'),
+  'salle-spa/carrousel-7-contact': page(1080, 1350, `
+    <div class="content">${sketch}<div class="rule"></div>
+      <h2>Venez <em>visiter</em><br>le château</h2><div class="rule"></div>
+      <p class="lead">Du mercredi 14 au mercredi 21 octobre, découvrez la salle de réception, le spa et le domaine, et imaginons ensemble votre <em>projet</em>.</p>
+      <div class="spacer"></div>
+      <div class="list" style="font-size:40px">Réunions <span>·</span> Séminaires<br>Team building <span>·</span> Repas d’affaires<br>Événements privés</div>
+      <div class="spacer"></div>
+      <div class="btn">Contactez-nous</div><div style="height:40px"></div>
+      <div class="contact">05 57 51 06 72<br>contact@chateaulatoursegur.com<br>Lussac — Saint-Émilion</div>
+    </div><div class="border"></div>`, 'wine'),
+  'salle-spa/story-1-save-the-date': page(1080, 1920, `
+    <div class="photo" style="background-image:url('${img('photos/salle-voutee-cheminee-verticale')}');filter:brightness(1.2)"></div><div class="shade"></div>
+    <div class="content on-photo" style="padding:250px 90px 330px">${brand()}<div class="spacer"></div>
+      <div class="sticker">Save the date</div><div style="height:50px"></div>
+      <h1>Portes<br><em>ouvertes</em></h1><div class="rule"></div>${datesBlock}<div class="rule"></div>
+      <div class="tags">Réunions · Séminaires · Team building<br>Repas d’affaires · Événements</div>
+    </div><div class="border"></div>`),
+  'salle-spa/story-2-c-est-parti': page(1080, 1920, `
+    <div class="photo" style="background-image:url('${img('photos/porte-ouverte-couloir')}');background-position:47% center"></div><div class="shade"></div>
+    <div class="content on-photo" style="padding:250px 90px 330px">${brand()}<div class="spacer"></div>
+      <div class="kicker">Mercredi 14 octobre</div><div class="rule"></div>
+      <h1>Les portes<br>sont <em>ouvertes</em></h1><div class="rule"></div>
+      <p class="lead">Jusqu’au <em>21 octobre</em>, venez découvrir la salle de réception et le spa pour vos séminaires et événements.</p>
+    </div><div class="border"></div>`),
+  'salle-spa/story-3-derniers-jours': page(1080, 1920, `
+    <div class="photo" style="background-image:url('${img('photos/spa-couloir-piscine')}')"></div><div class="shade"></div>
+    <div class="content on-photo" style="padding:250px 90px 330px">${brand()}<div class="spacer"></div>
+      <div class="sticker">Derniers jours</div><div style="height:50px"></div>
+      <h1>Jusqu’au<br><em>21 octobre</em></h1><div class="rule"></div>
+      <p class="lead">Dernière ligne droite pour visiter le château et préparer votre prochain événement.</p><div class="rule"></div>
+      <div class="contact">05 57 51 06 72<br>contact@chateaulatoursegur.com</div>
+    </div><div class="border"></div>`),
 }
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined })
 for (const [name, html] of Object.entries(visuals)) {
-  const [w, h] = name.startsWith('story') ? [1080, 1920] : [1080, 1350]
-  const file = join(tmp, `${name}.html`)
+  const [w, h] = name.includes('story') ? [1080, 1920] : [1080, 1350]
+  const file = join(tmp, `${name.replace('/', '--')}.html`)
+  const target = name.includes('/') ? join(here, `visuels-${name}.png`) : join(out, `${name}.png`)
+  mkdirSync(dirname(target), { recursive: true })
   writeFileSync(file, html)
   const p = await browser.newPage({ viewport: { width: w, height: h } })
   await p.goto(pathToFileURL(file).href)
   await p.evaluate(() => document.fonts.ready)
-  await p.screenshot({ path: join(out, `${name}.png`) })
+  await p.screenshot({ path: target })
   await p.close()
   console.log('✓', name)
 }

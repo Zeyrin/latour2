@@ -119,3 +119,39 @@ Texte à l'écran : **« On vous fait visiter ? 🏰 Jusqu'au 21/10 »**
 
 ## Hashtags de réserve
 #seminaireentreprise #lieuseminaire #seminairebordeaux #teambuildingbordeaux #evenemententreprise #receptionprivee #anniversaire #fetedefamille #chateaudebordeaux #vignoble #oenotourisme #nouvelleaquitaine #libournais
+
+---
+
+## VERSION « SALLE DE RÉCEPTION & SPA »
+Visuels : dossier `visuels-salle-spa/` (photos d'origine dans `photos/`).
+Mêmes formats et même calendrier que ci-dessus. Le carrousel passe à 7 images, avec une image dédiée au Spa TerreHappy®.
+
+| Image | Photo |
+|---|---|
+| 1. Couverture | Salle voûtée et sa cheminée |
+| 2. Réunions & séminaires | Présentation sous la voûte |
+| 3. Team building | Réception dans la salle voûtée |
+| 4. Repas d'affaires | Table au coin du feu |
+| 5. Vos événements | Soirée musicale devant la cheminée |
+| 6. Le Spa TerreHappy® | Couloir du spa et piscine |
+| 7. Contact | Fond bordeaux |
+
+Stories : salle voûtée (save the date), porte ouverte sur le couloir (« Les portes sont ouvertes », le 14), couloir du spa (derniers jours).
+
+**Légende du carrousel :**
+
+> Sous la voûte de pierre, au coin du feu… le château vous ouvre ses portes 🗝️
+>
+> Du 14 au 21 octobre, venez découvrir notre salle de réception voûtée et le Spa TerreHappy® pour vos **réunions, séminaires, team building, repas d'affaires et événements**.
+>
+> Entreprises ou particuliers, c'est le moment de visiter les lieux et de nous parler de votre projet : une journée de travail en équipe, un déjeuner client, une soirée entre amis ou une fête de famille.
+>
+> 🔥 Une salle voûtée en pierre avec sa grande cheminée
+> 🌿 Un spa privatisable pour prolonger la journée
+> 🍷 Au cœur du vignoble de Saint-Émilion
+>
+> 📅 Du mercredi 14 au mercredi 21 octobre
+> 📍 Lussac — Saint-Émilion
+> 📞 05 57 51 06 72 · ✉️ contact@chateaulatoursegur.com
+>
+> #chateaulatoursegur #portesouvertes #saintemilion #seminaire #teambuilding #salledereception #salledeseminaire #repasdaffaires #evenementprive #spa #terrehappy #chateau #bordeaux #gironde
