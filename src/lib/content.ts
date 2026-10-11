@@ -80,9 +80,11 @@ export const universes: Universe[] = [
   },
 ]
 
-export type SuiteId = 'eau' | 'feu' | 'bois'
+export type SuiteId = 'terre' | 'eau' | 'metal' | 'feu' | 'bois'
 export const suites: { id: SuiteId; label: string }[] = [
+  { id: 'terre', label: 'La Suite Terre' },
   { id: 'eau', label: 'La Suite Eau' },
+  { id: 'metal', label: 'La Suite Métal' },
   { id: 'feu', label: 'La Suite Feu' },
   { id: 'bois', label: 'Le Cottage Bois' },
 ]
