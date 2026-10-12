@@ -1,5 +1,6 @@
 {
   "cleanUrls": true,
+  "crons": [{ "path": "/api/sync-beds24", "schedule": "0 4 * * *" }],
   "trailingSlash": false,
   "headers": [
     { "source": "/(.*)", "headers": [

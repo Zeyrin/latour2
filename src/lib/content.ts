@@ -80,6 +80,15 @@ export const universes: Universe[] = [
   },
 ]
 
+export type SuiteId = 'terre' | 'eau' | 'metal' | 'feu' | 'bois'
+export const suites: { id: SuiteId; label: string }[] = [
+  { id: 'terre', label: 'La Suite Terre' },
+  { id: 'eau', label: 'La Suite Eau' },
+  { id: 'metal', label: 'La Suite Métal' },
+  { id: 'feu', label: 'La Suite Feu' },
+  { id: 'bois', label: 'Le Cottage Bois' },
+]
+
 export const escapes = [
   { id: 'romantique', label: 'Une escapade à deux', title: 'À deux, loin du monde.', image: 'suite-candidate', alt: 'Un grand lit baigné de lumière dans une chambre aux tons naturels', text: 'Un réveil sans réveil, une balade dans le parc, une pause au spa. Retrouvez le plaisir d’être simplement ensemble.', universe: 'suites' as UniverseId, request: 'Je souhaite en savoir plus sur un week-end romantique au château.' },
   { id: 'ressourcement', label: 'Cures & bien-être', title: 'Retrouver son équilibre.', image: 'spa-soin', alt: 'Un soin relaxant aux huiles, réalisé avec des gestes attentionnés', text: 'Accorder au corps et à l’esprit le temps dont ils ont besoin. Une parenthèse de soins à composer selon vos envies.', universe: 'spa' as UniverseId, request: 'Je souhaite composer une cure de bien-être et de ressourcement.' },
