@@ -13,7 +13,7 @@ Pour les régénérer : `NODE_PATH=$(npm root -g) node social/portes-ouvertes-oc
 
 | Date | Où | Contenu |
 |---|---|---|
-| Dim. 11 oct. | Instagram feed | **Post 1** : carrousel 6 slides |
+| Dim. 11 oct. | Instagram feed | **Post 1** : carrousel 7 slides |
 | Lun. 12 oct. | Story IG + TikTok | **Story 1** « Save the date » + **TikTok 1** (visite du domaine) |
 | Mar. 13 oct. | Story IG | Repartage du carrousel + sticker compte à rebours « Portes ouvertes » |
 | Mer. 14 oct. | Story IG + Reel/TikTok | **Story 2** « C'est parti ! » + **TikTok 2** (les 4 formats) |
@@ -23,8 +23,8 @@ Pour les régénérer : `NODE_PATH=$(npm root -g) node social/portes-ouvertes-oc
 
 ---
 
-## POST 1 — Carrousel Instagram (6 slides)
-Visuels : `carrousel-1` à `carrousel-6`
+## POST 1 — Carrousel Instagram (7 slides)
+Visuels : `carrousel-1` à `carrousel-7`. La slide 2 présente les 3 facettes du château : Suites · Spa · Réceptions.
 
 **Légende :**
 
@@ -128,19 +128,20 @@ Texte à l'écran : **« On vous fait visiter ? 🏰 Jusqu'au 21/10 »**
 
 ## VERSION « SALLE DE RÉCEPTION & SPA »
 Visuels : dossier `visuels-salle-spa/` (photos d'origine dans `photos/`).
-Mêmes formats et même calendrier que ci-dessus. Le carrousel passe à 7 images, avec une image dédiée au Spa TerreHappy®.
+Mêmes formats et même calendrier que ci-dessus. Le carrousel passe à 8 images, avec une slide « 3 facettes » et une image dédiée au Spa TerreHappy®.
 
 | Image | Photo |
 |---|---|
 | 1. Couverture | Salle voûtée et sa cheminée |
-| 2. Réunions & séminaires | Présentation sous la voûte |
-| 3. Team building | Réception dans la salle voûtée |
-| 4. Repas d'affaires | Table au coin du feu |
-| 5. Vos événements | Soirée musicale devant la cheminée |
-| 6. Le Spa TerreHappy® | Couloir du spa et piscine |
-| 7. Contact | Fond bordeaux |
+| 2. Les 3 facettes | Suites · Spa · Réceptions (une bande photo par univers) |
+| 3. Réunions & séminaires | Présentation sous la voûte |
+| 4. Team building | Réception dans la salle voûtée |
+| 5. Repas d'affaires | Table au coin du feu |
+| 6. Vos événements | Soirée musicale devant la cheminée |
+| 7. Le Spa TerreHappy® | Couloir du spa et piscine |
+| 8. Contact | Fond bordeaux |
 
-Stories : salle voûtée (save the date), porte ouverte sur le couloir (« Les portes sont ouvertes », le 14), couloir du spa (derniers jours).
+Stories : salle voûtée (save the date), porte ouverte sur le couloir (« Les portes sont ouvertes », le 14), couloir du spa (derniers jours). Les 3 stories ont un bandeau « Suites · Spa · Réceptions » en bas.
 
 **Légende du carrousel :**
 

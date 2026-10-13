@@ -14,7 +14,7 @@ const tmp = mkdtempSync(join(tmpdir(), 'po-'))
 mkdirSync(out, { recursive: true })
 
 const asset = (p) => pathToFileURL(join(pub, p)).href
-const img = (name) => name.startsWith('photos/') ? pathToFileURL(join(here, `${name}.jpg`)).href : asset(`images/${name}.webp`)
+const img = (name) => name.startsWith('photos') ? pathToFileURL(join(here, `${name}.jpg`)).href : asset(`images/${name}.webp`)
 
 const sketch = `<svg class="sketch" viewBox="0 0 110 68" fill="none" stroke="currentColor" stroke-width=".85" stroke-linecap="round" stroke-linejoin="round"><path d="M7 61h96M12 58h86M17 56V28h76v28M14 28h82M15 25h80M22 23V15h22M66 15h22v8M19 15h28M63 15h28M38 23 55 9l17 14H38ZM44 24h22M46 56V30h18v26M43 57h24M41 60h28"/><path d="M26 34h8v11h-8zM76 34h8v11h-8zM26 49h8v7h-8zM76 49h8v7h-8zM51 36a4 4 0 0 1 8 0v9h-8zM51 56V49h8v7M30 34v11m-4-6h8M80 34v11m-4-6h8M55 36v9m-4-5h8M23 15v-5m-2 0h4m62 5v-5m-2 0h4M55 9V4m-2 0h4"/><path d="M4 56c-6-11 2-19 6-15-2-10 5-16 9-12M3 61l4-14M99 61l3-15m-5 11c-6-8-2-16 3-15-2-10 6-16 9-8 3 5-1 9-4 11 6 3 3 10-6 12"/><circle cx="55" cy="19" r="2.3"/></svg>`
 
@@ -41,6 +41,15 @@ body{font-family:Newsreader,Georgia,serif;color:var(--wine);-webkit-font-smoothi
 .b-facets{font-style:italic;font-size:27px;font-weight:300;letter-spacing:.03em;margin-top:14px}
 .b-loc{font-family:Roboto,sans-serif;font-size:14px;letter-spacing:.32em;text-transform:uppercase;margin-top:12px;opacity:.75}
 .facets{font-family:Roboto,sans-serif;font-size:20px;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);margin-top:26px}
+.tri{position:absolute;left:0;right:0;height:345px;background-size:cover;background-position:center;display:flex;align-items:flex-end;padding:0 70px 30px}
+.tri::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(32,10,5,.78) 0%,rgba(32,10,5,.25) 60%,rgba(32,10,5,0) 100%)}
+.tri div{position:relative;color:var(--cream);text-shadow:0 2px 14px rgba(0,0,0,.4)}
+.tri .t{font-size:66px;font-weight:300;line-height:1}
+.tri .s{font-size:30px;font-style:italic;color:#f1e3c9;margin-top:6px}
+.tri-head{position:absolute;top:0;left:0;right:0;height:315px;background:var(--wine);color:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.tri-head .facets{margin-top:16px}
+.fbar{position:absolute;left:90px;right:90px;bottom:340px;display:flex;justify-content:center;align-items:center;gap:26px;color:var(--cream);font-family:Roboto,sans-serif;font-size:25px;letter-spacing:.3em;text-transform:uppercase;border-top:1.5px solid rgba(184,155,114,.8);padding-top:34px;text-shadow:0 2px 12px rgba(0,0,0,.4)}
+.fbar i{font-style:normal;color:var(--gold)}
 .facets-name{font-size:40px;font-weight:300;margin-top:22px;letter-spacing:.03em}
 .kicker{font-family:Roboto,sans-serif;font-size:22px;letter-spacing:.38em;text-transform:uppercase;color:var(--gold)}
 .on-photo .kicker{color:#f1e3c9}
@@ -83,6 +92,14 @@ const split = (n, image, pos, badge, title, text) => page(1080, 1350, `
   <div class="panel"><div class="num">${n}</div><h2>${title}</h2><p>${text}</p></div>
   <div class="border"></div>`, 'split')
 
+const triptych = (suite, spa, reception) => page(1080, 1350, `
+  <div class="tri-head"><div class="b-small" style="font-family:Roboto,sans-serif;letter-spacing:.42em;text-transform:uppercase;font-size:19px">Château</div><div style="font-size:64px;font-weight:300;letter-spacing:.03em">Latour Ségur</div><div class="facets">Suites · Spa · Réceptions</div></div>
+  <div class="tri" style="top:315px;background-image:url('${img(suite[0])}');background-position:${suite[1]}"><div><div class="t">Les Suites</div><div class="s">L’art de séjourner</div></div></div>
+  <div class="tri" style="top:660px;background-image:url('${img(spa[0])}');background-position:${spa[1]}"><div><div class="t">Le Spa TerreHappy®</div><div class="s">L’art de se ressourcer</div></div></div>
+  <div class="tri" style="top:1005px;background-image:url('${img(reception[0])}');background-position:${reception[1]}"><div><div class="t">Les Réceptions</div><div class="s">L’art de se réunir</div></div></div>
+  <div class="border"></div>`)
+const fbar = `<div class="fbar">Suites <i>·</i> Spa <i>·</i> Réceptions</div>`
+
 const visuals = {
   // ——— Carrousel Instagram 4:5 ———
   'carrousel-1-couverture': page(1080, 1350, `
@@ -91,11 +108,12 @@ const visuals = {
       <div class="kicker">Entreprises & particuliers</div><div class="rule"></div>
       <h1>Portes<br><em>ouvertes</em></h1><div class="rule"></div>${datesBlock}
     </div><div class="border"></div>`),
-  'carrousel-2-seminaires': split('01', 'chateau-panorama', '78% center', '', 'Réunions <em>&</em><br>séminaires', 'Sortir du bureau pour penser autrement, entre vieilles pierres et parc arboré.'),
-  'carrousel-3-team-building': split('02', 'parc', 'center 60%', '', 'Team <em>building</em>', 'Des allées de cyprès, de grands espaces verts : l’équipe se retrouve vraiment.'),
-  'carrousel-4-repas-affaires': split('03', 'evenements', 'center center', '', 'Repas <em>d’affaires</em>', 'Une belle table dans une demeure de caractère, pour des échanges qui comptent.'),
-  'carrousel-5-evenements': split('04', 'art-de-vivre', 'center center', '', 'Vos <em>événements</em>', 'Anniversaire, fête de famille, réception privée : un cadre unique pour célébrer.'),
-  'carrousel-6-contact': page(1080, 1350, `
+  'carrousel-2-trois-facettes': triptych(['suites','center center'], ['spa-piscine','center 60%'], ['evenements','center center']),
+  'carrousel-3-seminaires': split('01', 'chateau-panorama', '78% center', '', 'Réunions <em>&</em><br>séminaires', 'Sortir du bureau pour penser autrement, entre vieilles pierres et parc arboré.'),
+  'carrousel-4-team-building': split('02', 'parc', 'center 60%', '', 'Team <em>building</em>', 'Des allées de cyprès, de grands espaces verts : l’équipe se retrouve vraiment.'),
+  'carrousel-5-repas-affaires': split('03', 'evenements', 'center center', '', 'Repas <em>d’affaires</em>', 'Une belle table dans une demeure de caractère, pour des échanges qui comptent.'),
+  'carrousel-6-evenements': split('04', 'art-de-vivre', 'center center', '', 'Vos <em>événements</em>', 'Anniversaire, fête de famille, réception privée : un cadre unique pour célébrer.'),
+  'carrousel-7-contact': page(1080, 1350, `
     <div class="content">${sketch}<div class="facets-name">Château Latour Ségur</div><div class="facets">Suites · Spa · Réceptions</div><div class="rule"></div>
       <h2>Venez <em>visiter</em><br>le château</h2><div class="rule"></div>
       <p class="lead">Du mercredi 14 au mercredi 21 octobre, découvrez les espaces et imaginons ensemble votre <em>projet</em>.</p>
@@ -109,20 +127,20 @@ const visuals = {
   // ——— Stories / Reels / TikTok 9:16 ———
   'story-1-save-the-date': page(1080, 1920, `
     <div class="photo" style="background-image:url('${img('domaine-mobile')}')"></div><div class="shade"></div>
-    <div class="content on-photo" style="padding:250px 90px 330px">${brand()}<div class="spacer"></div>
+    <div class="content on-photo" style="padding:250px 90px 470px">${brand()}<div class="spacer"></div>
       <div class="sticker">Save the date</div><div style="height:50px"></div>
       <h1>Portes<br><em>ouvertes</em></h1><div class="rule"></div>${datesBlock}<div class="rule"></div>
       <div class="tags">Réunions · Séminaires · Team building<br>Repas d’affaires · Événements</div>
     </div><div class="border"></div>`),
   'story-2-c-est-parti': page(1080, 1920, `
     <div class="photo" style="background-image:url('${img('parc')}')"></div><div class="shade"></div>
-    <div class="content on-photo" style="padding:250px 90px 330px">${brand()}<div class="spacer"></div>
+    <div class="content on-photo" style="padding:250px 90px 470px">${brand()}<div class="spacer"></div>
       <div class="kicker">Mercredi 14 octobre</div><div class="rule"></div>
       <h1>C’est <em>parti&nbsp;!</em></h1><div class="rule"></div>
       <p class="lead">Les portes du château sont ouvertes jusqu’au <em>21 octobre</em>. Venez découvrir nos espaces pour vos séminaires et événements.</p>
     </div><div class="border"></div>`),
   'story-3-derniers-jours': page(1080, 1920, `
-    <div class="content" style="padding:250px 90px 330px">${sketch}<div class="facets-name">Château Latour Ségur</div><div class="facets">Suites · Spa · Réceptions</div><div class="rule"></div>
+    <div class="content" style="padding:250px 90px 470px">${sketch}<div class="facets-name">Château Latour Ségur</div><div class="facets">Suites · Spa · Réceptions</div><div class="rule"></div>
       <div class="kicker">Portes ouvertes</div><div style="height:40px"></div>
       <h1>Derniers<br><em>jours</em></h1><div class="rule"></div>
       <p class="lead">Jusqu’au mercredi <em>21 octobre</em> pour visiter le château et préparer votre prochain événement.</p>
@@ -138,12 +156,13 @@ const visuals = {
       <div class="kicker">Entreprises & particuliers</div><div class="rule"></div>
       <h1>Portes<br><em>ouvertes</em></h1><div class="rule"></div>${datesBlock}
     </div><div class="border"></div>`),
-  'salle-spa/carrousel-2-seminaires': split('01', 'photos/seminaire-conference', 'center 30%', '', 'Réunions <em>&</em><br>séminaires', 'Sous la voûte de pierre, un lieu qui donne envie d’écouter, d’échanger et d’avancer ensemble.'),
-  'salle-spa/carrousel-3-team-building': split('02', 'photos/salle-voutee-reception', 'center 55%', '', 'Team <em>building</em>', 'Une grande salle voûtée et un parc pour sortir du quotidien et resserrer les liens.'),
-  'salle-spa/carrousel-4-repas-affaires': split('03', 'photos/salle-cheminee-table', 'center center', '', 'Repas <em>d’affaires</em>', 'Une table au coin du feu, dans une salle de caractère, pour des échanges qui comptent.'),
-  'salle-spa/carrousel-5-evenements': split('04', 'photos/soiree-musiciens', 'center 35%', '', 'Vos <em>événements</em>', 'Soirées, anniversaires, réceptions privées : la salle se prête à toutes les célébrations.'),
-  'salle-spa/carrousel-6-spa': split('05', 'photos/spa-couloir-piscine', 'center 62%', '', 'Le Spa <em>TerreHappy®</em>', 'Un espace bien-être privatisable pour prolonger la journée en toute sérénité.'),
-  'salle-spa/carrousel-7-contact': page(1080, 1350, `
+  'salle-spa/carrousel-2-trois-facettes': triptych(['suites','center center'], ['photos-retouchees/spa-couloir-piscine','center 72%'], ['photos-retouchees/salle-cheminee-table','center 55%']),
+  'salle-spa/carrousel-3-seminaires': split('01', 'photos/seminaire-conference', 'center 30%', '', 'Réunions <em>&</em><br>séminaires', 'Sous la voûte de pierre, un lieu qui donne envie d’écouter, d’échanger et d’avancer ensemble.'),
+  'salle-spa/carrousel-4-team-building': split('02', 'photos/salle-voutee-reception', 'center 55%', '', 'Team <em>building</em>', 'Une grande salle voûtée et un parc pour sortir du quotidien et resserrer les liens.'),
+  'salle-spa/carrousel-5-repas-affaires': split('03', 'photos/salle-cheminee-table', 'center center', '', 'Repas <em>d’affaires</em>', 'Une table au coin du feu, dans une salle de caractère, pour des échanges qui comptent.'),
+  'salle-spa/carrousel-6-evenements': split('04', 'photos/soiree-musiciens', 'center 35%', '', 'Vos <em>événements</em>', 'Soirées, anniversaires, réceptions privées : la salle se prête à toutes les célébrations.'),
+  'salle-spa/carrousel-7-spa': split('05', 'photos/spa-couloir-piscine', 'center 62%', '', 'Le Spa <em>TerreHappy®</em>', 'Un espace bien-être privatisable pour prolonger la journée en toute sérénité.'),
+  'salle-spa/carrousel-8-contact': page(1080, 1350, `
     <div class="content">${sketch}<div class="facets-name">Château Latour Ségur</div><div class="facets">Suites · Spa · Réceptions</div><div class="rule"></div>
       <h2>Venez <em>visiter</em><br>le château</h2><div class="rule"></div>
       <p class="lead">Du mercredi 14 au mercredi 21 octobre, découvrez la salle de réception, le spa et le domaine, et imaginons ensemble votre <em>projet</em>.</p>
@@ -155,21 +174,21 @@ const visuals = {
     </div><div class="border"></div>`, 'wine'),
   'salle-spa/story-1-save-the-date': page(1080, 1920, `
     <div class="photo" style="background-image:url('${img('photos/salle-voutee-cheminee-verticale')}');filter:brightness(1.2)"></div><div class="shade"></div>
-    <div class="content on-photo" style="padding:250px 90px 330px">${brand()}<div class="spacer"></div>
+    <div class="content on-photo" style="padding:250px 90px 470px">${brand()}<div class="spacer"></div>
       <div class="sticker">Save the date</div><div style="height:50px"></div>
       <h1>Portes<br><em>ouvertes</em></h1><div class="rule"></div>${datesBlock}<div class="rule"></div>
       <div class="tags">Réunions · Séminaires · Team building<br>Repas d’affaires · Événements</div>
     </div><div class="border"></div>`),
   'salle-spa/story-2-c-est-parti': page(1080, 1920, `
     <div class="photo" style="background-image:url('${img('photos/porte-ouverte-couloir')}');background-position:47% center"></div><div class="shade"></div>
-    <div class="content on-photo" style="padding:250px 90px 330px">${brand()}<div class="spacer"></div>
+    <div class="content on-photo" style="padding:250px 90px 470px">${brand()}<div class="spacer"></div>
       <div class="kicker">Mercredi 14 octobre</div><div class="rule"></div>
       <h1>Les portes<br>sont <em>ouvertes</em></h1><div class="rule"></div>
       <p class="lead">Jusqu’au <em>21 octobre</em>, venez découvrir la salle de réception et le spa pour vos séminaires et événements.</p>
     </div><div class="border"></div>`),
   'salle-spa/story-3-derniers-jours': page(1080, 1920, `
     <div class="photo" style="background-image:url('${img('photos/spa-couloir-piscine')}')"></div><div class="shade"></div>
-    <div class="content on-photo" style="padding:250px 90px 330px">${brand()}<div class="spacer"></div>
+    <div class="content on-photo" style="padding:250px 90px 470px">${brand()}<div class="spacer"></div>
       <div class="sticker">Derniers jours</div><div style="height:50px"></div>
       <h1>Jusqu’au<br><em>21 octobre</em></h1><div class="rule"></div>
       <p class="lead">Dernière ligne droite pour visiter le château et préparer votre prochain événement.</p><div class="rule"></div>
@@ -178,7 +197,8 @@ const visuals = {
 }
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined })
-for (const [name, html] of Object.entries(visuals)) {
+for (let [name, html] of Object.entries(visuals)) {
+  if (name.includes('story')) html = html.replace('<span class="b-facets">Suites · Spa · Réceptions</span>', '').replace(/<div class="border"><\/div>(?![\s\S]*<div class="border">)/, fbar + '<div class="border"></div>')
   const [w, h] = name.includes('story') ? [1080, 1920] : [1080, 1350]
   const file = join(tmp, `${name.replace('/', '--')}.html`)
   const target = name.includes('/') ? join(here, `visuels-${name}.png`) : join(out, `${name}.png`)
