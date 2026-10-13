@@ -5,7 +5,7 @@ Réunions · Séminaires · Team building · Repas d'affaires · Événements
 Visuels prêts à publier : dossier `visuels/` (1080×1350 pour le feed, 1080×1920 pour stories / Reels / TikTok).
 Pour les régénérer : `NODE_PATH=$(npm root -g) node social/portes-ouvertes-octobre-2026/render.mjs`
 
-> ⚠️ À compléter si besoin : horaires de visite et modalités (sur rendez-vous ou passage libre). Je n'ai rien inventé à ce sujet. Les visuels disent seulement « Contactez-nous ».
+> 🕦 **Horaires : de 11 h 30 à 14 h 30, ou sur rendez-vous.** Ils figurent sur tous les visuels, sur la vidéo et dans les légendes.
 
 ---
 
@@ -39,6 +39,7 @@ Visuels : `carrousel-1` à `carrousel-7`. La slide 2 présente les 3 facettes du
 > ✨ Un accompagnement sur mesure
 >
 > 📅 Du mercredi 14 au mercredi 21 octobre
+> 🕦 De 11 h 30 à 14 h 30, ou sur rendez-vous
 > 📍 Lussac — Saint-Émilion
 > 📞 05 57 51 06 72 · ✉️ contact@chateaulatoursegur.com
 >
@@ -57,7 +58,7 @@ Visuel : `carrousel-1-couverture.png` (ou une photo réelle prise pendant les pr
 
 > Les visites ont commencé et le château n'attend plus que vous ✨
 >
-> Jusqu'au mercredi 21 octobre, entreprises et particuliers sont les bienvenus pour découvrir nos espaces : salles de réunion, parc, tables de réception…
+> Jusqu'au mercredi 21 octobre, de 11 h 30 à 14 h 30 ou sur rendez-vous, entreprises et particuliers sont les bienvenus pour découvrir nos espaces : salles de réunion, parc, tables de réception…
 >
 > Séminaire d'équipe, déjeuner client, team building ou fête de famille : venez imaginer votre événement avec nous.
 >
@@ -117,7 +118,7 @@ Plans de coupe : clés et portail, mains sur la table dressée, vue du parc.
 Texte à l'écran : **« On vous fait visiter ? 🏰 Jusqu'au 21/10 »**
 
 **Légende :**
-> Petite visite en coulisses 👀 Il vous reste jusqu'au 21 octobre pour découvrir le château et préparer votre séminaire ou votre événement. #behindthescenes #chateau #seminaire #teambuilding #saintemilion #portesouvertes
+> Petite visite en coulisses 👀 Il vous reste jusqu'au 21 octobre (de 11 h 30 à 14 h 30 ou sur rendez-vous) pour découvrir le château et préparer votre séminaire ou votre événement. #behindthescenes #chateau #seminaire #teambuilding #saintemilion #portesouvertes
 
 ---
 
@@ -156,6 +157,7 @@ Stories : salle voûtée (save the date), porte ouverte sur le couloir (« Les p
 > 🍷 Au cœur du vignoble de Saint-Émilion
 >
 > 📅 Du mercredi 14 au mercredi 21 octobre
+> 🕦 De 11 h 30 à 14 h 30, ou sur rendez-vous
 > 📍 Lussac — Saint-Émilion
 > 📞 05 57 51 06 72 · ✉️ contact@chateaulatoursegur.com
 >

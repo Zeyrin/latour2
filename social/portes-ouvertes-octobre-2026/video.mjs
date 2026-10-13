@@ -53,7 +53,7 @@ const overlay = (s) => `<!doctype html><html><head><meta charset="utf-8"><style>
 <div class="shade"></div>
 ${s.noBrand ? '' : '<div class="brand"><small>Château</small><b>Latour Ségur</b><i>Suites · Spa · Réceptions</i></div>'}
 <div class="txt" ${s.end ? 'style="bottom:560px"' : ''}><div class="k">${s.kicker}</div><h1>${s.text}</h1></div>
-${s.end ? '<div class="end"><div class="tags">Entreprises &amp; particuliers</div>05 57 51 06 72<br>contact@chateaulatoursegur.com</div>' : ''}
+${s.end ? '<div class="end"><div class="tags">Entreprises &amp; particuliers</div>De 11 h 30 à 14 h 30 ou sur rendez-vous<br>05 57 51 06 72<br>contact@chateaulatoursegur.com</div>' : ''}
 </body></html>`
 
 // 1. Calques de texte transparents

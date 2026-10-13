@@ -50,6 +50,8 @@ body{font-family:Newsreader,Georgia,serif;color:var(--wine);-webkit-font-smoothi
 .tri-head .facets{margin-top:16px}
 .fbar{position:absolute;left:90px;right:90px;bottom:340px;display:flex;justify-content:center;align-items:center;gap:26px;color:var(--cream);font-family:Roboto,sans-serif;font-size:25px;letter-spacing:.3em;text-transform:uppercase;border-top:1.5px solid rgba(184,155,114,.8);padding-top:34px;text-shadow:0 2px 12px rgba(0,0,0,.4)}
 .fbar i{font-style:normal;color:var(--gold)}
+.hours{font-family:Roboto,sans-serif;font-size:23px;letter-spacing:.2em;text-transform:uppercase;margin-top:30px}
+.hours i{font-style:normal;color:var(--gold)}
 .facets-name{font-size:40px;font-weight:300;margin-top:22px;letter-spacing:.03em}
 .kicker{font-family:Roboto,sans-serif;font-size:22px;letter-spacing:.38em;text-transform:uppercase;color:var(--gold)}
 .on-photo .kicker{color:#f1e3c9}
@@ -84,7 +86,8 @@ h2{font-weight:300;font-size:92px;line-height:1.02}
 
 const page = (w, h, body, cls = '') => `<!doctype html><html lang="fr"><head><meta charset="utf-8"><style>:root{--w:${w}px;--h:${h}px}${css}</style></head><body><div class="frame ${cls}">${body}</div></body></html>`
 
-const datesBlock = `<div class="dates"><span class="d">14</span><span class="arrow">→</span><span class="d">21</span><span class="m">octobre<br>2026</span></div>`
+const hours = `<div class="hours">11 h 30 – 14 h 30 <i>·</i> ou sur rendez-vous</div>`
+const datesBlock = `<div class="dates"><span class="d">14</span><span class="arrow">→</span><span class="d">21</span><span class="m">octobre<br>2026</span></div>${hours}`
 
 const split = (n, image, pos, badge, title, text) => page(1080, 1350, `
   <div class="photo" style="background-image:url('${img(image)}');background-position:${pos}"></div>
@@ -116,7 +119,7 @@ const visuals = {
   'carrousel-7-contact': page(1080, 1350, `
     <div class="content">${sketch}<div class="facets-name">Château Latour Ségur</div><div class="facets">Suites · Spa · Réceptions</div><div class="rule"></div>
       <h2>Venez <em>visiter</em><br>le château</h2><div class="rule"></div>
-      <p class="lead">Du mercredi 14 au mercredi 21 octobre, découvrez les espaces et imaginons ensemble votre <em>projet</em>.</p>
+      <p class="lead">Du mercredi 14 au mercredi 21 octobre, découvrez les espaces et imaginons ensemble votre <em>projet</em>.</p>${hours}
       <div class="spacer"></div>
       <div class="list" style="font-size:40px">Réunions <span>·</span> Séminaires<br>Team building <span>·</span> Repas d’affaires<br>Événements privés</div>
       <div class="spacer"></div>
@@ -137,13 +140,13 @@ const visuals = {
     <div class="content on-photo" style="padding:250px 90px 470px">${brand()}<div class="spacer"></div>
       <div class="kicker">Mercredi 14 octobre</div><div class="rule"></div>
       <h1>C’est <em>parti&nbsp;!</em></h1><div class="rule"></div>
-      <p class="lead">Les portes du château sont ouvertes jusqu’au <em>21 octobre</em>. Venez découvrir nos espaces pour vos séminaires et événements.</p>
+      <p class="lead">Les portes du château sont ouvertes jusqu’au <em>21 octobre</em>. Venez découvrir nos espaces pour vos séminaires et événements.</p>${hours}
     </div><div class="border"></div>`),
   'story-3-derniers-jours': page(1080, 1920, `
     <div class="content" style="padding:250px 90px 470px">${sketch}<div class="facets-name">Château Latour Ségur</div><div class="facets">Suites · Spa · Réceptions</div><div class="rule"></div>
       <div class="kicker">Portes ouvertes</div><div style="height:40px"></div>
       <h1>Derniers<br><em>jours</em></h1><div class="rule"></div>
-      <p class="lead">Jusqu’au mercredi <em>21 octobre</em> pour visiter le château et préparer votre prochain événement.</p>
+      <p class="lead">Jusqu’au mercredi <em>21 octobre</em> pour visiter le château et préparer votre prochain événement.</p>${hours}
       <div class="spacer"></div>
       <div class="list">Réunions <span>·</span> Séminaires<br>Team building <span>·</span> Repas d’affaires<br>Événements privés</div>
       <div class="spacer"></div>
@@ -165,7 +168,7 @@ const visuals = {
   'salle-spa/carrousel-8-contact': page(1080, 1350, `
     <div class="content">${sketch}<div class="facets-name">Château Latour Ségur</div><div class="facets">Suites · Spa · Réceptions</div><div class="rule"></div>
       <h2>Venez <em>visiter</em><br>le château</h2><div class="rule"></div>
-      <p class="lead">Du mercredi 14 au mercredi 21 octobre, découvrez la salle de réception, le spa et le domaine, et imaginons ensemble votre <em>projet</em>.</p>
+      <p class="lead">Du mercredi 14 au mercredi 21 octobre, découvrez la salle de réception, le spa et le domaine, et imaginons ensemble votre <em>projet</em>.</p>${hours}
       <div class="spacer"></div>
       <div class="list" style="font-size:40px">Réunions <span>·</span> Séminaires<br>Team building <span>·</span> Repas d’affaires<br>Événements privés</div>
       <div class="spacer"></div>
@@ -184,14 +187,14 @@ const visuals = {
     <div class="content on-photo" style="padding:250px 90px 470px">${brand()}<div class="spacer"></div>
       <div class="kicker">Mercredi 14 octobre</div><div class="rule"></div>
       <h1>Les portes<br>sont <em>ouvertes</em></h1><div class="rule"></div>
-      <p class="lead">Jusqu’au <em>21 octobre</em>, venez découvrir la salle de réception et le spa pour vos séminaires et événements.</p>
+      <p class="lead">Jusqu’au <em>21 octobre</em>, venez découvrir la salle de réception et le spa pour vos séminaires et événements.</p>${hours}
     </div><div class="border"></div>`),
   'salle-spa/story-3-derniers-jours': page(1080, 1920, `
     <div class="photo" style="background-image:url('${img('photos/spa-couloir-piscine')}')"></div><div class="shade"></div>
     <div class="content on-photo" style="padding:250px 90px 470px">${brand()}<div class="spacer"></div>
       <div class="sticker">Derniers jours</div><div style="height:50px"></div>
       <h1>Jusqu’au<br><em>21 octobre</em></h1><div class="rule"></div>
-      <p class="lead">Dernière ligne droite pour visiter le château et préparer votre prochain événement.</p><div class="rule"></div>
+      <p class="lead">Dernière ligne droite pour visiter le château et préparer votre prochain événement.</p>${hours}<div class="rule"></div>
       <div class="contact">05 57 51 06 72<br>contact@chateaulatoursegur.com</div>
     </div><div class="border"></div>`),
 }
