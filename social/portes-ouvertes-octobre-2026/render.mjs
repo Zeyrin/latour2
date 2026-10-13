@@ -18,7 +18,7 @@ const img = (name) => name.startsWith('photos/') ? pathToFileURL(join(here, `${n
 
 const sketch = `<svg class="sketch" viewBox="0 0 110 68" fill="none" stroke="currentColor" stroke-width=".85" stroke-linecap="round" stroke-linejoin="round"><path d="M7 61h96M12 58h86M17 56V28h76v28M14 28h82M15 25h80M22 23V15h22M66 15h22v8M19 15h28M63 15h28M38 23 55 9l17 14H38ZM44 24h22M46 56V30h18v26M43 57h24M41 60h28"/><path d="M26 34h8v11h-8zM76 34h8v11h-8zM26 49h8v7h-8zM76 49h8v7h-8zM51 36a4 4 0 0 1 8 0v9h-8zM51 56V49h8v7M30 34v11m-4-6h8M80 34v11m-4-6h8M55 36v9m-4-5h8M23 15v-5m-2 0h4m62 5v-5m-2 0h4M55 9V4m-2 0h4"/><path d="M4 56c-6-11 2-19 6-15-2-10 5-16 9-12M3 61l4-14M99 61l3-15m-5 11c-6-8-2-16 3-15-2-10 6-16 9-8 3 5-1 9-4 11 6 3 3 10-6 12"/><circle cx="55" cy="19" r="2.3"/></svg>`
 
-const brand = (cls = '') => `<div class="brand ${cls}"><span class="b-small">Château</span><span class="b-name">Latour Ségur</span><span class="b-loc">Saint-Émilion · France</span></div>`
+const brand = (cls = '') => `<div class="brand ${cls}"><span class="b-small">Château</span><span class="b-name">Latour Ségur</span><span class="b-facets">Suites · Spa · Réceptions</span><span class="b-loc">Saint-Émilion · France</span></div>`
 
 const css = `
 @font-face{font-family:Newsreader;src:url('${asset('fonts/newsreader.woff2')}') format('woff2');font-style:normal;font-weight:300 500}
@@ -38,7 +38,10 @@ body{font-family:Newsreader,Georgia,serif;color:var(--wine);-webkit-font-smoothi
 .brand{display:flex;flex-direction:column;align-items:center;line-height:1}
 .b-small{font-family:Roboto,sans-serif;font-size:19px;letter-spacing:.42em;text-transform:uppercase;margin-bottom:10px}
 .b-name{font-size:50px;font-weight:300;letter-spacing:.04em}
-.b-loc{font-family:Roboto,sans-serif;font-size:15px;letter-spacing:.32em;text-transform:uppercase;margin-top:12px;opacity:.85}
+.b-facets{font-style:italic;font-size:27px;font-weight:300;letter-spacing:.03em;margin-top:14px}
+.b-loc{font-family:Roboto,sans-serif;font-size:14px;letter-spacing:.32em;text-transform:uppercase;margin-top:12px;opacity:.75}
+.facets{font-family:Roboto,sans-serif;font-size:20px;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);margin-top:26px}
+.facets-name{font-size:40px;font-weight:300;margin-top:22px;letter-spacing:.03em}
 .kicker{font-family:Roboto,sans-serif;font-size:22px;letter-spacing:.38em;text-transform:uppercase;color:var(--gold)}
 .on-photo .kicker{color:#f1e3c9}
 .on-photo{text-shadow:0 2px 18px rgba(20,6,3,.35)}
@@ -93,7 +96,7 @@ const visuals = {
   'carrousel-4-repas-affaires': split('03', 'evenements', 'center center', '', 'Repas <em>d’affaires</em>', 'Une belle table dans une demeure de caractère, pour des échanges qui comptent.'),
   'carrousel-5-evenements': split('04', 'art-de-vivre', 'center center', '', 'Vos <em>événements</em>', 'Anniversaire, fête de famille, réception privée : un cadre unique pour célébrer.'),
   'carrousel-6-contact': page(1080, 1350, `
-    <div class="content">${sketch}<div class="rule"></div>
+    <div class="content">${sketch}<div class="facets-name">Château Latour Ségur</div><div class="facets">Suites · Spa · Réceptions</div><div class="rule"></div>
       <h2>Venez <em>visiter</em><br>le château</h2><div class="rule"></div>
       <p class="lead">Du mercredi 14 au mercredi 21 octobre, découvrez les espaces et imaginons ensemble votre <em>projet</em>.</p>
       <div class="spacer"></div>
@@ -119,7 +122,7 @@ const visuals = {
       <p class="lead">Les portes du château sont ouvertes jusqu’au <em>21 octobre</em>. Venez découvrir nos espaces pour vos séminaires et événements.</p>
     </div><div class="border"></div>`),
   'story-3-derniers-jours': page(1080, 1920, `
-    <div class="content" style="padding:250px 90px 330px">${sketch}<div class="rule"></div>
+    <div class="content" style="padding:250px 90px 330px">${sketch}<div class="facets-name">Château Latour Ségur</div><div class="facets">Suites · Spa · Réceptions</div><div class="rule"></div>
       <div class="kicker">Portes ouvertes</div><div style="height:40px"></div>
       <h1>Derniers<br><em>jours</em></h1><div class="rule"></div>
       <p class="lead">Jusqu’au mercredi <em>21 octobre</em> pour visiter le château et préparer votre prochain événement.</p>
@@ -141,7 +144,7 @@ const visuals = {
   'salle-spa/carrousel-5-evenements': split('04', 'photos/soiree-musiciens', 'center 35%', '', 'Vos <em>événements</em>', 'Soirées, anniversaires, réceptions privées : la salle se prête à toutes les célébrations.'),
   'salle-spa/carrousel-6-spa': split('05', 'photos/spa-couloir-piscine', 'center 62%', '', 'Le Spa <em>TerreHappy®</em>', 'Un espace bien-être privatisable pour prolonger la journée en toute sérénité.'),
   'salle-spa/carrousel-7-contact': page(1080, 1350, `
-    <div class="content">${sketch}<div class="rule"></div>
+    <div class="content">${sketch}<div class="facets-name">Château Latour Ségur</div><div class="facets">Suites · Spa · Réceptions</div><div class="rule"></div>
       <h2>Venez <em>visiter</em><br>le château</h2><div class="rule"></div>
       <p class="lead">Du mercredi 14 au mercredi 21 octobre, découvrez la salle de réception, le spa et le domaine, et imaginons ensemble votre <em>projet</em>.</p>
       <div class="spacer"></div>

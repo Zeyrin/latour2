@@ -49,10 +49,34 @@ On garde **votre identité**, sans copier la leur :
 
 ---
 
-## 4. Les 6 types de publications
+## 4. Les 3 facettes : Suites · Spa · Réceptions
 
-| Type | Part | Exemples Latour Ségur |
+Comme sur le site, le compte présente **trois univers**, toujours dans cet ordre et avec ces mots :
+
+> **Château Latour Ségur — Suites · Spa · Réceptions**
+
+| Facette | Ce qu'on montre | Part |
 |---|---|---|
+| **Les Suites** · *l'art de séjourner* | Les suites Eau, Feu, le Cottage Bois ; un réveil, le petit-déjeuner, un livre au coin du feu, la balade dans le parc | 30 % |
+| **Le Spa TerreHappy®** · *l'art de se ressourcer* | Le spa privatisable, la piscine dans la roche, un soin, deux amies en peignoir avec un verre | 30 % |
+| **Les Réceptions** · *l'art de se réunir* | Séminaires sous la voûte, repas d'affaires, team building, anniversaires, fêtes de famille, soirées au coin du feu | 30 % |
+| **Le château, transversal** | Le lieu (drone, allée de cyprès, voûte), l'équipe face caméra, les offres et les jeux concours | 10 % |
+
+**Où les trois facettes apparaissent :**
+- **Sous le nom, sur chaque visuel** : « Suites · Spa · Réceptions » (déjà ajouté sur les visuels et la vidéo des portes ouvertes).
+- **La bio Instagram et TikTok** :
+  > Château Latour Ségur ✨ Suites · Spa · Réceptions
+  > Un château de caractère au cœur du vignoble de Saint-Émilion
+  > 📍 Lussac — Saint-Émilion · 📞 05 57 51 06 72
+  > ⬇️ Réserver · Privatiser · Organiser votre événement
+- **3 stories à la une** : « Suites », « Spa », « Réceptions », avec une couverture sobre (fond bordeaux, picto doré), plus « Le château » et « Avis ».
+- **La grille** : on alterne les trois facettes pour que chaque série de 3 publications montre les trois univers.
+- **La signature de chaque légende**, sur la dernière ligne :
+  > Château Latour Ségur · Suites · Spa · Réceptions
+
+**Dans chaque publication, on reste sur une seule facette**, puis on renvoie vers les deux autres. Par exemple, un Reel séminaire se termine par « et pour prolonger : nos suites et le spa ».
+
+---|---|---|
 | **Le lieu** | 20 % | Drone sur le château et les vignes, l'allée de cyprès, la voûte, le feu qu'on allume |
 | **Les moments partagés** | 25 % | Un toast devant la cheminée, une tablée qui rit, un couple dans le parc |
 | **Le spa TerreHappy®** | 15 % | Deux amies en peignoir avec un verre, l'eau de la piscine, un soin, la lumière des lampes en osier |
@@ -112,10 +136,16 @@ Un seul shooting comme celui-ci donne **3 à 4 mois de contenu**.
 
 ---
 
-## 8. Exemple de mois
+## 8. Exemple de mois (les 3 facettes en rotation)
 
 | Semaine | Lundi | Mercredi | Vendredi |
 |---|---|---|---|
+| 1 | **Réceptions** · Reel : on pousse la porte et on découvre la voûte | **Suites** · Carrousel : la Suite Feu, du soir au matin | **Spa** · Reel : une après-midi spa entre amies |
+| 2 | **Suites** · Reel : un réveil sans réveil, le petit-déjeuner | **Réceptions** · Reel : une journée de séminaire en 15 s | **Spa** · Photo : la piscine dans la roche |
+| 3 | **Spa** · Reel : un soin, gestes et matières (ASMR) | **Suites** · Reel : le Cottage Bois, refuge indépendant | **Réceptions** · Reel : le toast devant la cheminée |
+| 4 | **Château** · Reel : le lancement du jeu concours (une nuit en suite + le spa) | **Réceptions** · Carrousel : témoignage d'une entreprise | **Château** · Reel : portrait de la propriétaire |
+
+---|---|---|---|
 | 1 | Reel : on pousse la porte → la voûte | Carrousel : 5 façons de vivre la salle | Reel : le toast devant la cheminée |
 | 2 | Reel : portrait de la propriétaire | Photo : le drone au coucher du soleil | Reel : après-midi spa entre amies |
 | 3 | Reel : une journée de séminaire en 15 s | Carrousel : témoignage d'une entreprise | Reel : on allume le feu (ASMR) |

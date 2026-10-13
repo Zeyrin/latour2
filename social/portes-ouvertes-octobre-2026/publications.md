@@ -44,6 +44,8 @@ Visuels : `carrousel-1` à `carrousel-6`
 >
 > Faites glisser pour découvrir les formats 👉
 >
+> Château Latour Ségur · Suites · Spa · Réceptions
+>
 > #chateaulatoursegur #portesouvertes #saintemilion #seminaire #teambuilding #seminaireauvert #reunion #repasdaffaires #evenementprofessionnel #lieudereception #evenementprive #chateau #bordeaux #gironde #lussac #MICE #incentive
 
 ---
@@ -60,6 +62,8 @@ Visuel : `carrousel-1-couverture.png` (ou une photo réelle prise pendant les pr
 > Séminaire d'équipe, déjeuner client, team building ou fête de famille : venez imaginer votre événement avec nous.
 >
 > 📞 05 57 51 06 72 · ✉️ contact@chateaulatoursegur.com
+>
+> Château Latour Ségur · Suites · Spa · Réceptions
 >
 > #chateaulatoursegur #portesouvertes #saintemilion #seminaire #teambuilding #evenement #chateau #gironde
 
@@ -153,5 +157,7 @@ Stories : salle voûtée (save the date), porte ouverte sur le couloir (« Les p
 > 📅 Du mercredi 14 au mercredi 21 octobre
 > 📍 Lussac — Saint-Émilion
 > 📞 05 57 51 06 72 · ✉️ contact@chateaulatoursegur.com
+>
+> Château Latour Ségur · Suites · Spa · Réceptions
 >
 > #chateaulatoursegur #portesouvertes #saintemilion #seminaire #teambuilding #salledereception #salledeseminaire #repasdaffaires #evenementprive #spa #terrehappy #chateau #bordeaux #gironde

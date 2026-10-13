@@ -41,6 +41,7 @@ body{font-family:Newsreader,serif;color:#f8f6f2;-webkit-font-smoothing:antialias
 .brand{position:absolute;top:200px;left:0;right:0;text-align:center;line-height:1;text-shadow:0 2px 16px rgba(0,0,0,.4)}
 .brand small{display:block;font-family:Roboto;font-size:20px;letter-spacing:.42em;text-transform:uppercase;margin-bottom:10px}
 .brand b{font-weight:300;font-size:52px;letter-spacing:.04em}
+.brand i{display:block;font-size:28px;font-weight:300;margin-top:14px;letter-spacing:.03em}
 .txt{position:absolute;left:80px;right:150px;bottom:470px;text-align:left;text-shadow:0 3px 22px rgba(0,0,0,.45)}
 .k{font-family:Roboto;font-size:24px;letter-spacing:.38em;text-transform:uppercase;color:#e9d6b5;margin-bottom:26px}
 h1{font-weight:300;font-size:112px;line-height:1}
@@ -50,7 +51,7 @@ h1 em{font-style:italic}
 `
 const overlay = (s) => `<!doctype html><html><head><meta charset="utf-8"><style>${css}</style></head><body>
 <div class="shade"></div>
-${s.noBrand ? '' : '<div class="brand"><small>Château</small><b>Latour Ségur</b></div>'}
+${s.noBrand ? '' : '<div class="brand"><small>Château</small><b>Latour Ségur</b><i>Suites · Spa · Réceptions</i></div>'}
 <div class="txt" ${s.end ? 'style="bottom:560px"' : ''}><div class="k">${s.kicker}</div><h1>${s.text}</h1></div>
 ${s.end ? '<div class="end"><div class="tags">Entreprises &amp; particuliers</div>05 57 51 06 72<br>contact@chateaulatoursegur.com</div>' : ''}
 </body></html>`
