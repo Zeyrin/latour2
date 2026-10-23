@@ -104,6 +104,9 @@ const fr = {
   nextPhoto: 'Photographie suivante',
   close: 'Fermer la fenêtre',
   newWindow: '(nouvel onglet)',
+  photoCount: (n: number) => `${n} photo${n > 1 ? 's' : ''}`,
+  suitePhotoAlt: (suite: string, n: number) => `${suite}, photographie ${n}`,
+  allSuitePhotos: (n: number) => `Voir toutes les photos des suites (${n})`,
 }
 
 export type Ui = typeof fr
@@ -211,6 +214,9 @@ const en: Ui = {
   nextPhoto: 'Next photograph',
   close: 'Close',
   newWindow: '(opens in a new tab)',
+  photoCount: (n: number) => `${n} photo${n > 1 ? 's' : ''}`,
+  suitePhotoAlt: (suite: string, n: number) => `${suite}, photograph ${n}`,
+  allSuitePhotos: (n: number) => `See all suite photos (${n})`,
 }
 
 export const ui: Record<Lang, Ui> = { fr, en }

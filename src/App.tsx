@@ -9,7 +9,7 @@ import { Modal } from './components/Modal'
 import { Picture } from './components/Picture'
 import { BookingForm } from './components/BookingForm'
 import { Seo } from './components/Seo'
-import { SITE_URL, SPA_URL, contact, escapes, galleryPhotos, spa, universes, type GalleryFilter, type Universe, type UniverseId } from './lib/content'
+import { SITE_URL, SPA_URL, contact, escapes, galleryPhotos, spa, suitePhotos, suites, universes, type SuiteId, type GalleryFilter, type Universe, type UniverseId } from './lib/content'
 import { LangContext, paths, type Lang } from './lib/i18n'
 import { ui } from './lib/ui'
 
@@ -19,6 +19,8 @@ type ModalState =
   | { type: 'escape'; id: string }
   | { type: 'story' }
   | null
+
+interface LightboxPhoto { id: string; src: string; alt: string; title: string }
 
 function Reveal({ children, className = '', delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
   return <motion.div className={className} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.08, margin: '0px 0px 80px 0px' }} transition={{ duration: 0.85, delay, ease: [0.22, 1, 0.36, 1] }}>{children}</motion.div>
@@ -43,6 +45,11 @@ function Chapter({ universe, caption, onDiscover }: { universe: Universe; captio
       </div>
     </section>
   )
+}
+
+function SuitePhotoStrip({ photos, label, onOpen }: { photos: LightboxPhoto[]; label: string; onOpen: (index: number) => void }) {
+  if (!photos.length) return null
+  return <div className="suite-photos">{photos.map((photo, index) => <button key={photo.id} onClick={() => onOpen(index)} aria-label={`${label} ${photo.alt}`}><img src={photo.src} alt="" loading="lazy" decoding="async" /></button>)}</div>
 }
 
 function jsonLd(lang: Lang) {
@@ -73,11 +80,15 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [modal, setModal] = useState<ModalState>(null)
   const [filter, setFilter] = useState<GalleryFilter>('tous')
-  const [lightbox, setLightbox] = useState<number | null>(null)
+  const [lightbox, setLightbox] = useState<{ photos: LightboxPhoto[]; index: number } | null>(null)
   const lenisRef = useRef<Lenis | null>(null)
   const reducedMotion = useReducedMotion()
   const visiblePhotos = galleryPhotos[lang].filter((photo) => filter === 'tous' || photo.category === filter)
-  const lightboxPhoto = lightbox !== null ? visiblePhotos[lightbox] : undefined
+  const lightboxPhoto = lightbox?.photos[lightbox.index]
+  const suiteLabel = (id: SuiteId) => suites[lang].find((suite) => suite.id === id)!.label
+  const photosOfSuite = (id: SuiteId): LightboxPhoto[] => suitePhotos[id].map((src, index) => ({ id: src, src, alt: t.suitePhotoAlt(suiteLabel(id), index + 1), title: suiteLabel(id) }))
+  const allSuitePhotos = suites[lang].flatMap((suite) => photosOfSuite(suite.id))
+  const showPhoto = (step: number) => setLightbox((current) => current && { ...current, index: (current.index + step + current.photos.length) % current.photos.length })
 
   useEffect(() => {
     let cancelled = false
@@ -102,19 +113,19 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
   }, [])
 
   useEffect(() => {
-    if (modal || menuOpen || lightbox !== null) lenisRef.current?.stop()
+    if (modal || menuOpen || lightbox) lenisRef.current?.stop()
     else lenisRef.current?.start()
   }, [modal, menuOpen, lightbox])
 
   useEffect(() => {
-    if (lightbox === null) return
+    if (!lightbox) return
     const handleKey = (event: KeyboardEvent) => {
-      if (event.key === 'ArrowRight') setLightbox((current) => ((current ?? 0) + 1) % visiblePhotos.length)
-      if (event.key === 'ArrowLeft') setLightbox((current) => ((current ?? 0) - 1 + visiblePhotos.length) % visiblePhotos.length)
+      if (event.key === 'ArrowRight') showPhoto(1)
+      if (event.key === 'ArrowLeft') showPhoto(-1)
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [lightbox, visiblePhotos.length])
+  }, [lightbox])
 
   function book(universe?: UniverseId, message?: string) {
     setMenuOpen(false)
@@ -261,7 +272,7 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
         <section className="gallery-section section-space" id="galerie" aria-labelledby="gallery-heading"><div className="page-width">
           <Reveal className="gallery-heading"><p className="eyebrow">{t.galleryEyebrow}</p><h2 id="gallery-heading">{t.galleryTitle[0]} <em>{t.galleryTitle[1]}</em></h2><p>{t.galleryIntro}</p></Reveal>
           <div className="gallery-filters" aria-label={t.galleryFilterLabel}>{(['tous', 'suites', 'spa', 'evenements'] as GalleryFilter[]).map((id) => <button key={id} className={filter === id ? 'is-active' : ''} onClick={() => setFilter(id)} aria-pressed={filter === id}>{t.galleryFilters[id]}{filter === id && <motion.span className="filter-underline" layoutId="gallery-filter" transition={{ duration: 0.4 }} />}</button>)}</div>
-          <motion.div layout className={`gallery-grid ${filter !== 'tous' ? 'is-filtered' : ''}`}><AnimatePresence mode="popLayout">{visiblePhotos.map((photo, index) => <motion.button layout key={photo.id} className="gallery-photo" onClick={() => setLightbox(index)} aria-label={`${t.enlarge} ${photo.title}`} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}><Picture name={photo.image} alt={photo.alt} sizes="(max-width: 640px) 50vw, 33vw" /><span className="gallery-photo-overlay" /><span className="gallery-photo-title">{photo.title}</span><span className="gallery-plus"><Plus size={19} strokeWidth={1.2} /></span></motion.button>)}</AnimatePresence></motion.div>
+          <motion.div layout className={`gallery-grid ${filter !== 'tous' ? 'is-filtered' : ''}`}><AnimatePresence mode="popLayout">{visiblePhotos.map((photo, index) => <motion.button layout key={photo.id} className="gallery-photo" onClick={() => setLightbox({ index, photos: visiblePhotos.map((item) => ({ id: item.id, src: `/images/${item.image}.webp`, alt: item.alt, title: item.title })) })} aria-label={`${t.enlarge} ${photo.title}`} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}><Picture name={photo.image} alt={photo.alt} sizes="(max-width: 640px) 50vw, 33vw" /><span className="gallery-photo-overlay" /><span className="gallery-photo-title">{photo.title}</span><span className="gallery-plus"><Plus size={19} strokeWidth={1.2} /></span></motion.button>)}</AnimatePresence></motion.div>
           <p className="gallery-note">{t.galleryNote}</p>
         </div></section>
 
@@ -279,12 +290,12 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
 
       {modal && <Modal key={modal.type} title={modal.type === 'booking' ? t.bookingModal : t.discoverModal} onClose={() => setModal(null)} className={`content-modal ${modal.type === 'booking' ? 'booking-modal' : ''}`}>
         {modal.type === 'booking' && <BookingForm initialUniverse={modal.universe} initialMessage={modal.message} />}
-        {modal.type === 'universe' && (() => { const universe = langUniverses.find((item) => item.id === modal.id)!; return <><div className="detail-image"><Picture name={universe.image} alt={universe.imageAlt} /></div><div className="detail-body"><p className="eyebrow">{universe.art}</p><h2>{universe.title[0]}<br /><em>{universe.title[1]}</em></h2><p>{universe.description}</p><div className="detail-options">{universe.options.map((option, index) => <details key={option.title} open={index === 0}><summary>{option.title}<ChevronDown size={18} strokeWidth={1.25} /></summary><p>{option.text}</p></details>)}</div><p className="detail-note">{t.detailNote}</p><div className="detail-actions"><button className="button button-burgundy" onClick={() => book(universe.id)}>{t.detailCta} <ArrowRight size={17} /></button>{universe.id === 'spa' && <a className="text-link" href="#spa-terrehappy" onClick={() => setModal(null)}>{t.spaDetailLink} <ArrowDown size={16} strokeWidth={1.25} /></a>}</div></div></> })()}
+        {modal.type === 'universe' && (() => { const universe = langUniverses.find((item) => item.id === modal.id)!; return <><div className="detail-image"><Picture name={universe.image} alt={universe.imageAlt} /></div><div className="detail-body"><p className="eyebrow">{universe.art}</p><h2>{universe.title[0]}<br /><em>{universe.title[1]}</em></h2><p>{universe.description}</p><div className="detail-options">{universe.options.map((option, index) => <details key={option.title} open={index === 0}><summary>{option.title}{option.suite && suitePhotos[option.suite].length > 0 && <span className="summary-count">{t.photoCount(suitePhotos[option.suite].length)}</span>}<ChevronDown size={18} strokeWidth={1.25} /></summary><p>{option.text}</p>{option.suite && <SuitePhotoStrip photos={photosOfSuite(option.suite)} label={t.enlarge} onOpen={(photoIndex) => setLightbox({ photos: photosOfSuite(option.suite!), index: photoIndex })} />}</details>)}</div>{universe.id === 'suites' && allSuitePhotos.length > 0 && <button className="text-link all-suite-photos" onClick={() => setLightbox({ photos: allSuitePhotos, index: 0 })}>{t.allSuitePhotos(allSuitePhotos.length)} <ArrowUpRight size={16} strokeWidth={1.25} /></button>}<p className="detail-note">{t.detailNote}</p><div className="detail-actions"><button className="button button-burgundy" onClick={() => book(universe.id)}>{t.detailCta} <ArrowRight size={17} /></button>{universe.id === 'spa' && <a className="text-link" href="#spa-terrehappy" onClick={() => setModal(null)}>{t.spaDetailLink} <ArrowDown size={16} strokeWidth={1.25} /></a>}</div></div></> })()}
         {modal.type === 'escape' && (() => { const escape = escapes[lang].find((item) => item.id === modal.id)!; return <><div className="detail-image"><Picture name={escape.image} alt={escape.alt} /></div><div className="detail-body"><p className="eyebrow">{escape.label}</p><h2>{escape.title}</h2><p>{escape.text}</p><p>{t.escapeText}</p><p className="detail-note">{t.escapeNote}</p><button className="button button-burgundy" onClick={() => book(escape.universe, escape.request)}>{t.composeEscape} <ArrowRight size={17} /></button></div></> })()}
         {modal.type === 'story' && <><div className="detail-image"><Picture name="domaine" alt={t.storyAlt} /></div><div className="detail-body"><p className="eyebrow">{t.storyEyebrow}</p><h2>{t.storyTitle[0]}<br /><em>{t.storyTitle[1]}</em></h2>{t.story.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}<span className="story-signature">{t.storySignature}</span><button className="button button-burgundy" onClick={() => book()}>{t.storyCta} <ArrowRight size={17} /></button></div></>}
       </Modal>}
 
-      {lightboxPhoto && lightbox !== null && <Modal title={`${t.photo} ${lightboxPhoto.title}`} onClose={() => setLightbox(null)} className="lightbox"><div className="lightbox-image"><AnimatePresence mode="wait"><motion.img key={lightboxPhoto.id} src={`/images/${lightboxPhoto.image}.webp`} alt={lightboxPhoto.alt} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.22 }} /></AnimatePresence></div><div className="lightbox-bottom"><div><p>{lightboxPhoto.title}</p><span>{String(lightbox + 1).padStart(2, '0')} / {String(visiblePhotos.length).padStart(2, '0')}</span></div><div className="lightbox-controls"><button className="icon-button" aria-label={t.prevPhoto} onClick={() => setLightbox((lightbox - 1 + visiblePhotos.length) % visiblePhotos.length)}><ArrowLeft size={22} strokeWidth={1.25} /></button><button className="icon-button" aria-label={t.nextPhoto} onClick={() => setLightbox((lightbox + 1) % visiblePhotos.length)}><ArrowRight size={22} strokeWidth={1.25} /></button></div></div></Modal>}
+      {lightbox && lightboxPhoto && <Modal title={`${t.photo} ${lightboxPhoto.title}`} onClose={() => setLightbox(null)} className="lightbox"><div className="lightbox-image"><AnimatePresence mode="wait"><motion.img key={lightboxPhoto.id} src={lightboxPhoto.src} alt={lightboxPhoto.alt} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.22 }} /></AnimatePresence></div><div className="lightbox-bottom"><div><p>{lightboxPhoto.title}</p><span>{String(lightbox.index + 1).padStart(2, '0')} / {String(lightbox.photos.length).padStart(2, '0')}</span></div><div className="lightbox-controls"><button className="icon-button" aria-label={t.prevPhoto} onClick={() => showPhoto(-1)}><ArrowLeft size={22} strokeWidth={1.25} /></button><button className="icon-button" aria-label={t.nextPhoto} onClick={() => showPhoto(1)}><ArrowRight size={22} strokeWidth={1.25} /></button></div></div></Modal>}
     </MotionConfig>
     </LangContext.Provider>
   )

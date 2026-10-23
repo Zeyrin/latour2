@@ -84,6 +84,16 @@ try {
   assert(formScan.violations.length === 0, 'Formulaire sans erreur d’accessibilité détectée')
   await desktop.keyboard.press('Escape')
   assert(await desktop.locator('dialog').count() === 0, 'Fermeture accessible par Échap')
+  await desktop.locator('#suites .text-link').click()
+  assert(await desktop.locator('dialog details').count() === 5, 'Cinq suites détaillées')
+  const suiteThumbs = desktop.locator('dialog .suite-photos button')
+  if (await suiteThumbs.count()) {
+    await suiteThumbs.first().click()
+    assert(await desktop.locator('dialog.lightbox').count() === 1, 'Photos de la suite en grand')
+    await desktop.keyboard.press('Escape')
+    assert(await desktop.locator('dialog').count() === 1, 'Retour à la fiche des suites')
+  }
+  await desktop.keyboard.press('Escape')
   await desktop.locator('#spa .text-link').click()
   assert(await desktop.locator('dialog details').count() === 3, 'Trois expériences détaillées pour le spa')
   await desktop.locator('dialog summary').nth(1).click()

@@ -16,7 +16,7 @@ export interface Universe {
   detail: string
   features: string[]
   action: string
-  options: { title: string; text: string }[]
+  options: { title: string; text: string; suite?: SuiteId }[]
 }
 
 export const universes: Record<Lang, Universe[]> = {
@@ -36,11 +36,11 @@ export const universes: Record<Lang, Universe[]> = {
       features: ['Suites de caractère', 'Cheminées & balnéo', 'Au calme du parc'],
       action: 'Explorer les suites',
       options: [
-        { title: 'La Suite Terre', text: 'Un vaste refuge aux tons de pierre et de bois, avec cheminée et bain à remous privé, pour prendre ses aises à deux.' },
-        { title: 'La Suite Eau', text: 'Un univers de douceur et de fluidité, pensé pour ralentir à deux et retrouver le plaisir des choses simples.' },
-        { title: 'La Suite Métal', text: 'La plus spacieuse : deux chambres, une cheminée, une grande baignoire et une cuisine équipée. Idéale en famille ou entre amis.' },
-        { title: 'La Suite Feu', text: 'Une atmosphère enveloppante, le charme d’une cheminée et l’esprit chaleureux d’une véritable maison de campagne.' },
-        { title: 'Le Cottage Bois', text: 'Les nuances du blé, de la pierre et du bois. Un refuge indépendant avec cheminée et terrasse sur le jardin, pour vivre le domaine à votre rythme.' },
+        { suite: 'terre', title: 'La Suite Terre', text: 'Un vaste refuge aux tons de pierre et de bois, avec cheminée et bain à remous privé, pour prendre ses aises à deux.' },
+        { suite: 'eau', title: 'La Suite Eau', text: 'Un univers de douceur et de fluidité, pensé pour ralentir à deux et retrouver le plaisir des choses simples.' },
+        { suite: 'metal', title: 'La Suite Métal', text: 'La plus spacieuse : deux chambres, une cheminée, une grande baignoire et une cuisine équipée. Idéale en famille ou entre amis.' },
+        { suite: 'feu', title: 'La Suite Feu', text: 'Une atmosphère enveloppante, le charme d’une cheminée et l’esprit chaleureux d’une véritable maison de campagne.' },
+        { suite: 'bois', title: 'Le Cottage Bois', text: 'Les nuances du blé, de la pierre et du bois. Un refuge indépendant avec cheminée et terrasse sur le jardin, pour vivre le domaine à votre rythme.' },
       ],
     },
     {
@@ -100,11 +100,11 @@ export const universes: Record<Lang, Universe[]> = {
       features: ['Characterful suites', 'Fireplaces & whirlpools', 'In a quiet park'],
       action: 'Explore the suites',
       options: [
-        { title: 'The Earth Suite', text: 'A generous retreat in shades of stone and wood, with a fireplace and private whirlpool bath — room to unwind together.' },
-        { title: 'The Water Suite', text: 'A soft, flowing world designed for slowing down as a couple and rediscovering simple pleasures.' },
-        { title: 'The Metal Suite', text: 'Our most spacious: two bedrooms, a fireplace, a large bathtub and a fitted kitchen. Ideal for families or friends.' },
-        { title: 'The Fire Suite', text: 'A cocooning atmosphere, the charm of an open fire and the warm spirit of a true country house.' },
-        { title: 'The Wood Cottage', text: 'Shades of wheat, stone and timber. A self-contained hideaway with a fireplace and a terrace onto the garden, to enjoy the estate at your own pace.' },
+        { suite: 'terre', title: 'The Earth Suite', text: 'A generous retreat in shades of stone and wood, with a fireplace and private whirlpool bath — room to unwind together.' },
+        { suite: 'eau', title: 'The Water Suite', text: 'A soft, flowing world designed for slowing down as a couple and rediscovering simple pleasures.' },
+        { suite: 'metal', title: 'The Metal Suite', text: 'Our most spacious: two bedrooms, a fireplace, a large bathtub and a fitted kitchen. Ideal for families or friends.' },
+        { suite: 'feu', title: 'The Fire Suite', text: 'A cocooning atmosphere, the charm of an open fire and the warm spirit of a true country house.' },
+        { suite: 'bois', title: 'The Wood Cottage', text: 'Shades of wheat, stone and timber. A self-contained hideaway with a fireplace and a terrace onto the garden, to enjoy the estate at your own pace.' },
       ],
     },
     {
@@ -152,10 +152,19 @@ export const universes: Record<Lang, Universe[]> = {
 
 export type SuiteId = 'terre' | 'eau' | 'metal' | 'feu' | 'bois'
 const suiteIds: SuiteId[] = ['terre', 'eau', 'metal', 'feu', 'bois']
-export const suites: Record<Lang, { id: SuiteId; label: string }[]> = {
-  fr: suiteIds.map((id, index) => ({ id, label: universes.fr[0].options[index].title })),
-  en: suiteIds.map((id, index) => ({ id, label: universes.en[0].options[index].title })),
-}
+const suitesOf = (lang: Lang) => suiteIds.map((id) => ({ id, label: universes[lang][0].options.find((option) => option.suite === id)!.title }))
+export const suites: Record<Lang, { id: SuiteId; label: string }[]> = { fr: suitesOf('fr'), en: suitesOf('en') }
+
+/**
+ * Les photos de chaque suite : tout fichier déposé dans src/assets/suites/<suite>/ est publié
+ * automatiquement, dans l'ordre alphabétique des noms de fichiers (voir le README du dossier).
+ */
+const suitePhotoFiles = import.meta.glob<string>('../assets/suites/*/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP}', { eager: true, query: '?url', import: 'default' })
+const byName = new Intl.Collator('fr', { numeric: true }).compare
+export const suitePhotos = Object.fromEntries(suiteIds.map((id) => [id, Object.keys(suitePhotoFiles)
+  .filter((path) => path.split('/').at(-2) === id)
+  .sort(byName)
+  .map((path) => suitePhotoFiles[path])])) as Record<SuiteId, string[]>
 
 export interface Escape { id: string; label: string; title: string; image: string; alt: string; text: string; universe: UniverseId; request: string }
 export const escapes: Record<Lang, Escape[]> = {

@@ -493,3 +493,13 @@ em{font-weight:300}
   .spa-actions{flex-direction:column;align-items:flex-start}.spa-site-link{width:100%;justify-content:space-between}
   .legal-lang{right:18px;font-size:8px}
 }
+
+/* Les photos de chaque suite */
+.detail-options summary{gap:14px}
+.summary-count{margin-left:auto;font-family:var(--sans);font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--stone)}
+.suite-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;padding-bottom:22px}
+.suite-photos>button{aspect-ratio:4/3;overflow:hidden;background:#e5dfd5}
+.suite-photos img{width:100%;height:100%;filter:saturate(.8);transition:transform .6s cubic-bezier(.22,1,.36,1)}
+.suite-photos>button:hover img{transform:scale(1.06)}
+.all-suite-photos{margin-bottom:6px}
+@media(max-width:700px){.suite-photos{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}}
