@@ -1,6 +1,6 @@
 import { createServer } from 'node:http'
 import { readFile } from 'node:fs/promises'
-import { existsSync, mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync, statSync } from 'node:fs'
 import { extname, join, normalize } from 'node:path'
 import { chromium } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
@@ -11,7 +11,9 @@ const server = createServer(async (request, response) => {
     const url = new URL(request.url, 'http://localhost')
     const clean = normalize(decodeURIComponent(url.pathname)).replace(/^(\.\.(\/|\\|$))+/, '')
     let file = join(process.cwd(), 'dist', clean === '/' ? 'index.html' : clean)
-    if (!existsSync(file)) file = join(process.cwd(), 'dist', 'index.html')
+    const isFile = (path) => existsSync(path) && statSync(path).isFile()
+    if (!isFile(file) && isFile(`${file}.html`)) file = `${file}.html`
+    if (!isFile(file)) file = join(process.cwd(), 'dist', 'index.html')
     const content = await readFile(file)
     response.writeHead(200, { 'Content-Type': types[extname(file)] || 'application/octet-stream' })
     response.end(content)
@@ -25,9 +27,11 @@ mkdirSync('artifacts', { recursive: true })
 const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] })
 const errors = []
 const results = []
+// Requêtes externes (statistiques, Supabase) coupées : le test ne dépend que du site construit.
+const offline = (context) => context.route(/^https?:\/\/(?!127\.0\.0\.1)/, (route) => route.abort()).then(() => context)
 function assert(condition, message) { if (!condition) throw new Error(message); results.push(message) }
 try {
-  const desktopContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, permissions: ['clipboard-read', 'clipboard-write'] })
+  const desktopContext = await offline(await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, permissions: ['clipboard-read', 'clipboard-write'] }))
   const desktop = await desktopContext.newPage()
   desktop.on('pageerror', (error) => errors.push(error.message))
   await desktop.goto('http://127.0.0.1:4179/', { waitUntil: 'networkidle' })
@@ -80,6 +84,16 @@ try {
   assert(formScan.violations.length === 0, 'Formulaire sans erreur d’accessibilité détectée')
   await desktop.keyboard.press('Escape')
   assert(await desktop.locator('dialog').count() === 0, 'Fermeture accessible par Échap')
+  await desktop.locator('#suites .text-link').click()
+  assert(await desktop.locator('dialog details').count() === 5, 'Cinq suites détaillées')
+  const suiteThumbs = desktop.locator('dialog .suite-photos button')
+  if (await suiteThumbs.count()) {
+    await suiteThumbs.first().click()
+    assert(await desktop.locator('dialog.lightbox').count() === 1, 'Photos de la suite en grand')
+    await desktop.keyboard.press('Escape')
+    assert(await desktop.locator('dialog').count() === 1, 'Retour à la fiche des suites')
+  }
+  await desktop.keyboard.press('Escape')
   await desktop.locator('#spa .text-link').click()
   assert(await desktop.locator('dialog details').count() === 3, 'Trois expériences détaillées pour le spa')
   await desktop.locator('dialog summary').nth(1).click()
@@ -88,7 +102,7 @@ try {
   await desktop.locator('#galerie').scrollIntoViewIfNeeded()
   await desktop.locator('.gallery-filters').getByRole('button', { name: 'Le spa', exact: true }).click()
   await desktop.waitForTimeout(650)
-  assert(await desktop.locator('.gallery-photo').count() === 2, 'Filtrage de la galerie')
+  assert(await desktop.locator('.gallery-photo').count() === 4, 'Filtrage de la galerie')
   await desktop.locator('.gallery-photo').first().click()
   const initialCaption = await desktop.locator('.lightbox-bottom p').innerText()
   await desktop.getByRole('button', { name: 'Photographie suivante' }).click()
@@ -108,11 +122,47 @@ try {
   console.log('DESKTOP ACCESSIBILITY', JSON.stringify(scan.violations.map((violation) => ({ id: violation.id, impact: violation.impact, description: violation.description, nodes: violation.nodes.map((node) => ({ target: node.target, summary: node.failureSummary })) })), null, 2))
   assert(scan.violations.length === 0, 'Page ordinateur sans erreur d’accessibilité détectée')
   assert(await desktop.locator('img').evaluateAll((images) => images.every((image) => image.complete && image.naturalWidth > 0)), 'Toutes les photographies sont chargées')
-  await desktop.getByRole('button', { name: 'Mentions légales', exact: true }).click()
+  const spaLink = desktop.locator('#spa-terrehappy a[href="https://spaterrehappy.fr/"]')
+  assert(await spaLink.count() === 1 && await spaLink.getAttribute('target') === '_blank', 'Lien vers spaterrehappy.fr dans la section spa')
+  assert(await desktop.locator('#spa-terrehappy .spa-space').count() === 4, 'Quatre espaces du spa présentés')
+  await desktop.getByRole('link', { name: 'Mentions légales', exact: true }).click()
+  await desktop.locator('.legal-content').waitFor()
   assert(await desktop.locator('.legal-content').count() === 1, 'Mentions légales accessibles')
-  await desktop.keyboard.press('Escape')
+  await desktop.getByRole('link', { name: 'English', exact: true }).click()
+  await desktop.locator('h1', { hasText: 'Legal' }).waitFor()
+  assert(await desktop.locator('html').getAttribute('lang') === 'en', 'Mentions légales en anglais')
 
-  const mobileContext = await browser.newContext({ viewport: { width: 375, height: 812 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true })
+  const english = await desktopContext.newPage()
+  english.on('pageerror', (error) => errors.push(error.message))
+  await english.goto('http://127.0.0.1:4179/en', { waitUntil: 'networkidle' })
+  await english.waitForTimeout(1500)
+  assert(await english.locator('html').getAttribute('lang') === 'en', 'Version anglaise : langue déclarée')
+  assert((await english.locator('h1').innerText()).includes('Far from the noise'), 'Version anglaise : titre traduit')
+  assert(await english.locator('link[rel="alternate"][hreflang="fr"]').count() === 1, 'Version anglaise : hreflang')
+  await english.locator('.header-cta').click()
+  await english.locator('input[name="universe"][value="spa"]').check()
+  assert((await english.locator('.calendar-legend').textContent()).includes('Available'), 'Calendrier traduit')
+  await english.locator('input[name="name"]').fill('Jane Smith')
+  await english.locator('input[name="email"]').fill('jane@example.com')
+  await english.locator('input[name="consent"]').check()
+  await english.getByRole('button', { name: 'Prepare my request', exact: true }).click()
+  await english.locator('#draft-heading').waitFor()
+  assert((await english.locator('.draft-preview').innerText()).includes('Dear Corinne and André'), 'Demande rédigée en anglais')
+  await english.keyboard.press('Escape')
+  for (let top = 0; top < await english.evaluate(() => document.body.scrollHeight); top += 650) {
+    await english.evaluate((y) => window.scrollTo(0, y), top)
+    await english.waitForTimeout(100)
+  }
+  await english.waitForTimeout(800)
+  await english.screenshot({ path: 'artifacts/desktop-full-en.png', fullPage: true })
+  const englishScan = await new AxeBuilder({ page: english }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()
+  console.log('ENGLISH ACCESSIBILITY', JSON.stringify(englishScan.violations.map((violation) => ({ id: violation.id, nodes: violation.nodes.map((node) => ({ target: node.target, summary: node.failureSummary })) })), null, 2))
+  assert(englishScan.violations.length === 0, 'Version anglaise sans erreur d’accessibilité détectée')
+  await english.getByRole('link', { name: 'Version française' }).first().click()
+  await english.waitForTimeout(500)
+  assert(await english.locator('html').getAttribute('lang') === 'fr', 'Retour à la version française')
+
+  const mobileContext = await offline(await browser.newContext({ viewport: { width: 375, height: 812 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true }))
   const mobile = await mobileContext.newPage()
   mobile.on('pageerror', (error) => errors.push(error.message))
   await mobile.goto('http://127.0.0.1:4179/', { waitUntil: 'networkidle' })
@@ -154,7 +204,7 @@ try {
     await mobile.waitForTimeout(500)
     assert(await mobile.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `Aucun débordement à ${width} px`)
   }
-  const reducedContext = await browser.newContext({ viewport: { width: 375, height: 812 }, reducedMotion: 'reduce' })
+  const reducedContext = await offline(await browser.newContext({ viewport: { width: 375, height: 812 }, reducedMotion: 'reduce' }))
   const reduced = await reducedContext.newPage()
   await reduced.goto('http://127.0.0.1:4179/', { waitUntil: 'networkidle' })
   assert(await reduced.locator('.hero-image img').evaluate((image) => getComputedStyle(image).animationName) === 'none', 'Préférence de mouvement réduit respectée')

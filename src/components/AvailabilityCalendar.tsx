@@ -1,6 +1,8 @@
 import { useState, type KeyboardEvent, type ReactNode } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { addDays, addMonths, freeResource, isBooked, monthStart, type AvailabilityBlock } from '../lib/availability'
+import { locales, useLang, type Lang } from '../lib/i18n'
+import { bookingUi } from '../lib/ui'
 
 interface AvailabilityCalendarProps {
   mode: 'range' | 'single'
@@ -14,19 +16,19 @@ interface AvailabilityCalendarProps {
 }
 
 const MONTHS_AHEAD = 18
-const weekdays = ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.', 'dim.']
-const weekdayNames = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
 
-function longDate(iso: string) {
-  return new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${iso}T12:00:00Z`))
+function longDate(iso: string, lang: Lang) {
+  return new Intl.DateTimeFormat(locales[lang], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${iso}T12:00:00Z`))
 }
 
 function Month({ start, children }: { start: string; children: (day: string) => ReactNode }) {
+  const lang = useLang()
+  const { weekdays, weekdayNames } = bookingUi[lang]
   const first = new Date(`${start}T12:00:00Z`)
   const offset = (first.getUTCDay() + 6) % 7
   const length = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0)).getUTCDate()
   const cells = [...Array(offset).fill(''), ...Array.from({ length }, (_, index) => addDays(start, index))]
-  const title = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(first)
+  const title = new Intl.DateTimeFormat(locales[lang], { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(first)
   return <div className="calendar-month">
     <p className="calendar-month-title" id={`month-${start}`}>{title}</p>
     <div className="calendar-grid" role="group" aria-labelledby={`month-${start}`}>
@@ -37,6 +39,8 @@ function Month({ start, children }: { start: string; children: (day: string) => 
 }
 
 export function AvailabilityCalendar({ mode, resources, blocks, min, arrival, departure, onChange }: AvailabilityCalendarProps) {
+  const lang = useLang()
+  const t = bookingUi[lang]
   const [view, setView] = useState(() => monthStart(arrival || min))
   const firstMonth = monthStart(min)
   const lastMonth = addMonths(firstMonth, MONTHS_AHEAD - 1)
@@ -73,32 +77,32 @@ export function AvailabilityCalendar({ mode, resources, blocks, min, arrival, de
     const blocked = !past && !isDeparture && nightBlocked(day)
     const disabled = past || (blocked && !validDeparture(day))
     const inRange = Boolean(arrival && departure) && day > arrival && day < departure
-    const status = past ? 'date passée' : disabled ? 'indisponible' : isArrival ? (mode === 'range' ? 'arrivée sélectionnée' : 'date sélectionnée') : isDeparture ? 'départ sélectionné' : inRange ? 'dans votre séjour' : 'disponible'
+    const status = past ? t.past : disabled ? t.unavailable : isArrival ? (mode === 'range' ? t.arrivalSelected : t.dateSelected) : isDeparture ? t.departureSelected : inRange ? t.inStay : t.available
     return <button
       type="button"
       data-date={day}
       className={['calendar-day', disabled && 'is-unavailable', blocked && !past && 'is-booked', (isArrival || isDeparture) && 'is-selected', inRange && 'is-in-range'].filter(Boolean).join(' ')}
       aria-disabled={disabled || undefined}
       aria-pressed={isArrival || isDeparture}
-      aria-label={`${longDate(day)}, ${status}`}
+      aria-label={`${longDate(day, lang)}, ${status}`}
       onClick={() => { if (!disabled) select(day) }}
     >{Number(day.slice(8))}</button>
   }
 
   const hint = mode === 'single'
-    ? 'Choisissez votre date.'
-    : !arrival ? 'Choisissez votre date d’arrivée.' : !departure ? 'Choisissez maintenant votre date de départ.' : 'Vos dates sont choisies. Touchez une autre date pour recommencer.'
+    ? t.hintSingle
+    : !arrival ? t.hintArrival : !departure ? t.hintDeparture : t.hintDone
 
   return <div className="calendar" onKeyDown={onKeyDown}>
     <div className="calendar-toolbar">
-      <button type="button" className="icon-button" aria-label="Mois précédent" disabled={view <= firstMonth} onClick={() => setView(addMonths(view, -1))}><ChevronLeft size={18} strokeWidth={1.25} /></button>
+      <button type="button" className="icon-button" aria-label={t.prevMonth} disabled={view <= firstMonth} onClick={() => setView(addMonths(view, -1))}><ChevronLeft size={18} strokeWidth={1.25} /></button>
       <p className="calendar-hint" aria-live="polite">{hint}</p>
-      <button type="button" className="icon-button" aria-label="Mois suivant" disabled={view >= lastMonth} onClick={() => setView(addMonths(view, 1))}><ChevronRight size={18} strokeWidth={1.25} /></button>
+      <button type="button" className="icon-button" aria-label={t.nextMonth} disabled={view >= lastMonth} onClick={() => setView(addMonths(view, 1))}><ChevronRight size={18} strokeWidth={1.25} /></button>
     </div>
     <div className="calendar-months">
       <Month start={view}>{renderDay}</Month>
       <div className="calendar-second"><Month start={addMonths(view, 1)}>{renderDay}</Month></div>
     </div>
-    <div className="calendar-legend" aria-hidden="true"><span><i className="legend-free" />Disponible</span><span><i className="legend-booked" />Indisponible</span><span><i className="legend-selected" />Votre sélection</span></div>
+    <div className="calendar-legend" aria-hidden="true"><span><i className="legend-free" />{t.legendFree}</span><span><i className="legend-booked" />{t.legendBooked}</span><span><i className="legend-selected" />{t.legendSelected}</span></div>
   </div>
 }

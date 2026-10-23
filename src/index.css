@@ -445,3 +445,61 @@ em{font-weight:300}
 @media(max-width:700px){
   .calendar{padding:12px 10px 10px}.calendar-months{grid-template-columns:1fr}.calendar-second{display:none}.calendar-hint{font-size:14px}.calendar-day{font-size:15px;min-height:38px}.calendar-legend{font-size:7px;gap:6px 12px}.suite-choice{font-size:15px;padding:8px 12px}.dates-summary{font-size:15px}
 }
+
+/* Le choix de la langue */
+.header-actions{display:flex;align-items:center;gap:22px}
+.lang-switch{display:inline-flex;align-items:center;gap:7px;min-height:44px;font-family:var(--sans);font-size:9px;letter-spacing:1.6px;text-transform:uppercase;opacity:.9;transition:opacity .3s}
+.lang-switch:hover{opacity:1}
+.mobile-menu-lang{display:inline-flex;align-items:center;gap:9px;margin-top:14px;min-height:44px;font-family:var(--sans);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--wine)}
+.legal-page>header{position:relative;align-items:center}
+.legal-lang{position:absolute;right:32px;font-family:var(--sans);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:12px 0}
+.footer-column .footer-external{display:inline-flex;align-items:center;gap:6px}
+.detail-actions{display:flex;flex-wrap:wrap;align-items:center;gap:14px 30px;margin-top:11px}
+
+/* Le Spa TerreHappy® en détail */
+.spa-section{background:var(--sand);border-block:1px solid var(--hairline)}
+.spa-intro{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:64px;align-items:end;margin-bottom:70px}
+.spa-intro .eyebrow{margin-bottom:19px}
+.spa-intro-copy>p{font-size:18px;line-height:1.65;font-weight:300;margin-bottom:16px}
+.spa-intro-copy>.spa-open{font-family:var(--sans);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--wine);line-height:1.7;margin:24px 0 0;padding-top:18px;border-top:1px solid var(--hairline)}
+.spa-subheading{font-family:var(--sans);font-size:10px;font-weight:400;letter-spacing:2.1px;text-transform:uppercase;color:var(--wine);margin-bottom:26px}
+.spa-spaces{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;margin-bottom:76px}
+.spa-space-image{height:250px;overflow:hidden;background:#e5dfd5;margin-bottom:20px}
+.spa-space-image img{width:100%;height:100%;filter:saturate(.75);transition:transform 1s cubic-bezier(.22,1,.36,1)}
+.spa-space:hover .spa-space-image img{transform:scale(1.04)}
+.spa-space h4{font-size:24px;font-weight:400;color:var(--wine);letter-spacing:-.4px;margin:0 0 10px}
+.spa-space p{font-size:16px;line-height:1.6;font-weight:300}
+.spa-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:64px;margin-bottom:56px}
+.spa-treatments dl{margin:0;border-top:1px solid var(--hairline)}
+.spa-treatments dl>div{padding:18px 0;border-bottom:1px solid var(--hairline)}
+.spa-treatments dt{font-size:22px;color:var(--wine);margin-bottom:6px}
+.spa-treatments dd{margin:0;font-size:16px;line-height:1.6;font-weight:300}
+.spa-formulas ul{list-style:none;margin:0;padding:0;border-top:1px solid var(--hairline)}
+.spa-formulas li{padding:18px 0;border-bottom:1px solid var(--hairline)}
+.spa-formulas li>div{display:flex;justify-content:space-between;align-items:baseline;gap:20px;margin-bottom:6px}
+.spa-formula-title{font-size:22px;color:var(--wine)}
+.spa-formula-price{font-family:var(--sans);font-size:11px;letter-spacing:1px;color:var(--wine);white-space:nowrap}
+.spa-formulas li>p{font-size:16px;line-height:1.6;font-weight:300}
+.spa-note{font-size:14px;font-style:italic;color:#74624f;margin-top:16px}
+.spa-actions{display:flex;flex-wrap:wrap;align-items:center;gap:16px 34px;padding-top:32px;border-top:1px solid var(--hairline)}
+.spa-site-link{gap:18px}
+@media(max-width:1200px){.spa-spaces{grid-template-columns:repeat(2,minmax(0,1fr))}.spa-space-image{height:280px}.lang-switch{font-size:8px}}
+@media(max-width:1000px){.spa-intro,.spa-columns{grid-template-columns:1fr;gap:34px}.spa-intro{margin-bottom:52px}.header-actions{margin-left:auto;gap:18px}.header-cta{margin-left:0}}
+@media(max-width:700px){
+  .header-actions{gap:14px}.lang-switch{font-size:8px;letter-spacing:1.1px;gap:5px}
+  .spa-intro .eyebrow{font-size:8px;letter-spacing:1.4px}.spa-intro h2{font-size:36px;letter-spacing:-1.1px}.spa-intro-copy>p{font-size:17px}
+  .spa-spaces{grid-template-columns:1fr;gap:34px;margin-bottom:54px}.spa-space-image{height:230px}
+  .spa-formulas li>div{flex-direction:column;gap:4px}.spa-formula-title,.spa-treatments dt{font-size:21px}
+  .spa-actions{flex-direction:column;align-items:flex-start}.spa-site-link{width:100%;justify-content:space-between}
+  .legal-lang{right:18px;font-size:8px}
+}
+
+/* Les photos de chaque suite */
+.detail-options summary{gap:14px}
+.summary-count{margin-left:auto;font-family:var(--sans);font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--stone)}
+.suite-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;padding-bottom:22px}
+.suite-photos>button{aspect-ratio:4/3;overflow:hidden;background:#e5dfd5}
+.suite-photos img{width:100%;height:100%;filter:saturate(.8);transition:transform .6s cubic-bezier(.22,1,.36,1)}
+.suite-photos>button:hover img{transform:scale(1.06)}
+.all-suite-photos{margin-bottom:6px}
+@media(max-width:700px){.suite-photos{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}}
