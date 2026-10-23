@@ -9,7 +9,7 @@ import { Modal } from './components/Modal'
 import { Picture } from './components/Picture'
 import { BookingForm } from './components/BookingForm'
 import { Seo } from './components/Seo'
-import { SITE_URL, SPA_URL, contact, escapes, galleryPhotos, spa, suitePhotos, suites, universes, type SuiteId, type GalleryFilter, type Universe, type UniverseId } from './lib/content'
+import { SITE_URL, SPA_URL, contact, escapes, galleryPhotos, spa, suitePhotos, suites, universes, type SuiteId, type GalleryFilter, type GalleryPhoto, type Universe, type UniverseId } from './lib/content'
 import { LangContext, paths, type Lang } from './lib/i18n'
 import { ui } from './lib/ui'
 
@@ -60,7 +60,7 @@ function jsonLd(lang: Lang) {
     description: ui[lang].jsonLdDescription,
     url: `${SITE_URL}${paths.home[lang]}`,
     inLanguage: lang,
-    image: [`${SITE_URL}/images/domaine.webp`, `${SITE_URL}/images/suites.webp`, `${SITE_URL}/images/spa-piscine.webp`],
+    image: [`${SITE_URL}/images/domaine.webp`, `${SITE_URL}/images/chateau-panorama.webp`, `${SITE_URL}/images/spa-piscine.webp`],
     telephone: contact.phoneLink,
     email: contact.email,
     address: { '@type': 'PostalAddress', streetAddress: '1 Lieu dit Latour', postalCode: '33570', addressLocality: 'Lussac', addressRegion: 'Gironde', addressCountry: 'FR' },
@@ -83,11 +83,14 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
   const [lightbox, setLightbox] = useState<{ photos: LightboxPhoto[]; index: number } | null>(null)
   const lenisRef = useRef<Lenis | null>(null)
   const reducedMotion = useReducedMotion()
-  const visiblePhotos = galleryPhotos[lang].filter((photo) => filter === 'tous' || photo.category === filter)
   const lightboxPhoto = lightbox?.photos[lightbox.index]
   const suiteLabel = (id: SuiteId) => suites[lang].find((suite) => suite.id === id)!.label
   const photosOfSuite = (id: SuiteId): LightboxPhoto[] => suitePhotos[id].map((src, index) => ({ id: src, src, alt: t.suitePhotoAlt(suiteLabel(id), index + 1), title: suiteLabel(id) }))
   const allSuitePhotos = suites[lang].flatMap((suite) => photosOfSuite(suite.id))
+  const gallery: GalleryPhoto[] = [...galleryPhotos[lang], ...allSuitePhotos.map((photo) => ({ ...photo, category: 'suites' as const }))]
+  const galleryFilterIds = (['tous', 'suites', 'spa', 'evenements'] as GalleryFilter[]).filter((id) => id === 'tous' || gallery.some((photo) => photo.category === id))
+  const visiblePhotos = gallery.filter((photo) => filter === 'tous' || photo.category === filter)
+  const photoSrc = (photo: GalleryPhoto) => photo.src ?? `/images/${photo.image}.webp`
   const showPhoto = (step: number) => setLightbox((current) => current && { ...current, index: (current.index + step + current.photos.length) % current.photos.length })
 
   useEffect(() => {
@@ -271,8 +274,8 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
 
         <section className="gallery-section section-space" id="galerie" aria-labelledby="gallery-heading"><div className="page-width">
           <Reveal className="gallery-heading"><p className="eyebrow">{t.galleryEyebrow}</p><h2 id="gallery-heading">{t.galleryTitle[0]} <em>{t.galleryTitle[1]}</em></h2><p>{t.galleryIntro}</p></Reveal>
-          <div className="gallery-filters" aria-label={t.galleryFilterLabel}>{(['tous', 'suites', 'spa', 'evenements'] as GalleryFilter[]).map((id) => <button key={id} className={filter === id ? 'is-active' : ''} onClick={() => setFilter(id)} aria-pressed={filter === id}>{t.galleryFilters[id]}{filter === id && <motion.span className="filter-underline" layoutId="gallery-filter" transition={{ duration: 0.4 }} />}</button>)}</div>
-          <motion.div layout className={`gallery-grid ${filter !== 'tous' ? 'is-filtered' : ''}`}><AnimatePresence mode="popLayout">{visiblePhotos.map((photo, index) => <motion.button layout key={photo.id} className="gallery-photo" onClick={() => setLightbox({ index, photos: visiblePhotos.map((item) => ({ id: item.id, src: `/images/${item.image}.webp`, alt: item.alt, title: item.title })) })} aria-label={`${t.enlarge} ${photo.title}`} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}><Picture name={photo.image} alt={photo.alt} sizes="(max-width: 640px) 50vw, 33vw" /><span className="gallery-photo-overlay" /><span className="gallery-photo-title">{photo.title}</span><span className="gallery-plus"><Plus size={19} strokeWidth={1.2} /></span></motion.button>)}</AnimatePresence></motion.div>
+          <div className="gallery-filters" aria-label={t.galleryFilterLabel}>{galleryFilterIds.map((id) => <button key={id} className={filter === id ? 'is-active' : ''} onClick={() => setFilter(id)} aria-pressed={filter === id}>{t.galleryFilters[id]}{filter === id && <motion.span className="filter-underline" layoutId="gallery-filter" transition={{ duration: 0.4 }} />}</button>)}</div>
+          <motion.div layout className={`gallery-grid ${filter !== 'tous' ? 'is-filtered' : ''}`}><AnimatePresence mode="popLayout">{visiblePhotos.map((photo, index) => <motion.button layout key={photo.id} className="gallery-photo" onClick={() => setLightbox({ index, photos: visiblePhotos.map((item) => ({ id: item.id, src: photoSrc(item), alt: item.alt, title: item.title })) })} aria-label={`${t.enlarge} ${photo.title}`} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}>{photo.image ? <Picture name={photo.image} alt={photo.alt} sizes="(max-width: 640px) 50vw, 33vw" /> : <img src={photoSrc(photo)} alt={photo.alt} loading="lazy" decoding="async" />}<span className="gallery-photo-overlay" /><span className="gallery-photo-title">{photo.title}</span><span className="gallery-plus"><Plus size={19} strokeWidth={1.2} /></span></motion.button>)}</AnimatePresence></motion.div>
           <p className="gallery-note">{t.galleryNote}</p>
         </div></section>
 

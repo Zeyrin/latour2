@@ -28,8 +28,8 @@ export const universes: Record<Lang, Universe[]> = {
       art: 'L’art de séjourner',
       title: ['Les Suites', 'du château'],
       tagline: 'Des nuits douces, des matins à soi.',
-      image: 'suites',
-      imageAlt: 'Une suite du château : cheminée allumée, baignoire balnéo et murs de pierre blonde',
+      image: 'chateau-panorama',
+      imageAlt: 'Les vieilles pierres des dépendances du château, qui abritent les suites',
       heading: ['Se sentir ailleurs.', 'Se sentir chez soi.'],
       description: 'Une porte que l’on pousse, la douceur d’une lumière, le charme des matières. Dans les dépendances du château, nos suites cultivent cet équilibre précieux entre le caractère d’une maison ancienne et le confort d’un refuge intime.',
       detail: 'Inspirées des cinq éléments, elles ont chacune leur personnalité. À vous de trouver celle qui vous ressemble, puis de laisser le temps faire le reste.',
@@ -92,8 +92,8 @@ export const universes: Record<Lang, Universe[]> = {
       art: 'The art of staying',
       title: ['The Château', 'Suites'],
       tagline: 'Gentle nights, unhurried mornings.',
-      image: 'suites',
-      imageAlt: 'A château suite: a crackling fireplace, a whirlpool bath and pale stone walls',
+      image: 'chateau-panorama',
+      imageAlt: 'The old stone outbuildings of the château, home to the suites',
       heading: ['Somewhere else.', 'And yet at home.'],
       description: 'A door swinging open, soft light, beautiful textures. Set in the château’s outbuildings, our suites strike a rare balance between the character of an old house and the comfort of an intimate hideaway.',
       detail: 'Inspired by the five elements, each has its own personality. Find the one that feels like you, then let time do the rest.',
@@ -169,46 +169,35 @@ export const suitePhotos = Object.fromEntries(suiteIds.map((id) => [id, Object.k
 export interface Escape { id: string; label: string; title: string; image: string; alt: string; text: string; universe: UniverseId; request: string }
 export const escapes: Record<Lang, Escape[]> = {
   fr: [
-    { id: 'romantique', label: 'Une escapade à deux', title: 'À deux, loin du monde.', image: 'suite-candidate', alt: 'Un lit à baldaquin sous une voûte de pierre blonde, dans une suite du château', text: 'Un réveil sans réveil, une balade dans le parc, une pause au spa. Retrouvez le plaisir d’être simplement ensemble.', universe: 'suites', request: 'Je souhaite en savoir plus sur un week-end romantique au château.' },
+    { id: 'romantique', label: 'Une escapade à deux', title: 'À deux, loin du monde.', image: 'spa-nuit', alt: 'Les terrasses et le bassin du spa illuminés à la nuit tombée', text: 'Un réveil sans réveil, une balade dans le parc, une pause au spa. Retrouvez le plaisir d’être simplement ensemble.', universe: 'suites', request: 'Je souhaite en savoir plus sur un week-end romantique au château.' },
     { id: 'ressourcement', label: 'Cures & bien-être', title: 'Retrouver son équilibre.', image: 'spa-soin', alt: 'Une table de soin face aux baies vitrées qui ouvrent sur la piscine du spa', text: 'Accorder au corps et à l’esprit le temps dont ils ont besoin. Une parenthèse de soins à composer selon vos envies.', universe: 'spa', request: 'Je souhaite composer une cure de bien-être et de ressourcement.' },
     { id: 'partage', label: 'Des moments à partager', title: 'Le bonheur d’être réunis.', image: 'art-de-vivre', alt: 'Des verres de vin prêts à être partagés autour d’une belle table', text: 'Une grande tablée, des conversations qui s’étirent et des liens qui se renforcent. Les plus beaux souvenirs se vivent à plusieurs.', universe: 'evenements', request: 'Je souhaite organiser une escapade de groupe ou une réception au château.' },
   ],
   en: [
-    { id: 'romantique', label: 'A getaway for two', title: 'Just the two of you.', image: 'suite-candidate', alt: 'A canopy bed beneath a pale stone vault in one of the château suites', text: 'Waking up without an alarm, a stroll through the park, a moment at the spa. Rediscover the joy of simply being together.', universe: 'suites', request: 'I would like to know more about a romantic weekend at the château.' },
+    { id: 'romantique', label: 'A getaway for two', title: 'Just the two of you.', image: 'spa-nuit', alt: 'The spa terraces and pool lit up at nightfall', text: 'Waking up without an alarm, a stroll through the park, a moment at the spa. Rediscover the joy of simply being together.', universe: 'suites', request: 'I would like to know more about a romantic weekend at the château.' },
     { id: 'ressourcement', label: 'Wellness retreats', title: 'Find your balance again.', image: 'spa-soin', alt: 'A treatment table facing glass doors that open onto the spa pool', text: 'Give body and mind the time they need. A treatment break put together around your wishes.', universe: 'spa', request: 'I would like to put together a wellness and relaxation retreat.' },
     { id: 'partage', label: 'Moments to share', title: 'The joy of being together.', image: 'art-de-vivre', alt: 'Glasses of wine ready to be shared around a beautiful table', text: 'A long table, conversations that linger and bonds that grow stronger. The best memories are made together.', universe: 'evenements', request: 'I would like to organise a group getaway or a reception at the château.' },
   ],
 }
 
 export type GalleryFilter = 'tous' | UniverseId
-export interface GalleryPhoto { id: string; category: UniverseId; image: string; title: string; alt: string }
+/** `image` : photo de public/images ; `src` : photo déposée dans src/assets/suites. */
+export interface GalleryPhoto { id: string; category: UniverseId; image?: string; src?: string; title: string; alt: string }
 export const galleryPhotos: Record<Lang, GalleryPhoto[]> = {
   fr: [
-    { id: 'suite-feu', category: 'suites', image: 'suites', title: 'Au coin du feu', alt: 'Une suite avec cheminée allumée, table bistrot fleurie et baignoire balnéo' },
     { id: 'spa-eau', category: 'spa', image: 'spa-piscine', title: 'L’heure suspendue', alt: 'L’eau du bassin et les lumières du spa à la nuit tombante' },
-    { id: 'suite-voute', category: 'suites', image: 'suite-candidate', title: 'Sous la voûte', alt: 'Un lit à baldaquin sous une voûte de pierre et un œil-de-bœuf' },
     { id: 'spa-hammam', category: 'spa', image: 'spa-hammam', title: 'La chaleur du hammam', alt: 'Le hammam du spa, ses mosaïques et ses pierres chaudes' },
-    { id: 'suite-mezzanine', category: 'suites', image: 'suite-mezzanine', title: 'Une suite à partager', alt: 'Une suite spacieuse avec mezzanine, escalier en colimaçon et grand lit' },
     { id: 'table', category: 'evenements', image: 'evenements', title: 'Le goût d’être ensemble', alt: 'Une table de réception ornée de fleurs et de feuillage' },
-    { id: 'suite-salon-feu', category: 'suites', image: 'suite-cheminee', title: 'La douceur d’un refuge', alt: 'Un salon de suite avec cheminée en pierre, poutres et rideaux fleuris' },
     { id: 'spa-bain', category: 'spa', image: 'spa-bain', title: 'Un bain de minéraux', alt: 'Le bain à remous du spa, creusé dans la pierre, sous un miroir soleil' },
-    { id: 'suite-chambre', category: 'suites', image: 'suite-chambre', title: 'Les matins tranquilles', alt: 'Une chambre aux murs de pierre, grande armoire ancienne et table fleurie' },
     { id: 'spa-soin', category: 'spa', image: 'spa-soin', title: 'Un retour à l’essentiel', alt: 'Une table de soin face à la piscine du spa' },
-    { id: 'suite-salon', category: 'suites', image: 'suite-salon', title: 'Le charme de l’ancien', alt: 'Une suite sous charpente, armoire de famille et bouquet de lilas' },
     { id: 'partage-vin', category: 'evenements', image: 'art-de-vivre', title: 'L’art de recevoir', alt: 'Verres de vin et moments de convivialité' },
   ],
   en: [
-    { id: 'suite-feu', category: 'suites', image: 'suites', title: 'By the fireside', alt: 'A suite with a lit fireplace, a bistro table with flowers and a whirlpool bath' },
     { id: 'spa-eau', category: 'spa', image: 'spa-piscine', title: 'Time stands still', alt: 'The spa pool and its lights as night falls' },
-    { id: 'suite-voute', category: 'suites', image: 'suite-candidate', title: 'Beneath the vault', alt: 'A canopy bed beneath a stone vault and a round window' },
     { id: 'spa-hammam', category: 'spa', image: 'spa-hammam', title: 'The warmth of the hammam', alt: 'The spa hammam with its mosaics and warm stone' },
-    { id: 'suite-mezzanine', category: 'suites', image: 'suite-mezzanine', title: 'A suite to share', alt: 'A spacious suite with a mezzanine, a spiral staircase and a large bed' },
     { id: 'table', category: 'evenements', image: 'evenements', title: 'The pleasure of company', alt: 'A reception table decorated with flowers and foliage' },
-    { id: 'suite-salon-feu', category: 'suites', image: 'suite-cheminee', title: 'A gentle hideaway', alt: 'A suite sitting room with a stone fireplace, beams and floral curtains' },
     { id: 'spa-bain', category: 'spa', image: 'spa-bain', title: 'A mineral bath', alt: 'The spa whirlpool bath set into the stone beneath a sunburst mirror' },
-    { id: 'suite-chambre', category: 'suites', image: 'suite-chambre', title: 'Quiet mornings', alt: 'A bedroom with stone walls, a tall antique wardrobe and a table with flowers' },
     { id: 'spa-soin', category: 'spa', image: 'spa-soin', title: 'Back to essentials', alt: 'A treatment table facing the spa pool' },
-    { id: 'suite-salon', category: 'suites', image: 'suite-salon', title: 'Old-world charm', alt: 'A suite beneath exposed beams, a family wardrobe and a bunch of lilac' },
     { id: 'partage-vin', category: 'evenements', image: 'art-de-vivre', title: 'The art of hosting', alt: 'Glasses of wine and convivial moments' },
   ],
 }
