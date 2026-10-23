@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ArrowRight, Check, Copy, Mail, Phone } from 'lucide-react'
 import { contact, suites, universes, type SuiteId, type UniverseId } from '../lib/content'
+import { locales, useLang, type Lang } from '../lib/i18n'
+import { bookingUi } from '../lib/ui'
 import { AvailabilityCalendar } from './AvailabilityCalendar'
 import { freeResource, isBooked, nightsBetween, type AvailabilityBlock } from '../lib/availability'
 
@@ -9,13 +11,13 @@ interface BookingFormProps {
   initialMessage?: string
 }
 
-function dateLabel(value: string) {
-  if (!value) return 'À convenir ensemble'
-  return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(new Date(`${value}T12:00:00`))
+function dateLabel(value: string, lang: Lang) {
+  if (!value) return bookingUi[lang].toAgree
+  return new Intl.DateTimeFormat(locales[lang], { dateStyle: 'long' }).format(new Date(`${value}T12:00:00`))
 }
 
 function resourcesFor(universe: UniverseId | undefined, suite: SuiteId | '') {
-  if (universe === 'suites') return suite ? [suite] : suites.map((item) => item.id)
+  if (universe === 'suites') return suite ? [suite] : suites.fr.map((item) => item.id)
   return universe ? [universe] : []
 }
 
@@ -59,6 +61,8 @@ async function saveRequest(values: FormData, universe?: UniverseId, suite?: Suit
 }
 
 export function BookingForm({ initialUniverse, initialMessage = '' }: BookingFormProps) {
+  const lang = useLang()
+  const t = bookingUi[lang]
   const [universe, setUniverse] = useState<UniverseId | undefined>(initialUniverse)
   const [arrival, setArrival] = useState('')
   const [departure, setDeparture] = useState('')
@@ -107,7 +111,7 @@ export function BookingForm({ initialUniverse, initialMessage = '' }: BookingFor
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (universe === 'suites' && (!arrival || !departure)) {
-      setDateError(arrival ? 'Choisissez votre date de départ dans le calendrier.' : 'Choisissez vos dates d’arrivée et de départ dans le calendrier.')
+      setDateError(arrival ? t.pickDeparture : t.pickDates)
       datesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       datesRef.current?.querySelector<HTMLButtonElement>('.calendar-day:not([aria-disabled])')?.focus({ preventScroll: true })
       return
@@ -119,25 +123,26 @@ export function BookingForm({ initialUniverse, initialMessage = '' }: BookingFor
     setCopyError(false)
     const name = String(values.get('name') || '').trim()
     setGuestName(name)
-    const category = universes.find((item) => item.id === universe)?.label || 'Une parenthèse au château'
-    const suiteLabel = suites.find((item) => item.id === suite)?.label || 'Sans préférence'
+    const category = universes[lang].find((item) => item.id === universe)?.label || t.defaultCategory
+    const suiteLabel = suites[lang].find((item) => item.id === suite)?.label || t.noPreference
+    const sep = lang === 'fr' ? ' : ' : ': '
     const message = [
-      'Bonjour Corinne et André,',
+      t.greeting,
       '',
-      universe === 'suites' ? `Je souhaite réserver un séjour au Château Latour Ségur : ${category}.` : `Je souhaite préparer ma venue au Château Latour Ségur : ${category}.`,
+      universe === 'suites' ? t.wantStay(category) : t.wantVisit(category),
       '',
       ...(universe === 'suites'
-        ? [`Suite : ${suiteLabel}`, `Arrivée : ${dateLabel(arrival)}`, `Départ : ${dateLabel(departure)} (${nights} nuit${nights > 1 ? 's' : ''})`]
-        : [`Date souhaitée : ${dateLabel(arrival)}`]),
-      `Nombre de personnes : ${values.get('guests')}`,
+        ? [`${t.suite}${sep}${suiteLabel}`, `${t.arrival}${sep}${dateLabel(arrival, lang)}`, `${t.departure}${sep}${dateLabel(departure, lang)} (${t.nightsCount(nights)})`]
+        : [`${t.wishedDate}${sep}${dateLabel(arrival, lang)}`]),
+      `${t.guestsLine}${sep}${values.get('guests')}`,
       '',
-      String(values.get('message') || 'Je serais ravi(e) d’échanger avec vous sur les possibilités et les disponibilités.'),
+      String(values.get('message') || t.defaultMessage),
       '',
-      `Nom : ${name}`,
-      `Adresse e-mail : ${values.get('email')}`,
-      ...(values.get('phone') ? [`Téléphone : ${values.get('phone')}`] : []),
+      `${t.nameLine}${sep}${name}`,
+      `${t.emailLine}${sep}${values.get('email')}`,
+      ...(values.get('phone') ? [`${t.phoneLine}${sep}${values.get('phone')}`] : []),
       '',
-      'Merci et à bientôt !',
+      t.thanks,
     ].join('\n')
     setDraft(message)
     window.setTimeout(() => document.getElementById('draft-heading')?.focus(), 50)
@@ -154,79 +159,79 @@ export function BookingForm({ initialUniverse, initialMessage = '' }: BookingFor
   }
 
   if (draft) {
-    const mailto = `mailto:${contact.email}?subject=${encodeURIComponent(`Une parenthèse au château — ${guestName}`)}&body=${encodeURIComponent(draft)}`
+    const mailto = `mailto:${contact.email}?subject=${encodeURIComponent(t.subject(guestName))}&body=${encodeURIComponent(draft)}`
     return (
       <div className="booking-confirmation">
         <span className="confirmation-icon"><Check size={28} strokeWidth={1.2} /></span>
-        <p className="eyebrow">Le début d’une belle parenthèse</p>
-        <h2 id="draft-heading" tabIndex={-1}>Votre demande<br /><em>est prête.</em></h2>
-        <p>Un dernier geste : envoyez-la depuis votre messagerie. Corinne et André vous confirmeront personnellement votre réservation et ses modalités.</p>
-        <div className="draft-preview" tabIndex={0} role="region" aria-label="Votre demande préparée"><pre>{draft}</pre></div>
-        <a className="button button-burgundy" href={mailto}><Mail size={16} /> Envoyer par e-mail <ArrowRight size={17} /></a>
-        <button type="button" className="copy-button" onClick={copyDraft}>{copied ? <Check size={15} /> : <Copy size={15} />}{copied ? 'Votre demande a été copiée' : 'Copier ma demande'}</button>
-        <div role="status" className="form-status">{copyError && 'Vous pouvez sélectionner le texte ci-dessus et le copier dans votre messagerie.'}</div>
-        <p className="form-note">La réservation n’est définitive qu’après confirmation du château. Les tarifs et modalités vous seront communiqués directement.</p>
-        <button type="button" className="text-link" onClick={() => setDraft('')}>Modifier ma demande <ArrowRight size={16} /></button>
+        <p className="eyebrow">{t.confirmEyebrow}</p>
+        <h2 id="draft-heading" tabIndex={-1}>{t.confirmTitle[0]}<br /><em>{t.confirmTitle[1]}</em></h2>
+        <p>{t.confirmText}</p>
+        <div className="draft-preview" tabIndex={0} role="region" aria-label={t.draftLabel}><pre>{draft}</pre></div>
+        <a className="button button-burgundy" href={mailto}><Mail size={16} /> {t.sendEmail} <ArrowRight size={17} /></a>
+        <button type="button" className="copy-button" onClick={copyDraft}>{copied ? <Check size={15} /> : <Copy size={15} />}{copied ? t.copied : t.copy}</button>
+        <div role="status" className="form-status">{copyError && t.copyError}</div>
+        <p className="form-note">{t.confirmNote}</p>
+        <button type="button" className="text-link" onClick={() => setDraft('')}>{t.edit} <ArrowRight size={16} /></button>
       </div>
     )
   }
 
   return (
     <div className="booking-content">
-      <p className="eyebrow">Votre parenthèse commence ici</p>
-      <h2>Faisons place<br /><em>à vos envies.</em></h2>
-      <p className="booking-intro">Un séjour, un moment pour soi, un événement à imaginer. Racontez-nous ce qui vous ferait plaisir.</p>
+      <p className="eyebrow">{t.eyebrow}</p>
+      <h2>{t.title[0]}<br /><em>{t.title[1]}</em></h2>
+      <p className="booking-intro">{t.intro}</p>
       <form onSubmit={handleSubmit}>
         <fieldset className="universe-fieldset">
-          <legend>Je viens pour…</legend>
+          <legend>{t.comingFor}</legend>
           <div className="booking-universes">
-            {universes.map((item) => <label key={item.id} className={`universe-choice ${universe === item.id ? 'is-selected' : ''}`}>
+            {universes[lang].map((item) => <label key={item.id} className={`universe-choice ${universe === item.id ? 'is-selected' : ''}`}>
               <input type="radio" name="universe" value={item.id} checked={universe === item.id} onChange={() => changeUniverse(item.id)} required />
               <span className="choice-number">{item.number}</span>
-              <span>{item.id === 'suites' ? 'Les suites' : item.id === 'spa' ? 'Le spa' : 'Événements'}</span>
+              <span>{t.choices[item.id]}</span>
               <Check size={14} className="choice-check" />
             </label>)}
           </div>
         </fieldset>
         {universe === 'suites' && <fieldset className="universe-fieldset">
-          <legend>Ma suite</legend>
+          <legend>{t.mySuite}</legend>
           <div className="suite-choices">
-            {[{ id: '' as const, label: 'Sans préférence' }, ...suites].map((item) => <label key={item.id || 'any'} className={`suite-choice ${suite === item.id ? 'is-selected' : ''}`}>
+            {[{ id: '' as const, label: t.noPreference }, ...suites[lang]].map((item) => <label key={item.id || 'any'} className={`suite-choice ${suite === item.id ? 'is-selected' : ''}`}>
               <input type="radio" name="suite" value={item.id} checked={suite === item.id} onChange={() => changeSuite(item.id)} />
               {item.label}
             </label>)}
           </div>
         </fieldset>}
         <fieldset className="universe-fieldset dates-fieldset" ref={datesRef}>
-          <legend>{universe === 'suites' ? <>Mes dates de séjour <span aria-hidden="true">*</span></> : 'Ma date souhaitée'}</legend>
+          <legend>{universe === 'suites' ? <>{t.myStayDates} <span aria-hidden="true">*</span></> : t.myDate}</legend>
           {universe
             ? <AvailabilityCalendar key={universe} mode={universe === 'suites' ? 'range' : 'single'} resources={resources} blocks={blocks} min={today} arrival={arrival} departure={departure} onChange={changeDates} />
-            : <p className="dates-placeholder">Choisissez d’abord ce qui vous amène : le calendrier des disponibilités s’affichera ici.</p>}
+            : <p className="dates-placeholder">{t.datesPlaceholder}</p>}
           <input type="hidden" name="arrival" value={arrival} />
           <input type="hidden" name="departure" value={universe === 'suites' ? departure : ''} />
           <div className="dates-summary" role="status">
             {dateError
               ? <span className="dates-error">{dateError}</span>
               : universe === 'suites' && arrival
-                ? <>Arrivée le <strong>{dateLabel(arrival)}</strong>{departure && <> · départ le <strong>{dateLabel(departure)}</strong> · {nights} nuit{nights > 1 ? 's' : ''}</>}</>
-                : universe && arrival ? <>Le <strong>{dateLabel(arrival)}</strong></> : null}
+                ? <>{t.arrivalOn} <strong>{dateLabel(arrival, lang)}</strong>{departure && <> · {t.departureOn} <strong>{dateLabel(departure, lang)}</strong> · {t.nightsCount(nights)}</>}</>
+                : universe && arrival ? <>{t.on} <strong>{dateLabel(arrival, lang)}</strong></> : null}
           </div>
-          {universe && availability === 'offline' && <p className="dates-note">Le calendrier en ligne est momentanément indisponible : indiquez vos dates, le château vous confirmera ses disponibilités.</p>}
-          {universe && universe !== 'suites' && <p className="dates-note">Facultatif : laissez vide si vos dates restent à convenir.</p>}
+          {universe && availability === 'offline' && <p className="dates-note">{t.offline}</p>}
+          {universe && universe !== 'suites' && <p className="dates-note">{t.optional}</p>}
         </fieldset>
         <div className="form-grid">
-          <label className="form-field"><span>Votre nom <span aria-hidden="true">*</span></span><input name="name" autoComplete="name" required maxLength={100} defaultValue={savedValues.name || ''} placeholder="Prénom et nom" /></label>
-          <label className="form-field"><span>Votre e-mail <span aria-hidden="true">*</span></span><input name="email" type="email" autoComplete="email" required defaultValue={savedValues.email || ''} placeholder="vous@exemple.fr" /></label>
-          <label className="form-field"><span>Votre téléphone</span><input type="tel" name="phone" autoComplete="tel" defaultValue={savedValues.phone || ''} placeholder="Votre numéro" /></label>
-          <label className="form-field"><span>Nombre de personnes <span aria-hidden="true">*</span></span><input name="guests" type="number" min="1" step="1" defaultValue={savedValues.guests || '2'} required /></label>
-          <label className="form-field form-field-wide"><span>Vos envies, en quelques mots</span><textarea name="message" rows={3} maxLength={2000} defaultValue={savedValues.message ?? initialMessage} placeholder="Une occasion particulière, un soin, une attention…" /></label>
+          <label className="form-field"><span>{t.name} <span aria-hidden="true">*</span></span><input name="name" autoComplete="name" required maxLength={100} defaultValue={savedValues.name || ''} placeholder={t.namePlaceholder} /></label>
+          <label className="form-field"><span>{t.email} <span aria-hidden="true">*</span></span><input name="email" type="email" autoComplete="email" required defaultValue={savedValues.email || ''} placeholder={t.emailPlaceholder} /></label>
+          <label className="form-field"><span>{t.phone}</span><input type="tel" name="phone" autoComplete="tel" defaultValue={savedValues.phone || ''} placeholder={t.phonePlaceholder} /></label>
+          <label className="form-field"><span>{t.guests} <span aria-hidden="true">*</span></span><input name="guests" type="number" min="1" step="1" defaultValue={savedValues.guests || '2'} required /></label>
+          <label className="form-field form-field-wide"><span>{t.message}</span><textarea name="message" rows={3} maxLength={2000} defaultValue={savedValues.message ?? initialMessage} placeholder={t.messagePlaceholder} /></label>
         </div>
         <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: 'absolute', left: '-9999px' }} />
-        <label className="consent"><input type="checkbox" name="consent" required defaultChecked={savedValues.consent === 'on'} /><span>J’accepte que mes coordonnées soient utilisées pour répondre à cette demande. <span aria-hidden="true">*</span></span></label>
-        <button className="button button-burgundy form-submit" type="submit">Préparer ma demande <ArrowRight size={17} /></button>
-        <p className="form-note">* Champs obligatoires. Les dates affichées comme disponibles le sont à titre indicatif : votre réservation est confirmée personnellement par le château, sans paiement en ligne.</p>
+        <label className="consent"><input type="checkbox" name="consent" required defaultChecked={savedValues.consent === 'on'} /><span>{t.consent} <span aria-hidden="true">*</span></span></label>
+        <button className="button button-burgundy form-submit" type="submit">{t.submit} <ArrowRight size={17} /></button>
+        <p className="form-note">{t.formNote}</p>
       </form>
-      <a className="booking-phone" href={`tel:${contact.phoneLink}`}><Phone size={15} strokeWidth={1.25} /> Vous préférez nous appeler ? <span>{contact.phone}</span></a>
+      <a className="booking-phone" href={`tel:${contact.phoneLink}`}><Phone size={15} strokeWidth={1.25} /> {t.callUs} <span>{contact.phone}</span></a>
     </div>
   )
 }

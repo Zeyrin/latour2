@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://www.chateaulatoursegur.com/</loc><priority>1.0</priority></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url><loc>https://www.chateaulatoursegur.com/</loc><priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.chateaulatoursegur.com/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.chateaulatoursegur.com/en" /></url>
+  <url><loc>https://www.chateaulatoursegur.com/en</loc><priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.chateaulatoursegur.com/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.chateaulatoursegur.com/en" /></url>
   <url><loc>https://www.chateaulatoursegur.com/mentions-legales</loc><priority>0.2</priority></url>
   <url><loc>https://www.chateaulatoursegur.com/confidentialite</loc><priority>0.2</priority></url>
+  <url><loc>https://www.chateaulatoursegur.com/en/legal-notice</loc><priority>0.2</priority></url>
+  <url><loc>https://www.chateaulatoursegur.com/en/privacy</loc><priority>0.2</priority></url>
 </urlset>
