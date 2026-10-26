@@ -17,6 +17,7 @@ alter table public.booking_requests enable row level security;
 
 -- Le public peut seulement ajouter une demande (ni lire, ni modifier, ni supprimer).
 create policy "insert public" on public.booking_requests for insert to anon with check (true);
+grant insert on public.booking_requests to anon;
 
 -- ─── Réservation : choix de la suite et disponibilités ──────────────────────
 -- Section ré-exécutable sans risque (elle met aussi à jour une version précédente).
