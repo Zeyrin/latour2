@@ -83,3 +83,34 @@ $$;
 
 revoke all on function public.replace_beds24_blocks(jsonb) from public, anon, authenticated;
 grant execute on function public.replace_beds24_blocks(jsonb) to service_role;
+
+-- ─── Alerte e-mail à chaque nouvelle demande ────────────────────────────────
+-- Le déclencheur appelle la fonction Edge notify-booking (supabase/functions/notify-booking)
+-- en arrière-plan : un échec d'envoi n'empêche jamais l'enregistrement de la demande.
+-- Remplacer irtawlfoigpdwreureoo par l'identifiant du projet si le schéma est installé ailleurs.
+create extension if not exists pg_net;
+alter table public.booking_requests add column if not exists notified_at timestamptz;
+
+create or replace function public.notify_booking_request()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform net.http_post(
+    url := 'https://irtawlfoigpdwreureoo.supabase.co/functions/v1/notify-booking',
+    body := jsonb_build_object('id', new.id),
+    headers := '{"Content-Type": "application/json"}'::jsonb
+  );
+  return new;
+exception when others then
+  raise warning 'notify_booking_request: %', sqlerrm;
+  return new;
+end;
+$$;
+revoke all on function public.notify_booking_request() from public, anon, authenticated;
+
+drop trigger if exists notify_booking_request on public.booking_requests;
+create trigger notify_booking_request after insert on public.booking_requests
+  for each row execute function public.notify_booking_request();
