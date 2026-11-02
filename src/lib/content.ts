@@ -291,7 +291,7 @@ export const contact = {
   map: 'https://www.google.com/maps/search/?api=1&query=Ch%C3%A2teau+Latour+S%C3%A9gur+1+Latour+33570+Lussac',
 }
 
-export const SITE_URL = 'https://www.chateaulatoursegur.com'
+export const SITE_URL = 'https://www.chambredhotesaintemilion.fr'
 
 export const legal = {
   company: 'Château Latour Ségur Suites & Spa TerreHappy®',
