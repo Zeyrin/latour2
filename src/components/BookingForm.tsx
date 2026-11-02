@@ -22,26 +22,24 @@ function resourcesFor(universe: UniverseId | undefined, suite: SuiteId | '') {
 }
 
 async function loadAvailability(): Promise<AvailabilityBlock[] | null> {
-  const url = import.meta.env.VITE_SUPABASE_URL
-  const key = import.meta.env.VITE_SUPABASE_ANON_KEY
-  if (!url || !key) return null
+  // Servi par api/availability.ts (clé Supabase uniquement côté serveur).
   try {
-    const response = await fetch(`${url}/rest/v1/availability?select=resource,start_date,end_date`, { headers: { apikey: key, Authorization: `Bearer ${key}` } })
+    const response = await fetch('/api/availability')
     if (!response.ok) return null
-    return await response.json() as AvailabilityBlock[]
+    const blocks: unknown = await response.json()
+    return Array.isArray(blocks) ? blocks as AvailabilityBlock[] : null
   } catch {
     return null
   }
 }
 
 async function saveRequest(values: FormData, universe?: UniverseId, suite?: SuiteId | '') {
-  const url = import.meta.env.VITE_SUPABASE_URL
-  const key = import.meta.env.VITE_SUPABASE_ANON_KEY
-  if (!url || !key || values.get('website')) return
+  if (values.get('website')) return
   try {
-    await fetch(`${url}/rest/v1/booking_requests`, {
+    // Enregistré par api/booking-request.ts (clé Supabase uniquement côté serveur).
+    await fetch('/api/booking-request', {
       method: 'POST',
-      headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: String(values.get('name') || '').trim(),
         email: String(values.get('email') || '').trim(),
