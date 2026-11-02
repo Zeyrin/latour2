@@ -1,5 +1,5 @@
--- À exécuter dans Supabase > SQL Editor
-create table public.booking_requests (
+-- À exécuter dans Supabase > SQL Editor (fichier ré-exécutable sans risque)
+create table if not exists public.booking_requests (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
   name text not null check (char_length(name) between 1 and 100),
@@ -16,6 +16,7 @@ create table public.booking_requests (
 alter table public.booking_requests enable row level security;
 
 -- Le public peut seulement ajouter une demande (ni lire, ni modifier, ni supprimer).
+drop policy if exists "insert public" on public.booking_requests;
 create policy "insert public" on public.booking_requests for insert to anon with check (true);
 
 -- ─── Réservation : choix de la suite et disponibilités ──────────────────────
