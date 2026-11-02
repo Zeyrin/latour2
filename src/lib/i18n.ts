@@ -14,4 +14,7 @@ export const paths = {
 
 export type PageKey = keyof typeof paths
 
+/** Chemins de la page détaillée d'une suite. */
+export const suitePaths = (suite: string): Record<Lang, string> => ({ fr: `/suites/${suite}`, en: `/en/suites/${suite}` })
+
 export const locales: Record<Lang, string> = { fr: 'fr-FR', en: 'en-GB' }

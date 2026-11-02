@@ -10,9 +10,9 @@ function LegalLayout({ lang, page, title, description, eyebrow, children }: { la
   return (
     <LangContext.Provider value={lang}>
       <div className="legal-page">
-        <Seo lang={lang} page={page} title={`${eyebrow} — Château Latour Ségur`} description={description} />
+        <Seo lang={lang} page={page} title={`${eyebrow} — Château Latour Ségur Suites & Spa`} description={description} />
         <header>
-          <Link to={paths.home[lang]} aria-label={lang === 'fr' ? 'Château Latour Ségur, retour à l’accueil' : 'Château Latour Ségur, back to home'}><Brand /></Link>
+          <Link to={paths.home[lang]} aria-label={lang === 'fr' ? 'Château Latour Ségur Suites & Spa, retour à l’accueil' : 'Château Latour Ségur Suites & Spa, back to home'}><Brand /></Link>
           <Link className="legal-lang" to={paths[page][other]} hrefLang={other} lang={other}>{lang === 'fr' ? 'English' : 'Français'}</Link>
         </header>
         <main className="page-width legal-content">
@@ -28,7 +28,7 @@ function LegalLayout({ lang, page, title, description, eyebrow, children }: { la
 
 export function MentionsLegales() {
   return (
-    <LegalLayout lang="fr" page="legal" eyebrow="Mentions légales" title={<>Mentions <em>légales.</em></>} description="Mentions légales du site du Château Latour Ségur, suites, spa TerreHappy® et événements à Saint-Émilion.">
+    <LegalLayout lang="fr" page="legal" eyebrow="Mentions légales" title={<>Mentions <em>légales.</em></>} description="Mentions légales du site du Château Latour Ségur Suites & Spa, suites, spa TerreHappy® et événements à Saint-Émilion.">
       <h2>Éditeur</h2>
       <p>{legal.company}<br />{contact.address}, {contact.locality}<br />Tél. <a href={`tel:${contact.phoneLink}`}>{contact.phone}</a><br /><a href={`mailto:${contact.email}`}>{contact.email}</a></p>
       <p>Directrice de la publication : {legal.publisher}</p>
@@ -48,7 +48,7 @@ export function MentionsLegales() {
 
 export function Confidentialite() {
   return (
-    <LegalLayout lang="fr" page="privacy" eyebrow="Confidentialité" title={<>En toute <em>confiance.</em></>} description="Politique de confidentialité du site du Château Latour Ségur : données collectées via le formulaire et mesure d’audience sans cookie.">
+    <LegalLayout lang="fr" page="privacy" eyebrow="Confidentialité" title={<>En toute <em>confiance.</em></>} description="Politique de confidentialité du site du Château Latour Ségur Suites & Spa : données collectées via le formulaire et mesure d’audience sans cookie.">
       <h2>Formulaire de demande</h2>
       <p>Lorsque vous préparez votre venue, les informations saisies (nom, e-mail, téléphone facultatif, dates, nombre de personnes, message) sont enregistrées afin que le château puisse vous répondre. Elles ne sont ni vendues ni transmises à des tiers, et conservées au plus 3 ans après notre dernier échange. Base légale : votre demande (mesures précontractuelles).</p>
       <p>Les données sont hébergées par Supabase (infrastructure au sein de l’Union européenne). Vous pouvez demander leur consultation ou leur suppression à tout moment : <a href={`mailto:${contact.email}`}>{contact.email}</a>.</p>
@@ -62,7 +62,7 @@ export function Confidentialite() {
 
 export function LegalNotice() {
   return (
-    <LegalLayout lang="en" page="legal" eyebrow="Legal notice" title={<>Legal <em>notice.</em></>} description="Legal notice for the Château Latour Ségur website: suites, Spa TerreHappy® and events near Saint-Émilion.">
+    <LegalLayout lang="en" page="legal" eyebrow="Legal notice" title={<>Legal <em>notice.</em></>} description="Legal notice for the Château Latour Ségur Suites & Spa website: suites, Spa TerreHappy® and events near Saint-Émilion.">
       <h2>Publisher</h2>
       <p>{legal.company}<br />{contact.address}, {contact.locality}, France<br />Tel. <a href={`tel:${contact.phoneLink}`}>{contact.phone}</a><br /><a href={`mailto:${contact.email}`}>{contact.email}</a></p>
       <p>Publication director: {legal.publisher}</p>
@@ -82,7 +82,7 @@ export function LegalNotice() {
 
 export function Privacy() {
   return (
-    <LegalLayout lang="en" page="privacy" eyebrow="Privacy" title={<>In complete <em>confidence.</em></>} description="Privacy policy for the Château Latour Ségur website: data collected through the request form and cookie-free audience measurement.">
+    <LegalLayout lang="en" page="privacy" eyebrow="Privacy" title={<>In complete <em>confidence.</em></>} description="Privacy policy for the Château Latour Ségur Suites & Spa website: data collected through the request form and cookie-free audience measurement.">
       <h2>Request form</h2>
       <p>When you plan your visit, the information you enter (name, email, optional phone number, dates, number of guests, message) is stored so that the château can reply to you. It is never sold or passed on to third parties, and is kept for no more than 3 years after our last exchange. Legal basis: your request (pre-contractual measures).</p>
       <p>The data is hosted by Supabase (infrastructure within the European Union). You may ask to see or delete it at any time: <a href={`mailto:${contact.email}`}>{contact.email}</a>.</p>
