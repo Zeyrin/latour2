@@ -9,6 +9,7 @@ import { freeResource, isBooked, nightsBetween, type AvailabilityBlock } from '.
 interface BookingFormProps {
   initialUniverse?: UniverseId
   initialMessage?: string
+  initialSuite?: SuiteId
 }
 
 function dateLabel(value: string, lang: Lang) {
@@ -58,7 +59,7 @@ async function saveRequest(values: FormData, universe?: UniverseId, suite?: Suit
   }
 }
 
-export function BookingForm({ initialUniverse, initialMessage = '' }: BookingFormProps) {
+export function BookingForm({ initialUniverse, initialMessage = '', initialSuite }: BookingFormProps) {
   const lang = useLang()
   const t = bookingUi[lang]
   const [universe, setUniverse] = useState<UniverseId | undefined>(initialUniverse)
@@ -69,7 +70,7 @@ export function BookingForm({ initialUniverse, initialMessage = '' }: BookingFor
   const [copyError, setCopyError] = useState(false)
   const [guestName, setGuestName] = useState('')
   const [savedValues, setSavedValues] = useState<Record<string, string>>({})
-  const [suite, setSuite] = useState<SuiteId | ''>('')
+  const [suite, setSuite] = useState<SuiteId | ''>(initialSuite ?? '')
   const [blocks, setBlocks] = useState<AvailabilityBlock[]>([])
   const [availability, setAvailability] = useState<'loading' | 'ready' | 'offline'>('loading')
   const [dateError, setDateError] = useState('')

@@ -15,7 +15,7 @@ export function Brand({ className = '', sketch = false }: { className?: string; 
       {sketch && <ChateauSketch className="brand-sketch" />}
       <span className="brand-small">Château</span>
       <span className="brand-name">Latour Ségur</span>
-      <span className="brand-location">Saint-Émilion · France</span>
+      <span className="brand-location">Suites &amp; Spa · Saint-Émilion</span>
     </span>
   )
 }

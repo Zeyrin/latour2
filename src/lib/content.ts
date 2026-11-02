@@ -1,5 +1,9 @@
 import type { Lang } from './i18n'
 
+export const SPA_URL = 'https://spaterrehappy.fr/'
+/** Boutique des bons cadeaux (Secretbox). */
+export const GIFT_URL = 'https://chateaulatoursegur.secretbox.fr/'
+
 export type UniverseId = 'suites' | 'spa' | 'evenements'
 
 export interface Universe {
@@ -56,7 +60,7 @@ export const universes: Record<Lang, Universe[]> = {
       description: 'L’eau, la chaleur, le silence. Au Spa TerreHappy®, tout invite à renouer avec ses sensations. Un cocon creusé dans la pierre, où les soins et les gestes attentifs ouvrent une parenthèse rien qu’à vous, loin de l’agitation du quotidien.',
       detail: 'Piscine chauffée, hammam, bain à remous, massages et soins : ouvert aux hôtes des suites comme aux visiteurs, et privatisable.',
       features: ['Ouvert à tous', 'Soins & massages', 'Privatisable'],
-      action: 'Découvrir le spa',
+      action: 'Découvrir le spa sur spaterrehappy.fr',
       options: [
         { title: 'Votre spa privé', text: 'Une journée, un après-midi ou une soirée : l’espace spa et détente se réserve pour profiter du lieu en toute intimité.' },
         { title: 'Les soins TerreHappy®', text: 'Des gestes attentifs et un accompagnement personnalisé. Échangeons sur vos envies pour choisir le soin qui vous correspond.' },
@@ -120,7 +124,7 @@ export const universes: Record<Lang, Universe[]> = {
       description: 'Water, warmth, silence. At Spa TerreHappy®, everything invites you to reconnect with your senses. A cocoon carved into the stone, where attentive hands and tailored treatments open a moment that is yours alone, far from everyday life.',
       detail: 'Heated pool, hammam, whirlpool bath, massages and treatments: open to suite guests and day visitors alike, and available for private hire.',
       features: ['Open to all', 'Treatments & massages', 'Private hire'],
-      action: 'Discover the spa',
+      action: 'Discover the spa on spaterrehappy.fr',
       options: [
         { title: 'Your private spa', text: 'A day, an afternoon or an evening: the spa and relaxation area can be reserved so you enjoy it in complete privacy.' },
         { title: 'TerreHappy® treatments', text: 'Attentive hands and personal advice. Tell us what you are looking for and we will help you choose the right treatment.' },
@@ -153,6 +157,7 @@ export const universes: Record<Lang, Universe[]> = {
 export type SuiteId = 'terre' | 'eau' | 'metal' | 'feu' | 'bois'
 const suiteIds: SuiteId[] = ['terre', 'eau', 'metal', 'feu', 'bois']
 const suitesOf = (lang: Lang) => suiteIds.map((id) => ({ id, label: universes[lang][0].options.find((option) => option.suite === id)!.title }))
+export { suiteIds }
 export const suites: Record<Lang, { id: SuiteId; label: string }[]> = { fr: suitesOf('fr'), en: suitesOf('en') }
 
 /**
@@ -166,7 +171,147 @@ export const suitePhotos = Object.fromEntries(suiteIds.map((id) => [id, Object.k
   .sort(byName)
   .map((path) => suitePhotoFiles[path])])) as Record<SuiteId, string[]>
 
-export interface Escape { id: string; label: string; title: string; image: string; alt: string; text: string; universe: UniverseId; request: string }
+/** `href` : l’échappée renvoie directement vers un site externe (le spa) au lieu d’ouvrir sa fiche. */
+export interface SuiteDetail {
+  /** Accroche courte, sous le nom de la suite. */
+  tagline: string
+  /** Présentation de la suite, paragraphe par paragraphe. */
+  story: string[]
+  surface: string
+  guests: string
+  beds: string
+  /** Équipements propres à la suite. */
+  features: string[]
+}
+
+/**
+ * Le détail de chaque suite (page /suites/<suite>).
+ * Surfaces, couchages et équipements repris des annonces de réservation du château : à vérifier.
+ */
+export const suiteDetails: Record<Lang, Record<SuiteId, SuiteDetail>> = {
+  fr: {
+    terre: {
+      tagline: 'Pierre, bois et bain à remous, pour prendre ses aises.',
+      story: [
+        'La Suite Terre est un vaste refuge aux tons de pierre et de bois. On y pose ses valises pour plusieurs jours, sans compter : le feu crépite dans la cheminée, le bain à remous privé attend la fin de la journée.',
+        'Ses volumes généreux accueillent deux personnes en toute aisance, et jusqu’à trois avec le lit d’appoint.',
+      ],
+      surface: '55 m²',
+      guests: 'Jusqu’à 3 personnes',
+      beds: '1 grand lit et 1 lit simple',
+      features: ['Cheminée', 'Bain à remous privé', 'Coin salon', 'Coin cuisine', 'Vue sur le jardin'],
+    },
+    eau: {
+      tagline: 'Un univers de douceur, pensé pour ralentir à deux.',
+      story: [
+        'La Suite Eau joue la fluidité et la légèreté. Une balnéo pour deux, une douche à l’italienne, un feu de bois les soirs plus frais : tout invite à retrouver le plaisir des choses simples.',
+        'Sa literie Tempur® et son accès au jardin en font une adresse idéale pour une escapade en amoureux.',
+      ],
+      surface: '30 m²',
+      guests: '2 personnes',
+      beds: '1 lit king-size Tempur®',
+      features: ['Balnéo pour deux', 'Douche à l’italienne', 'Cheminée à bois', 'Kitchenette', 'Accès au jardin'],
+    },
+    metal: {
+      tagline: 'La plus spacieuse, pour se retrouver en famille ou entre amis.',
+      story: [
+        'Avec ses deux chambres, la Suite Métal est faite pour les séjours à plusieurs. Chacun y trouve son coin, puis tout le monde se retrouve autour de la cheminée ou de la table de la cuisine.',
+        'Une grande baignoire, une cuisine équipée et de beaux volumes : de quoi vivre le domaine comme une maison.',
+      ],
+      surface: '65 m²',
+      guests: 'Jusqu’à 4 personnes',
+      beds: '2 chambres : 1 lit king-size et 1 grand lit',
+      features: ['Deux chambres', 'Cheminée', 'Grande baignoire', 'Cuisine équipée', 'Salon'],
+    },
+    feu: {
+      tagline: 'Une atmosphère enveloppante, au coin du feu.',
+      story: [
+        'La Suite Feu a l’esprit chaleureux d’une véritable maison de campagne. Les flammes de la cheminée, une baignoire pour se prélasser, des matières qui réchauffent : on y entre et l’on ne pense plus à rien.',
+        'Une suite romantique, pour deux, à savourer en toute saison.',
+      ],
+      surface: '36 m²',
+      guests: '2 personnes',
+      beds: '1 lit king-size',
+      features: ['Cheminée', 'Baignoire', 'Climatisation', 'Réfrigérateur', 'Télévision'],
+    },
+    bois: {
+      tagline: 'Un cottage indépendant, ouvert sur le jardin.',
+      story: [
+        'Le Cottage Bois se tient un peu à l’écart, dans les nuances du blé, de la pierre et du bois. Une porte à soi, une terrasse sur le jardin, une cheminée pour les soirées.',
+        'Le refuge rêvé pour vivre le domaine à votre rythme.',
+      ],
+      surface: '28 m²',
+      guests: '2 personnes',
+      beds: '1 lit king-size',
+      features: ['Cottage indépendant', 'Cheminée', 'Terrasse sur le jardin', 'Douche', 'Climatisation'],
+    },
+  },
+  en: {
+    terre: {
+      tagline: 'Stone, wood and a whirlpool bath — room to unwind.',
+      story: [
+        'The Earth Suite is a generous retreat in shades of stone and wood. It is made for staying a few days without counting: a fire crackling in the hearth, a private whirlpool bath waiting at the end of the day.',
+        'Its spacious rooms comfortably welcome two, and up to three with the extra bed.',
+      ],
+      surface: '55 m²',
+      guests: 'Up to 3 guests',
+      beds: '1 double bed and 1 single bed',
+      features: ['Fireplace', 'Private whirlpool bath', 'Sitting area', 'Kitchenette', 'Garden view'],
+    },
+    eau: {
+      tagline: 'A soft, flowing world, designed for slowing down as a couple.',
+      story: [
+        'The Water Suite is all about lightness. A whirlpool bath for two, a walk-in shower, a wood fire on cooler evenings: everything invites you to rediscover simple pleasures.',
+        'Its Tempur® bedding and access to the garden make it an ideal hideaway for a romantic getaway.',
+      ],
+      surface: '30 m²',
+      guests: '2 guests',
+      beds: '1 king-size Tempur® bed',
+      features: ['Whirlpool bath for two', 'Walk-in shower', 'Wood fireplace', 'Kitchenette', 'Garden access'],
+    },
+    metal: {
+      tagline: 'Our most spacious, for families or friends.',
+      story: [
+        'With two bedrooms, the Metal Suite is made for staying together. Everyone has a corner of their own, then gathers by the fire or around the kitchen table.',
+        'A large bathtub, a fitted kitchen and generous volumes: live the estate as if it were your own house.',
+      ],
+      surface: '65 m²',
+      guests: 'Up to 4 guests',
+      beds: '2 bedrooms: 1 king-size and 1 double bed',
+      features: ['Two bedrooms', 'Fireplace', 'Large bathtub', 'Fitted kitchen', 'Living room'],
+    },
+    feu: {
+      tagline: 'A cocooning atmosphere, by the fire.',
+      story: [
+        'The Fire Suite has the warm spirit of a true country house. Flames in the hearth, a bathtub to linger in, textures that warm you up: step inside and leave everything else behind.',
+        'A romantic suite for two, to enjoy in every season.',
+      ],
+      surface: '36 m²',
+      guests: '2 guests',
+      beds: '1 king-size bed',
+      features: ['Fireplace', 'Bathtub', 'Air conditioning', 'Fridge', 'Television'],
+    },
+    bois: {
+      tagline: 'A self-contained cottage opening onto the garden.',
+      story: [
+        'The Wood Cottage stands a little apart, in shades of wheat, stone and timber. A door of your own, a terrace onto the garden, a fireplace for the evenings.',
+        'The perfect hideaway to enjoy the estate at your own pace.',
+      ],
+      surface: '28 m²',
+      guests: '2 guests',
+      beds: '1 king-size bed',
+      features: ['Self-contained cottage', 'Fireplace', 'Garden terrace', 'Shower', 'Air conditioning'],
+    },
+  },
+}
+
+/** Équipements et services communs à toutes les suites. */
+export const suiteCommon: Record<Lang, string[]> = {
+  fr: ['Wi-Fi gratuit', 'Parking privé gratuit', 'Linge de lit et de toilette', 'Petit-déjeuner sur demande', 'Parc, étangs et jardin', 'Spa TerreHappy® sur place'],
+  en: ['Free Wi-Fi', 'Free private parking', 'Bed linen and towels', 'Breakfast on request', 'Park, ponds and garden', 'Spa TerreHappy® on site'],
+}
+
+export interface Escape { id: string; label: string; title: string; image: string; alt: string; text: string; universe: UniverseId; request: string; href?: string }
 export const escapes: Record<Lang, Escape[]> = {
   fr: [
     { id: 'romantique', label: 'Une escapade à deux', title: 'À deux, loin du monde.', image: 'suite-bain', alt: 'Un lit aux coussins verts et un bain à remous éclairé à la bougie, dans la Suite Métal', text: 'Un réveil sans réveil, une balade dans le parc, une pause au spa. Retrouvez le plaisir d’être simplement ensemble.', universe: 'suites', request: 'Je souhaite en savoir plus sur un week-end romantique au château.' },
@@ -215,85 +360,6 @@ export const galleryPhotos: Record<Lang, GalleryPhoto[]> = {
   ],
 }
 
-export const SPA_URL = 'https://spaterrehappy.fr/'
-
-/** La présentation détaillée du Spa TerreHappy® (contenu repris de spaterrehappy.fr). */
-export const spa = {
-  fr: {
-    eyebrow: 'Le Spa TerreHappy® · Lussac Saint-Émilion',
-    heading: ['Un cocon de pierre,', 'au milieu des vignes.'],
-    intro: [
-      'Niché dans les anciennes carrières du domaine, le Spa TerreHappy® est un lieu caché et discret où la nature procure calme et sérénité. TerreHappy, c’est se retrouver, communiquer, se connecter avec la nature, sourire à la vie.',
-      'Imaginé par Corinne Dray au fil d’un parcours d’esthéticienne entre Paris, les États-Unis et la Côte d’Azur, le concept TerreHappy® crée des passerelles entre beauté et bien-être : il allie les savoir-faire ancestraux, chinois ou ayurvédiques, aux techniques de soin d’aujourd’hui, pour redynamiser, ressourcer et adapter chaque soin à la personne.',
-    ],
-    open: 'Ouvert aux hôtes des suites comme à la clientèle extérieure · privatisation possible',
-    spacesTitle: 'Les espaces',
-    spaces: [
-      { image: 'spa-bassin', alt: 'La piscine chauffée du spa, entourée de baies vitrées et de pierres', title: 'La piscine chauffée', text: 'En extérieur, accessible dès les beaux jours. Sa configuration en amphithéâtre accueille aussi concerts et soirées, jusqu’à 100 personnes assises.' },
-      { image: 'spa-hammam', alt: 'Le hammam en pierre et mosaïque du spa', title: 'Le hammam', text: 'Jusqu’à 6 personnes, entre 40 et 45 °C et 80 % d’humidité. Idéal pour détendre les muscles et préparer la peau avant un massage.' },
-      { image: 'spa-bain', alt: 'Le bain à remous du spa sous un miroir soleil', title: 'Le bain à remous', text: 'Pour deux, à 32 °C, aux minéraux de la mer Morte, avec chromothérapie : 20 minutes de massage par jets d’air et d’eau.' },
-      { image: 'spa-nuit', alt: 'Les terrasses et le bassin du spa illuminés à la nuit tombée', title: 'L’espace détente', text: 'Fauteuil shiatsu, balancelle et bol d’air Jacquier : de quoi prolonger la sensation de légèreté après les soins.' },
-    ],
-    treatmentsTitle: 'Les soins',
-    treatments: [
-      { title: 'Massages', text: 'Californien, tuina chinois, amma assis, massage pré et post-natal. De 30 à 90 minutes.' },
-      { title: 'Soins du visage', text: 'Par type de peau et par âge, soins LPG, vitalité et lumière du regard.' },
-      { title: 'Soins du corps', text: 'Gommages et enveloppements aux minéraux de la mer Morte, LPG Cellu M6, « constellations » de soins.' },
-      { title: 'Beauté', text: 'Soins des mains et des pieds, épilations.' },
-    ],
-    formulasTitle: 'Les formules bien-être',
-    formulas: [
-      { title: 'Accès à l’espace détente', price: '55 €', text: 'Fauteuil shiatsu, balancelle, bol d’air Jacquier, piscine selon la saison ou hammam.' },
-      { title: 'Pause bien-être découverte', price: '110 € · 1 h 30', text: '30 minutes de soin au choix, hammam et accès à l’espace détente.' },
-      { title: 'Pause bien-être', price: '140 € · 2 h', text: '1 heure de soin au choix et accès à l’espace détente.' },
-      { title: 'Parcours initiatique', price: '195 € · 3 h', text: 'Bain à remous aux minéraux de la mer Morte, soins et espace détente.' },
-      { title: 'Escapade bien-être', price: '335 € solo · 640 € duo', text: 'Gommage et enveloppement de boue noire de la mer Morte, bain à remous, puis 1 heure de soin visage ou corps.' },
-    ],
-    pricesNote: 'Tarifs indicatifs. La carte complète et à jour des soins se trouve sur le site du spa.',
-    siteCta: 'Toute la carte sur spaterrehappy.fr',
-    bookCta: 'Réserver un soin',
-    giftCta: 'Offrir un bon cadeau',
-    bookRequest: 'Je souhaite réserver un moment au Spa TerreHappy®.',
-    giftRequest: 'Je souhaite offrir un bon cadeau pour le Spa TerreHappy®.',
-  },
-  en: {
-    eyebrow: 'Spa TerreHappy® · Lussac Saint-Émilion',
-    heading: ['A stone cocoon,', 'among the vines.'],
-    intro: [
-      'Tucked into the estate’s old stone quarries, Spa TerreHappy® is a hidden, discreet place where nature brings calm and serenity. TerreHappy is about finding yourself again, connecting with nature and smiling at life.',
-      'Created by Corinne Dray after a career as a beauty therapist in Paris, the United States and on the Riviera, the TerreHappy® concept bridges beauty and well-being: it pairs ancestral Chinese and Ayurvedic know-how with modern techniques to re-energise, restore and tailor every treatment to the person.',
-    ],
-    open: 'Open to suite guests and day visitors alike · private hire available',
-    spacesTitle: 'The spaces',
-    spaces: [
-      { image: 'spa-bassin', alt: 'The heated spa pool surrounded by glass doors and stone', title: 'The heated pool', text: 'Outdoors and open from the first fine days. Its amphitheatre layout also hosts concerts and evenings for up to 100 seated guests.' },
-      { image: 'spa-hammam', alt: 'The stone and mosaic hammam of the spa', title: 'The hammam', text: 'Up to 6 people, 40–45 °C and 80% humidity. Perfect for relaxing the muscles and preparing the skin before a massage.' },
-      { image: 'spa-bain', alt: 'The spa whirlpool bath beneath a sunburst mirror', title: 'The whirlpool bath', text: 'For two, at 32 °C, with Dead Sea minerals and colour therapy: a 20-minute air-and-water jet massage.' },
-      { image: 'spa-nuit', alt: 'The spa terraces and pool lit up at nightfall', title: 'The relaxation area', text: 'Shiatsu chair, swing seat and Jacquier “bol d’air”: everything you need to make that feeling of lightness last.' },
-    ],
-    treatmentsTitle: 'Treatments',
-    treatments: [
-      { title: 'Massages', text: 'Californian, Chinese tuina, seated amma, pre- and post-natal massage. From 30 to 90 minutes.' },
-      { title: 'Facials', text: 'By skin type and age, LPG facials, eye vitality and radiance.' },
-      { title: 'Body treatments', text: 'Dead Sea mineral scrubs and wraps, LPG Cellu M6, treatment “constellations”.' },
-      { title: 'Beauty', text: 'Hand and foot care, waxing.' },
-    ],
-    formulasTitle: 'Wellness packages',
-    formulas: [
-      { title: 'Relaxation area access', price: '€55', text: 'Shiatsu chair, swing seat, Jacquier “bol d’air”, pool in season or hammam.' },
-      { title: 'Discovery wellness break', price: '€110 · 1h30', text: '30 minutes of treatment of your choice, hammam and relaxation area access.' },
-      { title: 'Wellness break', price: '€140 · 2h', text: '1 hour of treatment of your choice and relaxation area access.' },
-      { title: 'Initiation journey', price: '€195 · 3h', text: 'Dead Sea mineral whirlpool bath, treatments and relaxation area.' },
-      { title: 'Wellness escape', price: '€335 solo · €640 for two', text: 'Dead Sea scrub and black mud wrap, whirlpool bath, then a 1-hour facial or body treatment.' },
-    ],
-    pricesNote: 'Prices for guidance only. The full, up-to-date treatment menu is on the spa’s website (in French).',
-    siteCta: 'Full menu on spaterrehappy.fr',
-    bookCta: 'Book a treatment',
-    giftCta: 'Give a gift voucher',
-    bookRequest: 'I would like to book some time at Spa TerreHappy®.',
-    giftRequest: 'I would like to give a Spa TerreHappy® gift voucher.',
-  },
-} satisfies Record<Lang, unknown>
 
 export const contact = {
   phone: '+33 (0)5 57 51 06 72',

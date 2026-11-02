@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'framer-motion'
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, ChevronDown, Globe, Instagram, MapPin, Menu, Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -9,8 +9,8 @@ import { Modal } from './components/Modal'
 import { Picture } from './components/Picture'
 import { BookingForm } from './components/BookingForm'
 import { Seo } from './components/Seo'
-import { SITE_URL, SPA_URL, contact, escapes, galleryPhotos, spa, suitePhotos, suites, universes, type SuiteId, type GalleryFilter, type GalleryPhoto, type Universe, type UniverseId } from './lib/content'
-import { LangContext, paths, type Lang } from './lib/i18n'
+import { GIFT_URL, SITE_URL, SPA_URL, contact, escapes, galleryPhotos, suiteDetails, suitePhotos, suites, universes, type SuiteId, type GalleryFilter, type GalleryPhoto, type Universe, type UniverseId } from './lib/content'
+import { LangContext, paths, suitePaths, type Lang } from './lib/i18n'
 import { ui } from './lib/ui'
 
 type ModalState =
@@ -26,7 +26,9 @@ function Reveal({ children, className = '', delay = 0 }: { children: ReactNode; 
   return <motion.div className={className} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.08, margin: '0px 0px 80px 0px' }} transition={{ duration: 0.85, delay, ease: [0.22, 1, 0.36, 1] }}>{children}</motion.div>
 }
 
-function Chapter({ universe, caption, onDiscover }: { universe: Universe; caption: string; onDiscover: () => void }) {
+/** Le bouton du chapitre ouvre une fiche (`onDiscover`) ou suit un lien (`href`, externe si `external`). */
+function Chapter({ universe, caption, onDiscover, href, external, newWindow }: { universe: Universe; caption: string; onDiscover?: () => void; href?: string; external?: boolean; newWindow: string }) {
+  const action = <>{universe.action}<span className="arrow-circle"><ArrowUpRight size={20} strokeWidth={1.25} /></span></>
   return (
     <section className={`chapter chapter-${universe.id}`} id={universe.id} aria-labelledby={`heading-${universe.id}`}>
       <div className="chapter-inner page-width">
@@ -40,16 +42,11 @@ function Chapter({ universe, caption, onDiscover }: { universe: Universe; captio
           <p>{universe.description}</p>
           <p>{universe.detail}</p>
           <ul className="chapter-features">{universe.features.map((feature) => <li key={feature}>{feature}</li>)}</ul>
-          <button className="text-link" onClick={onDiscover}>{universe.action}<span className="arrow-circle"><ArrowUpRight size={20} strokeWidth={1.25} /></span></button>
+          {href ? <a className="text-link" href={href} {...(external ? { target: '_blank', rel: 'noopener', 'aria-label': `${universe.action} ${newWindow}` } : {})}>{action}</a> : <button className="text-link" onClick={onDiscover}>{action}</button>}
         </Reveal>
       </div>
     </section>
   )
-}
-
-function SuitePhotoStrip({ photos, label, onOpen }: { photos: LightboxPhoto[]; label: string; onOpen: (index: number) => void }) {
-  if (!photos.length) return null
-  return <div className="suite-photos">{photos.map((photo, index) => <button key={photo.id} onClick={() => onOpen(index)} aria-label={`${label} ${photo.alt}`}><img src={photo.src} alt="" loading="lazy" decoding="async" /></button>)}</div>
 }
 
 function jsonLd(lang: Lang) {
@@ -77,7 +74,6 @@ function jsonLd(lang: Lang) {
 
 function App({ lang = 'fr' }: { lang?: Lang }) {
   const t = ui[lang]
-  const s = spa[lang]
   const langUniverses = universes[lang]
   const other: Lang = lang === 'fr' ? 'en' : 'fr'
   const [loading, setLoading] = useState(true)
@@ -151,7 +147,10 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
     }, 80)
   }
 
-  const spaLink = (className: string, label: string) => <a className={className} href={SPA_URL} target="_blank" rel="noopener" aria-label={`${label} ${t.newWindow}`}>{label}<ArrowUpRight size={16} strokeWidth={1.25} /></a>
+  /** Liens externes : le Spa TerreHappy® (spaterrehappy.fr) et les bons cadeaux (Secretbox). */
+  const externalProps = (label: string) => ({ target: '_blank', rel: 'noopener', 'aria-label': `${label} ${t.newWindow}` })
+  const spaLink = (className: string, label: string) => <a className={className} href={SPA_URL} {...externalProps(label)}>{label}<ArrowUpRight size={16} strokeWidth={1.25} /></a>
+  const giftLink = (className: string, label: string, size = 17) => <a className={className} href={GIFT_URL} {...externalProps(label)}>{label}<ArrowUpRight size={size} strokeWidth={1.25} /></a>
 
   return (
     <LangContext.Provider value={lang}>
@@ -167,7 +166,7 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
         <nav className="desktop-nav" aria-label={t.mainNav}>
           <a href="#domaine">{t.nav.domaine}</a>
           <a href="#univers">{t.nav.univers}</a>
-          <a href="#spa-terrehappy">{t.nav.spa}</a>
+          <a href={SPA_URL} {...externalProps(t.nav.spa)}>{t.nav.spa}</a>
           <a href="#echappees">{t.nav.echappees}</a>
           <a href="#galerie">{t.nav.galerie}</a>
         </nav>
@@ -202,7 +201,7 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
               <p className="section-intro">{t.universesIntro[0]}{' '}<br />{t.universesIntro[1]}</p>
             </Reveal>
             <div className="triptych">
-              {langUniverses.map((universe, index) => <Reveal key={universe.id} delay={index * 0.1} className="triptych-reveal"><a href={`#${universe.id}`} className={`universe-card universe-${universe.id}`}>
+              {langUniverses.map((universe, index) => <Reveal key={universe.id} delay={index * 0.1} className="triptych-reveal"><a href={universe.id === 'spa' ? SPA_URL : `#${universe.id}`} {...(universe.id === 'spa' ? externalProps(`${universe.title.join(' ')} — ${t.spaSite}`) : {})} className={`universe-card universe-${universe.id}`}>
                 <Picture name={universe.image} alt={universe.imageAlt} sizes="(max-width: 700px) 100vw, 33vw" />
                 <div className="universe-shade" />
                 <div className="universe-top"><span>{universe.number}</span><span>{universe.art}</span></div>
@@ -229,52 +228,23 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
           <Reveal className="domain-values page-width"><div><ChateauSketch /><span>{t.values.house[0]}<br /><em>{t.values.house[1]}</em></span></div><span className="value-separator" /><p>{t.values.calm[0]}<br /><em>{t.values.calm[1]}</em></p><span className="value-separator" /><div className="domain-address"><MapPin size={25} strokeWidth={0.8} /><span>{t.values.vines[0]}<br /><em>{t.values.vines[1]}</em></span></div></Reveal>
         </section>
 
-        <div className="chapters">{langUniverses.map((universe) => <Chapter key={universe.id} universe={universe} caption={t.photoCaption} onDiscover={() => setModal({ type: 'universe', id: universe.id })}/>)}</div>
-
-        <section className="spa-section section-space" id="spa-terrehappy" aria-labelledby="spa-heading"><div className="page-width">
-          <Reveal className="spa-intro">
-            <div>
-              <p className="eyebrow">{s.eyebrow}</p>
-              <h2 id="spa-heading">{s.heading[0]}<br /><em>{s.heading[1]}</em></h2>
-            </div>
-            <div className="spa-intro-copy">
-              {s.intro.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-              <p className="spa-open">{s.open}</p>
-            </div>
-          </Reveal>
-
-          <h3 className="spa-subheading">{s.spacesTitle}</h3>
-          <div className="spa-spaces">{s.spaces.map((space, index) => <Reveal key={space.title} delay={index * 0.08} className="spa-space">
-            <div className="spa-space-image"><Picture name={space.image} alt={space.alt} sizes="(max-width: 700px) 100vw, 25vw" /></div>
-            <details className="spa-details">
-              <summary><h4>{space.title}</h4><span className="spa-toggle" aria-hidden="true" /></summary>
-              <p>{space.text}</p>
-            </details>
-          </Reveal>)}</div>
-
-          <div className="spa-columns">
-            <Reveal className="spa-treatments">
-              <h3 className="spa-subheading">{s.treatmentsTitle}</h3>
-              <div className="spa-treatment-list">{s.treatments.map((item) => <details key={item.title} className="spa-details"><summary><span className="spa-treatment-title">{item.title}</span><span className="spa-toggle" aria-hidden="true" /></summary><p>{item.text}</p></details>)}</div>
-            </Reveal>
-            <Reveal className="spa-formulas" delay={0.1}>
-              <h3 className="spa-subheading">{s.formulasTitle}</h3>
-              <ul>{s.formulas.map((item) => <li key={item.title}><div><span className="spa-formula-title">{item.title}</span><span className="spa-formula-price">{item.price}</span></div><p>{item.text}</p></li>)}</ul>
-              <p className="spa-note">{s.pricesNote}</p>
-            </Reveal>
-          </div>
-
-          <Reveal className="spa-actions">
-            {spaLink('button button-burgundy spa-site-link', s.siteCta)}
-            <button className="text-link" onClick={() => book('spa', s.bookRequest)}>{s.bookCta} <ArrowRight size={16} strokeWidth={1.25} /></button>
-            <button className="text-link" onClick={() => book('spa', s.giftRequest)}>{s.giftCta} <ArrowUpRight size={16} strokeWidth={1.25} /></button>
-          </Reveal>
-        </div></section>
+        <div className="chapters">{langUniverses.map((universe) => <Fragment key={universe.id}>
+          {universe.id === 'suites' && <Chapter universe={universe} caption={t.photoCaption} href="#les-suites" newWindow={t.newWindow} />}
+          {universe.id === 'spa' && <Chapter universe={universe} caption={t.photoCaption} href={SPA_URL} external newWindow={t.newWindow} />}
+          {universe.id === 'evenements' && <Chapter universe={universe} caption={t.photoCaption} onDiscover={() => setModal({ type: 'universe', id: universe.id })} newWindow={t.newWindow} />}
+          {universe.id === 'suites' && <section className="suites-list-section" id="les-suites" aria-labelledby="suites-list-heading"><div className="page-width">
+            <Reveal className="section-heading"><div><p className="eyebrow">{t.suitesListEyebrow}</p><h2 id="suites-list-heading">{t.suitesListTitle[0]} <em>{t.suitesListTitle[1]}</em></h2></div><p className="section-intro">{t.suitesListIntro}</p></Reveal>
+            <div className="suites-list">{suites[lang].map((suite, index) => { const detail = suiteDetails[lang][suite.id]; const cover = suitePhotos[suite.id][0]; return <Reveal key={suite.id} delay={index * 0.06}><Link to={suitePaths(suite.id)[lang]} className={`suite-card suite-card-${suite.id}`}>
+              <div className="suite-card-image">{cover ? <img src={cover} alt="" loading="lazy" decoding="async" /> : <span className="suite-card-mark" aria-hidden="true">{suite.label.split(' ').at(-1)}</span>}<span className="suite-card-number">0{index + 1}</span></div>
+              <div className="suite-card-body"><h3>{suite.label}</h3><p>{detail.tagline}</p><p className="suite-card-facts">{detail.surface} · {detail.guests}</p><span className="text-link">{t.seeSuite} <ArrowRight size={16} strokeWidth={1.25} /></span></div>
+            </Link></Reveal> })}</div>
+          </div></section>}
+        </Fragment>)}</div>
 
         <section className="escapes-section section-space" id="echappees" aria-labelledby="escapes-heading"><div className="page-width">
           <Reveal className="section-heading"><div><p className="eyebrow">{t.escapesEyebrow}</p><h2 id="escapes-heading">{t.escapesTitle[0]} <em>{t.escapesTitle[1]}</em></h2></div><p className="section-intro">{t.escapesIntro[0]}{' '}<br />{t.escapesIntro[1]}</p></Reveal>
-          <div className="escape-grid">{escapes[lang].map((escape, index) => <Reveal key={escape.id} delay={index * 0.1}><button className="escape-card" onClick={() => setModal({ type: 'escape', id: escape.id })}><div className="escape-image"><Picture name={escape.image} alt={escape.alt} sizes="(max-width: 700px) 100vw, 33vw" /><span className="escape-image-arrow"><ArrowUpRight size={20} strokeWidth={1.25} /></span></div><div className="escape-card-content"><p className="eyebrow">{escape.label}</p><h3>{escape.title}</h3><p>{escape.text}</p><span className="text-link">{t.composeEscape} <ArrowRight size={16} strokeWidth={1.25} /></span></div></button></Reveal>)}</div>
-          <Reveal className="gift-note"><span>{t.gift[0]} <em>{t.gift[1]}</em></span><button className="text-link" onClick={() => book(undefined, t.giftRequest)}>{t.giftCta} <ArrowUpRight size={17} strokeWidth={1.25} /></button></Reveal>
+          <div className="escape-grid">{escapes[lang].map((escape, index) => <Reveal key={escape.id} delay={index * 0.1}>{(() => { const content = <><div className="escape-image"><Picture name={escape.image} alt={escape.alt} sizes="(max-width: 700px) 100vw, 33vw" /><span className="escape-image-arrow"><ArrowUpRight size={20} strokeWidth={1.25} /></span></div><div className="escape-card-content"><p className="eyebrow">{escape.label}</p><h3>{escape.title}</h3><p>{escape.text}</p><span className="text-link">{escape.href ? t.spaSite : t.composeEscape} <ArrowRight size={16} strokeWidth={1.25} /></span></div></>; return escape.href ? <a className="escape-card" href={escape.href} {...externalProps(`${escape.title} — ${t.spaSite}`)}>{content}</a> : <button className="escape-card" onClick={() => setModal({ type: 'escape', id: escape.id })}>{content}</button> })()}</Reveal>)}</div>
+          <Reveal className="gift-note"><span>{t.gift[0]} <em>{t.gift[1]}</em></span>{giftLink('text-link', t.giftCta)}</Reveal>
         </div></section>
 
         <section className="interlude" aria-label={t.interludeLabel}><Picture name="chateau-panorama" alt={t.interludeAlt} sizes="100vw" /><div className="interlude-shade" /><Reveal className="interlude-content"><p className="eyebrow">{t.interludeEyebrow}</p><p className="interlude-quote">{t.interludeQuote[0]}{' '}<br />{t.interludeQuote[1]} <em>{t.interludeQuote[2]}</em></p><span className="interlude-line" /></Reveal></section>
@@ -286,21 +256,21 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
           <p className="gallery-note">{t.galleryNote}</p>
         </div></section>
 
-        <section className="closing-section" id="contact" aria-labelledby="closing-heading"><ChateauSketch className="closing-sketch" /><Reveal className="closing-content"><p className="eyebrow">{t.closingEyebrow}</p><h2 id="closing-heading">{t.closingTitle[0]}<br /><em>{t.closingTitle[1]}</em></h2><p>{t.closingText[0]}<br />{t.closingText[1]}</p><div className="closing-choices">{langUniverses.map((universe) => <button key={universe.id} onClick={() => book(universe.id)}>{t.closingChoices[universe.id]}<ArrowUpRight size={17} strokeWidth={1.25} /></button>)}</div><span className="closing-signature">Corinne & André</span></Reveal></section>
+        <section className="closing-section" id="contact" aria-labelledby="closing-heading"><ChateauSketch className="closing-sketch" /><Reveal className="closing-content"><p className="eyebrow">{t.closingEyebrow}</p><h2 id="closing-heading">{t.closingTitle[0]}<br /><em>{t.closingTitle[1]}</em></h2><p>{t.closingText[0]}<br />{t.closingText[1]}</p><div className="closing-choices">{langUniverses.map((universe) => universe.id === 'spa' ? <a key={universe.id} href={SPA_URL} {...externalProps(t.closingChoices[universe.id])}>{t.closingChoices[universe.id]}<ArrowUpRight size={17} strokeWidth={1.25} /></a> : <button key={universe.id} onClick={() => book(universe.id)}>{t.closingChoices[universe.id]}<ArrowUpRight size={17} strokeWidth={1.25} /></button>)}</div><span className="closing-signature">Corinne & André</span></Reveal></section>
       </main>
 
       <footer className="site-footer"><div className="footer-main page-width">
-        <div className="footer-brand"><a href="#accueil" aria-label={t.backToTop}><Brand sketch /></a><p>{t.footerTagline[0]}<br />{t.footerTagline[1]}</p></div>
-        <div className="footer-column"><h3>{t.footerHouse}</h3><a href="#domaine">{t.menuLinks.domaine}</a><a href="#suites">{t.menuLinks.suites}</a><a href="#spa-terrehappy">{t.menuLinks.spa}</a><a href="#evenements">{t.menuLinks.evenements}</a></div>
-        <div className="footer-column"><h3>{t.footerMoments}</h3><a href="#echappees">{t.menuLinks.echappees}</a><button onClick={() => book(undefined, t.footerGiftRequest)}>{t.footerGift}</button><a href="#galerie">{t.menuLinks.galerie}</a><button onClick={() => book()}>{t.footerPlan}</button>{spaLink('footer-external', t.spaSite)}</div>
+        <div className="footer-brand"><a href="#accueil" aria-label={t.backToTop}><Brand sketch /></a><p>{t.footerTagline[0]}<br />{t.footerTagline[1]}</p><p className="ancv"><img src="/images/ancv.png" alt="ANCV" width="45" height="25" loading="lazy" />{t.ancv}</p></div>
+        <div className="footer-column"><h3>{t.footerHouse}</h3><a href="#domaine">{t.menuLinks.domaine}</a><a href="#les-suites">{t.menuLinks.suites}</a>{spaLink('footer-external', t.menuLinks.spa)}<a href="#evenements">{t.menuLinks.evenements}</a></div>
+        <div className="footer-column"><h3>{t.footerMoments}</h3><a href="#echappees">{t.menuLinks.echappees}</a>{giftLink('footer-external', t.footerGift, 16)}<a href="#galerie">{t.menuLinks.galerie}</a><button onClick={() => book()}>{t.footerPlan}</button></div>
         <div className="footer-column footer-contact"><h3>{t.footerContact}</h3><address>{contact.address}<br />{contact.locality}</address><a href={`tel:${contact.phoneLink}`}>{contact.phone}</a><a className="footer-email" href={`mailto:${contact.email}`}>{contact.email}</a><a href={contact.map} target="_blank" rel="noopener noreferrer" className="footer-map">{t.directions} <ArrowUpRight size={14} /></a></div>
-      </div><div className="footer-bottom page-width"><p>© {new Date().getFullYear()} Château Latour Ségur</p><div><Link to={paths.legal[lang]}>{t.legal}</Link><Link to={paths.privacy[lang]}>{t.privacy}</Link><Link to={paths.home[other]} hrefLang={other} lang={other}>{t.switchLang}</Link></div><a className="instagram-link" href="https://www.instagram.com/chateaulatoursegur/" target="_blank" rel="noopener noreferrer" aria-label={t.instagramLabel}><Instagram size={17} strokeWidth={1.2} /><span>{t.instagramText}</span><ArrowUpRight size={13} /></a></div></footer>
+      </div><div className="footer-bottom page-width"><p>© {new Date().getFullYear()} Château Latour Ségur Suites & Spa</p><div><Link to={paths.legal[lang]}>{t.legal}</Link><Link to={paths.privacy[lang]}>{t.privacy}</Link><Link to={paths.home[other]} hrefLang={other} lang={other}>{t.switchLang}</Link></div><a className="instagram-link" href="https://www.instagram.com/chateaulatoursegur/" target="_blank" rel="noopener noreferrer" aria-label={t.instagramLabel}><Instagram size={17} strokeWidth={1.2} /><span>{t.instagramText}</span><ArrowUpRight size={13} /></a></div></footer>
 
-      {menuOpen && <Modal title={t.menuTitle} onClose={() => setMenuOpen(false)} className="mobile-menu"><Brand sketch /><p className="eyebrow">{t.menuWelcome}</p><nav aria-label={t.mobileNav}>{([['domaine', t.menuLinks.domaine], ['suites', t.menuLinks.suites], ['spa-terrehappy', t.menuLinks.spa], ['evenements', t.menuLinks.evenements], ['echappees', t.menuLinks.echappees], ['galerie', t.menuLinks.galerie]] as const).map(([id, text], index) => <button key={id} onClick={() => navigateFromMenu(id)}><span>0{index + 1}</span>{text}<ArrowUpRight size={18} strokeWidth={1.2} /></button>)}</nav><button className="button button-burgundy" onClick={() => book()}>{t.cta} <ArrowUpRight size={17} /></button><a className="mobile-menu-phone" href={`tel:${contact.phoneLink}`}>{contact.phone}</a><Link className="mobile-menu-lang" to={paths.home[other]} hrefLang={other} lang={other} onClick={() => setMenuOpen(false)}><Globe size={15} strokeWidth={1.25} />{t.switchLang}</Link></Modal>}
+      {menuOpen && <Modal title={t.menuTitle} onClose={() => setMenuOpen(false)} className="mobile-menu"><Brand sketch /><p className="eyebrow">{t.menuWelcome}</p><nav aria-label={t.mobileNav}>{([['domaine', t.menuLinks.domaine], ['les-suites', t.menuLinks.suites], ['spa', t.menuLinks.spa], ['evenements', t.menuLinks.evenements], ['echappees', t.menuLinks.echappees], ['galerie', t.menuLinks.galerie]] as const).map(([id, text], index) => id === 'spa' ? <a key={id} href={SPA_URL} {...externalProps(text)}><span>0{index + 1}</span>{text}<ArrowUpRight size={18} strokeWidth={1.2} /></a> : <button key={id} onClick={() => navigateFromMenu(id)}><span>0{index + 1}</span>{text}<ArrowUpRight size={18} strokeWidth={1.2} /></button>)}</nav><button className="button button-burgundy" onClick={() => book()}>{t.cta} <ArrowUpRight size={17} /></button><a className="mobile-menu-phone" href={`tel:${contact.phoneLink}`}>{contact.phone}</a><Link className="mobile-menu-lang" to={paths.home[other]} hrefLang={other} lang={other} onClick={() => setMenuOpen(false)}><Globe size={15} strokeWidth={1.25} />{t.switchLang}</Link></Modal>}
 
       {modal && <Modal key={modal.type} title={modal.type === 'booking' ? t.bookingModal : t.discoverModal} onClose={() => setModal(null)} className={`content-modal ${modal.type === 'booking' ? 'booking-modal' : ''}`}>
         {modal.type === 'booking' && <BookingForm initialUniverse={modal.universe} initialMessage={modal.message} />}
-        {modal.type === 'universe' && (() => { const universe = langUniverses.find((item) => item.id === modal.id)!; return <><div className="detail-image"><Picture name={universe.image} alt={universe.imageAlt} /></div><div className="detail-body"><p className="eyebrow">{universe.art}</p><h2>{universe.title[0]}<br /><em>{universe.title[1]}</em></h2><p>{universe.description}</p><div className="detail-options">{universe.options.map((option, index) => <details key={option.title} open={index === 0}><summary>{option.title}{option.suite && suitePhotos[option.suite].length > 0 && <span className="summary-count">{t.photoCount(suitePhotos[option.suite].length)}</span>}<ChevronDown size={18} strokeWidth={1.25} /></summary><p>{option.text}</p>{option.suite && <SuitePhotoStrip photos={photosOfSuite(option.suite)} label={t.enlarge} onOpen={(photoIndex) => setLightbox({ photos: photosOfSuite(option.suite!), index: photoIndex })} />}</details>)}</div>{universe.id === 'suites' && allSuitePhotos.length > 0 && <button className="text-link all-suite-photos" onClick={() => setLightbox({ photos: allSuitePhotos, index: 0 })}>{t.allSuitePhotos(allSuitePhotos.length)} <ArrowUpRight size={16} strokeWidth={1.25} /></button>}<p className="detail-note">{t.detailNote}</p><div className="detail-actions"><button className="button button-burgundy" onClick={() => book(universe.id)}>{t.detailCta} <ArrowRight size={17} /></button>{universe.id === 'spa' && <a className="text-link" href="#spa-terrehappy" onClick={() => setModal(null)}>{t.spaDetailLink} <ArrowDown size={16} strokeWidth={1.25} /></a>}</div></div></> })()}
+        {modal.type === 'universe' && (() => { const universe = langUniverses.find((item) => item.id === modal.id)!; return <><div className="detail-image"><Picture name={universe.image} alt={universe.imageAlt} /></div><div className="detail-body"><p className="eyebrow">{universe.art}</p><h2>{universe.title[0]}<br /><em>{universe.title[1]}</em></h2><p>{universe.description}</p><div className="detail-options">{universe.options.map((option, index) => <details key={option.title} open={index === 0}><summary>{option.title}<ChevronDown size={18} strokeWidth={1.25} /></summary><p>{option.text}</p></details>)}</div><p className="detail-note">{t.detailNote}</p><div className="detail-actions"><button className="button button-burgundy" onClick={() => book(universe.id)}>{t.detailCta} <ArrowRight size={17} /></button></div></div></> })()}
         {modal.type === 'escape' && (() => { const escape = escapes[lang].find((item) => item.id === modal.id)!; return <><div className="detail-image"><Picture name={escape.image} alt={escape.alt} /></div><div className="detail-body"><p className="eyebrow">{escape.label}</p><h2>{escape.title}</h2><p>{escape.text}</p><p>{t.escapeText}</p><p className="detail-note">{t.escapeNote}</p><button className="button button-burgundy" onClick={() => book(escape.universe, escape.request)}>{t.composeEscape} <ArrowRight size={17} /></button></div></> })()}
         {modal.type === 'story' && <><div className="detail-image"><Picture name="domaine" alt={t.storyAlt} /></div><div className="detail-body"><p className="eyebrow">{t.storyEyebrow}</p><h2>{t.storyTitle[0]}<br /><em>{t.storyTitle[1]}</em></h2>{t.story.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}<span className="story-signature">{t.storySignature}</span><button className="button button-burgundy" onClick={() => book()}>{t.storyCta} <ArrowRight size={17} /></button></div></>}
       </Modal>}
