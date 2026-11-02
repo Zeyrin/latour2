@@ -260,7 +260,7 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
       </main>
 
       <footer className="site-footer"><div className="footer-main page-width">
-        <div className="footer-brand"><a href="#accueil" aria-label={t.backToTop}><Brand sketch /></a><p>{t.footerTagline[0]}<br />{t.footerTagline[1]}</p><p className="ancv"><img src="/images/ancv.png" alt="ANCV" width="45" height="25" loading="lazy" />{t.ancv}</p></div>
+        <div className="footer-brand"><a href="#accueil" aria-label={t.backToTop}><Brand sketch /></a><p>{t.footerTagline[0]}<br />{t.footerTagline[1]}</p><p className="ancv"><img src="/images/ancv.svg" alt="ANCV" width="45" height="25" loading="lazy" />{t.ancv}</p></div>
         <div className="footer-column"><h3>{t.footerHouse}</h3><a href="#domaine">{t.menuLinks.domaine}</a><a href="#les-suites">{t.menuLinks.suites}</a>{spaLink('footer-external', t.menuLinks.spa)}<a href="#evenements">{t.menuLinks.evenements}</a></div>
         <div className="footer-column"><h3>{t.footerMoments}</h3><a href="#echappees">{t.menuLinks.echappees}</a>{giftLink('footer-external', t.footerGift, 16)}<a href="#galerie">{t.menuLinks.galerie}</a><button onClick={() => book()}>{t.footerPlan}</button></div>
         <div className="footer-column footer-contact"><h3>{t.footerContact}</h3><address>{contact.address}<br />{contact.locality}</address><a href={`tel:${contact.phoneLink}`}>{contact.phone}</a><a className="footer-email" href={`mailto:${contact.email}`}>{contact.email}</a><a href={contact.map} target="_blank" rel="noopener noreferrer" className="footer-map">{t.directions} <ArrowUpRight size={14} /></a></div>

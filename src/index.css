@@ -553,7 +553,7 @@ em{font-weight:300}
 
 /* Chèques-Vacances ANCV */
 .ancv{display:flex;align-items:center;gap:10px;font-family:var(--sans);font-size:9px!important;letter-spacing:1.1px;text-transform:uppercase;line-height:1.4!important;color:#71685c;font-style:normal!important}
-.ancv img{width:45px;height:25px;object-fit:contain;background:#fff;padding:2px 3px;border-radius:2px;flex-shrink:0}
+.ancv img{width:45px;height:25px;object-fit:contain;flex-shrink:0}
 .footer-brand .ancv{margin-top:18px}
 .suite-story>.ancv{margin:-10px 0 28px}
 @media(max-width:1000px){.footer-brand .ancv{margin-top:0}}

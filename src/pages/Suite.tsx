@@ -71,7 +71,7 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
             <div className="suite-story">
               {detail.story.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
               <p className="suite-note">{p.note}</p>
-              <p className="ancv"><img src="/images/ancv.png" alt="ANCV" width="45" height="25" loading="lazy" />{t.ancv}</p>
+              <p className="ancv"><img src="/images/ancv.svg" alt="ANCV" width="45" height="25" loading="lazy" />{t.ancv}</p>
               <button className="button button-burgundy" onClick={() => setBooking(true)}>{p.book} <ArrowRight size={17} /></button>
             </div>
             <aside className="suite-facts">
