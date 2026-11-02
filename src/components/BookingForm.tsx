@@ -22,13 +22,12 @@ function resourcesFor(universe: UniverseId | undefined, suite: SuiteId | '') {
 }
 
 async function loadAvailability(): Promise<AvailabilityBlock[] | null> {
-  const url = import.meta.env.VITE_SUPABASE_URL
-  const key = import.meta.env.VITE_SUPABASE_ANON_KEY
-  if (!url || !key) return null
+  // Servi par api/availability.ts (clé Supabase uniquement côté serveur).
   try {
-    const response = await fetch(`${url}/rest/v1/availability?select=resource,start_date,end_date`, { headers: { apikey: key, Authorization: `Bearer ${key}` } })
+    const response = await fetch('/api/availability')
     if (!response.ok) return null
-    return await response.json() as AvailabilityBlock[]
+    const blocks: unknown = await response.json()
+    return Array.isArray(blocks) ? blocks as AvailabilityBlock[] : null
   } catch {
     return null
   }
