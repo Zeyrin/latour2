@@ -241,14 +241,16 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
           <h3 className="spa-subheading">{s.spacesTitle}</h3>
           <div className="spa-spaces">{s.spaces.map((space, index) => <Reveal key={space.title} delay={index * 0.08} className="spa-space">
             <div className="spa-space-image"><Picture name={space.image} alt={space.alt} sizes="(max-width: 700px) 100vw, 25vw" /></div>
-            <h4>{space.title}</h4>
-            <p>{space.text}</p>
+            <details className="spa-details">
+              <summary><h4>{space.title}</h4><span className="spa-toggle" aria-hidden="true" /></summary>
+              <p>{space.text}</p>
+            </details>
           </Reveal>)}</div>
 
           <div className="spa-columns">
             <Reveal className="spa-treatments">
               <h3 className="spa-subheading">{s.treatmentsTitle}</h3>
-              <dl>{s.treatments.map((item) => <div key={item.title}><dt>{item.title}</dt><dd>{item.text}</dd></div>)}</dl>
+              <div className="spa-treatment-list">{s.treatments.map((item) => <details key={item.title} className="spa-details"><summary><span className="spa-treatment-title">{item.title}</span><span className="spa-toggle" aria-hidden="true" /></summary><p>{item.text}</p></details>)}</div>
             </Reveal>
             <Reveal className="spa-formulas" delay={0.1}>
               <h3 className="spa-subheading">{s.formulasTitle}</h3>

@@ -469,6 +469,20 @@ em{font-weight:300}
 .spa-space:hover .spa-space-image img{transform:scale(1.04)}
 .spa-space h4{font-size:24px;font-weight:400;color:var(--wine);letter-spacing:-.4px;margin:0 0 10px}
 .spa-space p{font-size:16px;line-height:1.6;font-weight:300}
+.spa-details summary{display:flex;justify-content:space-between;align-items:center;gap:16px;cursor:pointer;list-style:none}
+.spa-details summary::-webkit-details-marker{display:none}
+.spa-details summary:focus-visible{outline:1px solid var(--wine);outline-offset:4px}
+.spa-details summary h4{margin:0}
+.spa-toggle{position:relative;flex:none;width:14px;height:14px}
+.spa-toggle::before,.spa-toggle::after{content:"";position:absolute;left:0;top:50%;width:14px;height:1px;background:var(--wine);transition:transform .3s}
+.spa-toggle::after{transform:rotate(90deg)}
+.spa-details[open] .spa-toggle::after{transform:rotate(0)}
+.spa-details>p{margin:12px 0 0}
+.spa-space .spa-details>p{margin-top:10px}
+.spa-treatment-list{border-top:1px solid var(--hairline)}
+.spa-treatment-list .spa-details{padding:18px 0;border-bottom:1px solid var(--hairline)}
+.spa-treatment-title{font-size:22px;color:var(--wine)}
+.spa-treatment-list .spa-details>p{font-size:16px;line-height:1.6;font-weight:300}
 .spa-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:64px;margin-bottom:56px}
 .spa-treatments dl{margin:0;border-top:1px solid var(--hairline)}
 .spa-treatments dl>div{padding:18px 0;border-bottom:1px solid var(--hairline)}
@@ -489,7 +503,7 @@ em{font-weight:300}
   .header-actions{gap:14px}.lang-switch{font-size:8px;letter-spacing:1.1px;gap:5px}
   .spa-intro .eyebrow{font-size:8px;letter-spacing:1.4px}.spa-intro h2{font-size:36px;letter-spacing:-1.1px}.spa-intro-copy>p{font-size:17px}
   .spa-spaces{grid-template-columns:1fr;gap:34px;margin-bottom:54px}.spa-space-image{height:230px}
-  .spa-formulas li>div{flex-direction:column;gap:4px}.spa-formula-title,.spa-treatments dt{font-size:21px}
+  .spa-formulas li>div{flex-direction:column;gap:4px}.spa-formula-title,.spa-treatment-title{font-size:21px}
   .spa-actions{flex-direction:column;align-items:flex-start}.spa-site-link{width:100%;justify-content:space-between}
   .legal-lang{right:18px;font-size:8px}
 }
