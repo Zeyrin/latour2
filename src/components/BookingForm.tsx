@@ -34,13 +34,12 @@ async function loadAvailability(): Promise<AvailabilityBlock[] | null> {
 }
 
 async function saveRequest(values: FormData, universe?: UniverseId, suite?: SuiteId | '') {
-  const url = import.meta.env.VITE_SUPABASE_URL
-  const key = import.meta.env.VITE_SUPABASE_ANON_KEY
-  if (!url || !key || values.get('website')) return
+  if (values.get('website')) return
   try {
-    await fetch(`${url}/rest/v1/booking_requests`, {
+    // Enregistré par api/booking-request.ts (clé Supabase uniquement côté serveur).
+    await fetch('/api/booking-request', {
       method: 'POST',
-      headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: String(values.get('name') || '').trim(),
         email: String(values.get('email') || '').trim(),
