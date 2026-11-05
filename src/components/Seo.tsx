@@ -3,7 +3,7 @@ import { Head } from 'vite-react-ssg'
 import { SITE_URL } from '../lib/content'
 import { paths, type Lang, type PageKey } from '../lib/i18n'
 
-const OG_IMAGE = `${SITE_URL}/images/domaine.webp`
+const OG_IMAGE = `${SITE_URL}/images/og.jpg`
 
 export function Seo({ lang, page, title, description, children }: { lang: Lang; page: PageKey; title: string; description: string; children?: ReactNode }) {
   const url = `${SITE_URL}${paths[page][lang]}`
@@ -24,6 +24,8 @@ export function Seo({ lang, page, title, description, children }: { lang: Lang; 
       <meta property="og:description" content={description} />
       <meta property="og:url" content={url} />
       <meta property="og:image" content={OG_IMAGE} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />

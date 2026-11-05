@@ -7,6 +7,8 @@
 //   SUPABASE_SERVICE_ROLE_KEY  clé service_role, uniquement côté serveur
 //   CRON_SECRET                secret partagé : Vercel l'envoie dans Authorization, le webhook dans ?key=
 
+import { timingSafeEqual } from 'node:crypto'
+
 const BEDS24_API = 'https://api.beds24.com/v2'
 const DAYS_AHEAD = 540
 
@@ -69,10 +71,18 @@ async function fetchAvailability(token: string): Promise<RoomAvailability[]> {
   return rooms
 }
 
+/** Comparaison en temps constant, pour ne pas laisser deviner le secret. */
+function sameSecret(value: string | null, secret: string) {
+  if (!value) return false
+  const a = Buffer.from(value)
+  const b = Buffer.from(secret)
+  return a.length === b.length && timingSafeEqual(a, b)
+}
+
 async function sync(request: Request) {
   const secret = process.env.CRON_SECRET
   const key = new URL(request.url).searchParams.get('key')
-  if (!secret || (request.headers.get('authorization') !== `Bearer ${secret}` && key !== secret)) {
+  if (!secret || (!sameSecret(request.headers.get('authorization'), `Bearer ${secret}`) && !sameSecret(key, secret))) {
     return Response.json({ error: 'Non autorisé' }, { status: 401 })
   }
   const token = process.env.BEDS24_TOKEN
