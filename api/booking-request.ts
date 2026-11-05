@@ -4,6 +4,9 @@
 const UNIVERSES = ['suites', 'spa', 'evenements']
 const SUITES = ['terre', 'eau', 'metal', 'feu', 'bois']
 const MAX_BODY = 10_000
+// Anti-abus : au plus MAX_RECENT demandes par adresse e-mail sur RECENT_MINUTES.
+const MAX_RECENT = 3
+const RECENT_MINUTES = 60
 
 function text(value: unknown, max: number) {
   if (typeof value !== 'string') return null
@@ -58,10 +61,15 @@ export async function POST(request: Request) {
     message: text(body.message, 2000),
   }
 
+  const headers = { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` }
   try {
+    const since = new Date(Date.now() - RECENT_MINUTES * 60_000).toISOString()
+    const recent = await fetch(`${supabaseUrl}/rest/v1/booking_requests?select=id&email=eq.${encodeURIComponent(email)}&created_at=gte.${encodeURIComponent(since)}&limit=${MAX_RECENT}`, { headers })
+    if (recent.ok && (await recent.json() as unknown[]).length >= MAX_RECENT) return Response.json({ error: 'Trop de demandes, réessayez plus tard' }, { status: 429 })
+
     const response = await fetch(`${supabaseUrl}/rest/v1/booking_requests`, {
       method: 'POST',
-      headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      headers: { ...headers, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
       body: JSON.stringify(row),
     })
     if (!response.ok) throw new Error(`Supabase ${response.status} : ${await response.text()}`)

@@ -219,9 +219,9 @@ export function BookingForm({ initialUniverse, initialMessage = '' }: BookingFor
         </fieldset>
         <div className="form-grid">
           <label className="form-field"><span>{t.name} <span aria-hidden="true">*</span></span><input name="name" autoComplete="name" required maxLength={100} defaultValue={savedValues.name || ''} placeholder={t.namePlaceholder} /></label>
-          <label className="form-field"><span>{t.email} <span aria-hidden="true">*</span></span><input name="email" type="email" autoComplete="email" required defaultValue={savedValues.email || ''} placeholder={t.emailPlaceholder} /></label>
-          <label className="form-field"><span>{t.phone}</span><input type="tel" name="phone" autoComplete="tel" defaultValue={savedValues.phone || ''} placeholder={t.phonePlaceholder} /></label>
-          <label className="form-field"><span>{t.guests} <span aria-hidden="true">*</span></span><input name="guests" type="number" min="1" step="1" defaultValue={savedValues.guests || '2'} required /></label>
+          <label className="form-field"><span>{t.email} <span aria-hidden="true">*</span></span><input name="email" type="email" autoComplete="email" required maxLength={200} defaultValue={savedValues.email || ''} placeholder={t.emailPlaceholder} /></label>
+          <label className="form-field"><span>{t.phone}</span><input type="tel" name="phone" autoComplete="tel" maxLength={40} defaultValue={savedValues.phone || ''} placeholder={t.phonePlaceholder} /></label>
+          <label className="form-field"><span>{t.guests} <span aria-hidden="true">*</span></span><input name="guests" type="number" min="1" max="500" step="1" defaultValue={savedValues.guests || '2'} required /></label>
           <label className="form-field form-field-wide"><span>{t.message}</span><textarea name="message" rows={3} maxLength={2000} defaultValue={savedValues.message ?? initialMessage} placeholder={t.messagePlaceholder} /></label>
         </div>
         <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: 'absolute', left: '-9999px' }} />

@@ -15,9 +15,9 @@ create table if not exists public.booking_requests (
 
 alter table public.booking_requests enable row level security;
 
--- Le public peut seulement ajouter une demande (ni lire, ni modifier, ni supprimer).
+-- Aucune politique pour le public : les demandes passent uniquement par api/booking-request
+-- (clé service_role côté serveur). L'ancienne politique d'insertion publique est retirée.
 drop policy if exists "insert public" on public.booking_requests;
-create policy "insert public" on public.booking_requests for insert to anon with check (true);
 
 -- ─── Réservation : choix de la suite et disponibilités ──────────────────────
 -- Section ré-exécutable sans risque (elle met aussi à jour une version précédente).
@@ -54,14 +54,16 @@ alter table public.availability_blocks add constraint availability_blocks_source
 alter table public.availability_blocks enable row level security;
 -- Aucune politique pour le public sur la table : la note interne reste privée.
 
--- Vue publique : uniquement les dates à venir, sans la note.
+-- Vue des dates à venir, sans la note, lue uniquement par api/availability (service_role).
+-- security_invoker : la vue respecte la RLS de la table, donc rien n'est lisible avec la clé anon.
 create or replace view public.availability
-with (security_invoker = false) as
+with (security_invoker = true) as
   select resource, start_date, end_date
   from public.availability_blocks
   where end_date >= current_date;
 
-grant select on public.availability to anon;
+revoke all on public.availability from anon, authenticated;
+grant select on public.availability to service_role;
 
 -- Remplacement atomique des périodes issues de Beds24 (appelé par api/sync-beds24).
 create or replace function public.replace_beds24_blocks(blocks jsonb)
