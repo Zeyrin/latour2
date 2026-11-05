@@ -1,10 +1,14 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState, type FormEvent } from 'react'
 import { ArrowRight, Check, Copy, Mail, Phone } from 'lucide-react'
 import { contact, suites, universes, type SuiteId, type UniverseId } from '../lib/content'
 import { locales, useLang, type Lang } from '../lib/i18n'
 import { bookingUi } from '../lib/ui'
 import { AvailabilityCalendar } from './AvailabilityCalendar'
 import { freeResource, isBooked, nightsBetween, type AvailabilityBlock } from '../lib/availability'
+
+const StripeCheckout = lazy(() => import('./StripeCheckout'))
+
+interface Payment { clientSecret: string; publishableKey: string }
 
 interface BookingFormProps {
   initialUniverse?: UniverseId
@@ -30,6 +34,43 @@ async function loadAvailability(): Promise<AvailabilityBlock[] | null> {
     return Array.isArray(blocks) ? blocks as AvailabilityBlock[] : null
   } catch {
     return null
+  }
+}
+
+async function paymentEnabled() {
+  // Servi par api/checkout.ts : vrai lorsque les clés Stripe sont configurées sur Vercel.
+  try {
+    const response = await fetch('/api/checkout')
+    return response.ok && (await response.json() as { enabled?: boolean }).enabled === true
+  } catch {
+    return false
+  }
+}
+
+/** Ouvre une session de paiement ; « fallback » ramène à la demande par e-mail. */
+async function startCheckout(values: FormData, suite: SuiteId | '', lang: Lang): Promise<{ kind: 'ok'; payment: Payment } | { kind: 'unavailable' } | { kind: 'fallback' }> {
+  try {
+    const response = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lang,
+        suite: suite || null,
+        name: String(values.get('name') || '').trim(),
+        email: String(values.get('email') || '').trim(),
+        phone: String(values.get('phone') || '').trim() || null,
+        arrival: String(values.get('arrival') || ''),
+        departure: String(values.get('departure') || ''),
+        guests: Number(values.get('guests')) || null,
+        message: String(values.get('message') || '').trim() || null,
+      }),
+    })
+    if (response.status === 409) return { kind: 'unavailable' }
+    if (!response.ok) return { kind: 'fallback' }
+    const data = await response.json() as Partial<Payment>
+    return data.clientSecret && data.publishableKey ? { kind: 'ok', payment: { clientSecret: data.clientSecret, publishableKey: data.publishableKey } } : { kind: 'fallback' }
+  } catch {
+    return { kind: 'fallback' }
   }
 }
 
@@ -73,6 +114,10 @@ export function BookingForm({ initialUniverse, initialMessage = '' }: BookingFor
   const [blocks, setBlocks] = useState<AvailabilityBlock[]>([])
   const [availability, setAvailability] = useState<'loading' | 'ready' | 'offline'>('loading')
   const [dateError, setDateError] = useState('')
+  const [canPay, setCanPay] = useState(false)
+  const [paying, setPaying] = useState(false)
+  const [payment, setPayment] = useState<Payment | null>(null)
+  const [paid, setPaid] = useState(false)
   const datesRef = useRef<HTMLFieldSetElement>(null)
   const now = new Date()
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
@@ -86,8 +131,11 @@ export function BookingForm({ initialUniverse, initialMessage = '' }: BookingFor
       setBlocks(result ?? [])
       setAvailability(result ? 'ready' : 'offline')
     })
+    void paymentEnabled().then((enabled) => { if (active) setCanPay(enabled) })
     return () => { active = false }
   }, [])
+
+  const payOnline = canPay && universe === 'suites'
 
   function changeDates(nextArrival: string, nextDeparture: string) {
     setArrival(nextArrival)
@@ -106,17 +154,34 @@ export function BookingForm({ initialUniverse, initialMessage = '' }: BookingFor
     if (arrival && departure ? !freeResource(blocks, nextResources, arrival, departure) : arrival && nextResources.every((resource) => isBooked(blocks, resource, arrival))) changeDates('', '')
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function showDateError(message: string) {
+    setDateError(message)
+    datesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    datesRef.current?.querySelector<HTMLButtonElement>('.calendar-day:not([aria-disabled])')?.focus({ preventScroll: true })
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (universe === 'suites' && (!arrival || !departure)) {
-      setDateError(arrival ? t.pickDeparture : t.pickDates)
-      datesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      datesRef.current?.querySelector<HTMLButtonElement>('.calendar-day:not([aria-disabled])')?.focus({ preventScroll: true })
-      return
-    }
+    if (universe === 'suites' && (!arrival || !departure)) return showDateError(arrival ? t.pickDeparture : t.pickDates)
     const values = new FormData(event.currentTarget)
-    void saveRequest(values, universe, suite)
     setSavedValues(Object.fromEntries(Array.from(values.entries()).map(([key, value]) => [key, String(value)])))
+    if (payOnline) {
+      setPaying(true)
+      const result = await startCheckout(values, suite, lang)
+      setPaying(false)
+      if (result.kind === 'ok') {
+        setPayment(result.payment)
+        window.setTimeout(() => document.getElementById('payment-heading')?.focus(), 50)
+        return
+      }
+      if (result.kind === 'unavailable') {
+        void loadAvailability().then((next) => { if (next) setBlocks(next) })
+        changeDates('', '')
+        return showDateError(t.unavailableNow)
+      }
+      // Paiement indisponible : on revient à la demande par e-mail.
+    }
+    void saveRequest(values, universe, suite)
     setCopied(false)
     setCopyError(false)
     const name = String(values.get('name') || '').trim()
@@ -154,6 +219,34 @@ export function BookingForm({ initialUniverse, initialMessage = '' }: BookingFor
     } catch {
       setCopyError(true)
     }
+  }
+
+  if (paid) {
+    return (
+      <div className="booking-confirmation">
+        <span className="confirmation-icon"><Check size={28} strokeWidth={1.2} /></span>
+        <p className="eyebrow">{t.paidEyebrow}</p>
+        <h2 id="paid-heading" tabIndex={-1}>{t.paidTitle[0]}<br /><em>{t.paidTitle[1]}</em></h2>
+        <p>{t.paidText}</p>
+        <p className="form-note">{t.paidNote}</p>
+      </div>
+    )
+  }
+
+  if (payment) {
+    return (
+      <div className="booking-content booking-payment">
+        <p className="eyebrow">{t.payEyebrow}</p>
+        <h2 id="payment-heading" tabIndex={-1}>{t.payTitle[0]}<br /><em>{t.payTitle[1]}</em></h2>
+        <Suspense fallback={<p className="dates-note">{t.paying}</p>}>
+          <StripeCheckout clientSecret={payment.clientSecret} publishableKey={payment.publishableKey} onComplete={() => {
+            setPaid(true)
+            window.setTimeout(() => document.getElementById('paid-heading')?.focus(), 50)
+          }} />
+        </Suspense>
+        <button type="button" className="text-link" onClick={() => setPayment(null)}>{t.payBack} <ArrowRight size={16} /></button>
+      </div>
+    )
   }
 
   if (draft) {
@@ -226,8 +319,8 @@ export function BookingForm({ initialUniverse, initialMessage = '' }: BookingFor
         </div>
         <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: 'absolute', left: '-9999px' }} />
         <label className="consent"><input type="checkbox" name="consent" required defaultChecked={savedValues.consent === 'on'} /><span>{t.consent} <span aria-hidden="true">*</span></span></label>
-        <button className="button button-burgundy form-submit" type="submit">{t.submit} <ArrowRight size={17} /></button>
-        <p className="form-note">{t.formNote}</p>
+        <button className="button button-burgundy form-submit" type="submit" disabled={paying} aria-busy={paying || undefined}>{paying ? t.paying : payOnline ? t.submitPay : t.submit} <ArrowRight size={17} /></button>
+        <p className="form-note">{payOnline ? t.payNote : t.formNote}</p>
       </form>
       <a className="booking-phone" href={`tel:${contact.phoneLink}`}><Phone size={15} strokeWidth={1.25} /> {t.callUs} <span>{contact.phone}</span></a>
     </div>

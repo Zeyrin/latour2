@@ -50,8 +50,10 @@ export function Confidentialite() {
   return (
     <LegalLayout lang="fr" page="privacy" eyebrow="Confidentialité" title={<>En toute <em>confiance.</em></>} description="Politique de confidentialité du site du Château Latour Ségur : données collectées via le formulaire et mesure d’audience sans cookie.">
       <h2>Formulaire de demande</h2>
-      <p>Lorsque vous préparez votre venue, les informations saisies (nom, e-mail, téléphone facultatif, dates, nombre de personnes, message) sont enregistrées afin que le château puisse vous répondre. Elles ne sont ni vendues ni transmises à des tiers, et conservées au plus 3 ans après notre dernier échange. Base légale : votre demande (mesures précontractuelles).</p>
+      <p>Lorsque vous préparez votre venue, les informations saisies (nom, e-mail, téléphone facultatif, dates, nombre de personnes, message) sont enregistrées afin que le château puisse vous répondre. Elles ne sont jamais vendues, ne sont transmises qu’aux prestataires nécessaires à votre séjour (ci-dessous), et conservées au plus 3 ans après notre dernier échange. Base légale : votre demande (mesures précontractuelles).</p>
       <p>Les données sont hébergées par Supabase (infrastructure au sein de l’Union européenne). Vous pouvez demander leur consultation ou leur suppression à tout moment : <a href={`mailto:${contact.email}`}>{contact.email}</a>.</p>
+      <h2>Réservation et paiement en ligne</h2>
+      <p>Lorsque vous réservez une suite en ligne, vos coordonnées et les informations de votre séjour sont transmises à Beds24, notre logiciel de gestion des réservations, et le paiement est traité par Stripe. Vos données bancaires sont saisies directement chez Stripe : le château n’y a jamais accès. Ces données sont conservées pendant la durée nécessaire à la gestion de votre séjour et aux obligations comptables (10 ans pour les pièces comptables). Base légale : l’exécution du contrat de réservation.</p>
       <h2>Mesure d’audience</h2>
       <p>Nous utilisons Rybbit, un outil de statistiques respectueux de la vie privée : pas de cookie, pas d’identifiant persistant, pas de profilage.</p>
       <h2>Services externes</h2>
@@ -84,8 +86,10 @@ export function Privacy() {
   return (
     <LegalLayout lang="en" page="privacy" eyebrow="Privacy" title={<>In complete <em>confidence.</em></>} description="Privacy policy for the Château Latour Ségur website: data collected through the request form and cookie-free audience measurement.">
       <h2>Request form</h2>
-      <p>When you plan your visit, the information you enter (name, email, optional phone number, dates, number of guests, message) is stored so that the château can reply to you. It is never sold or passed on to third parties, and is kept for no more than 3 years after our last exchange. Legal basis: your request (pre-contractual measures).</p>
+      <p>When you plan your visit, the information you enter (name, email, optional phone number, dates, number of guests, message) is stored so that the château can reply to you. It is never sold, is shared only with the service providers needed for your stay (below), and is kept for no more than 3 years after our last exchange. Legal basis: your request (pre-contractual measures).</p>
       <p>The data is hosted by Supabase (infrastructure within the European Union). You may ask to see or delete it at any time: <a href={`mailto:${contact.email}`}>{contact.email}</a>.</p>
+      <h2>Online booking and payment</h2>
+      <p>When you book a suite online, your contact details and stay information are passed on to Beds24, our booking management software, and payment is processed by Stripe. Your card details are entered directly with Stripe: the château never has access to them. This data is kept for as long as needed to manage your stay and to meet accounting obligations (10 years for accounting records). Legal basis: performance of the booking contract.</p>
       <h2>Audience measurement</h2>
       <p>We use Rybbit, a privacy-friendly analytics tool: no cookies, no persistent identifier, no profiling.</p>
       <h2>External services</h2>

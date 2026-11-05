@@ -517,3 +517,8 @@ em{font-weight:300}
 .suite-photos>button:hover img{transform:scale(1.06)}
 .all-suite-photos{margin-bottom:6px}
 @media(max-width:700px){.suite-photos{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}}
+
+/* Paiement Stripe intégré */
+.stripe-checkout{margin:8px 0 16px;min-height:420px}
+.booking-payment h2:focus{outline:none}
+.form-submit[disabled]{opacity:.7;cursor:progress}

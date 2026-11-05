@@ -85,3 +85,33 @@ $$;
 
 revoke all on function public.replace_beds24_blocks(jsonb) from public, anon, authenticated;
 grant execute on function public.replace_beds24_blocks(jsonb) to service_role;
+
+-- ─── Réservations payées en ligne (Stripe) ──────────────────────────────────
+-- Écrites uniquement par api/stripe-webhook et api/capture-bookings (service_role).
+-- status : authorized  paiement autorisé, réservation créée dans Beds24, en attente (débit auto après 24-48 h)
+--          confirmed   montant débité
+--          refused     annulée par le château dans Stripe (rien n'est débité)
+--          expired     autorisation expirée sans débit
+--          unavailable dates prises pendant le paiement : autorisation libérée automatiquement
+create table if not exists public.bookings (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  stripe_session_id text not null unique,
+  payment_intent_id text unique,
+  suite text not null check (suite in ('terre','eau','metal','feu','bois')),
+  arrival date not null,
+  departure date not null check (departure > arrival),
+  guests int not null check (guests between 1 and 20),
+  name text not null,
+  email text not null,
+  phone text,
+  message text,
+  amount_cents int not null check (amount_cents > 0),
+  status text not null default 'authorized' check (status in ('authorized','confirmed','refused','expired','unavailable')),
+  beds24_booking_id bigint
+);
+create index if not exists bookings_status_created_idx on public.bookings (status, created_at);
+
+alter table public.bookings enable row level security;
+-- Aucune politique : ni lecture ni écriture avec la clé anon.
+revoke all on public.bookings from anon, authenticated;
