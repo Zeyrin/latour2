@@ -2,9 +2,9 @@ import type { Lang } from './i18n'
 import type { UniverseId } from './content'
 
 const fr = {
-  seoTitle: 'Château Latour Ségur — Suites, Spa & Événements à Saint-Émilion',
-  seoDescription: 'Séjournez dans une demeure historique à Lussac Saint-Émilion : suites de charme, Spa TerreHappy® ouvert à tous et privatisable, séminaires et réceptions. Demandez votre venue.',
-  jsonLdDescription: 'Demeure historique près de Saint-Émilion : suites de charme, Spa TerreHappy® et espaces de réception.',
+  seoTitle: 'Château Latour Ségur — Chambres d’hôtes de charme & Spa près de Saint-Émilion',
+  seoDescription: 'Chambres d’hôtes de charme dans un château historique à Lussac-Saint-Émilion, près de Bordeaux : cinq suites, Spa TerreHappy®, séminaires et réceptions. Réservez votre séjour.',
+  jsonLdDescription: 'Chambres d’hôtes de charme dans un château historique près de Saint-Émilion : cinq suites, Spa TerreHappy® et espaces de réception.',
   jsonLdMeeting: 'Salle de séminaire et de réception',
   skip: 'Aller au contenu',
   homeLabel: 'Château Latour Ségur, accueil',
@@ -18,7 +18,7 @@ const fr = {
   heroAlt: 'La façade de pierre du Château Latour Ségur, nichée au cœur de son parc arboré',
   heroEyebrow: 'Une maison, trois façons de se retrouver',
   heroTitle: ['Loin du bruit,', 'près de l’essentiel.'],
-  heroSubtitle: ['Suites de caractère, spa confidentiel & événements singuliers.', 'Au cœur du vignoble de Saint-Émilion, une autre idée du temps.'],
+  heroSubtitle: ['Chambres d’hôtes de caractère, spa confidentiel & événements singuliers.', 'Au cœur du vignoble de Saint-Émilion, une autre idée du temps.'],
   heroDiscover: 'Entrez dans la maison',
   heroLocation: 'Lussac · Saint-Émilion · France',
   scrollCue: 'Découvrir les trois univers',
@@ -36,7 +36,7 @@ const fr = {
   domainEyebrow: 'Le domaine · Lussac, Saint-Émilion',
   domainTitle: ['Des pierres, une histoire.', 'Et surtout, une âme.'],
   domainLead: ['Il y a des maisons que l’on visite.', 'Et d’autres que l’on a l’impression de retrouver.'],
-  domainText: 'Aux portes de Saint-Émilion, le Château Latour Ségur se dévoile entre arbres centenaires, étangs et vieilles pierres. Une demeure historique vivante, où l’élégance se fait discrète et l’accueil, profondément personnel.',
+  domainText: 'À Lussac, aux portes de Saint-Émilion à moins d’une heure de Bordeaux, le Château Latour Ségur se dévoile entre arbres centenaires, étangs et vieilles pierres. Une demeure historique vivante, chambres d’hôtes tenues par Corinne et André, où l’élégance se fait discrète et l’accueil, profondément personnel.',
   domainQuote: '« Notre bonheur, c’est que vous vous sentiez ici un peu chez vous. »',
   hosts: 'Vos hôtes, tout simplement',
   storyLink: 'L’histoire de notre maison',
@@ -112,9 +112,9 @@ const fr = {
 export type Ui = typeof fr
 
 const en: Ui = {
-  seoTitle: 'Château Latour Ségur — Suites, Spa & Events near Saint-Émilion',
-  seoDescription: 'Stay in a historic house in Lussac Saint-Émilion, Bordeaux wine country: charming suites, Spa TerreHappy® open to all and available for private hire, seminars and receptions.',
-  jsonLdDescription: 'Historic house near Saint-Émilion: charming suites, Spa TerreHappy® and event spaces.',
+  seoTitle: 'Château Latour Ségur — Boutique B&B & Spa near Saint-Émilion',
+  seoDescription: 'Boutique bed & breakfast in a historic château in Lussac-Saint-Émilion, Bordeaux wine country: five suites, Spa TerreHappy®, seminars and receptions. Book your stay.',
+  jsonLdDescription: 'Boutique bed & breakfast in a historic château near Saint-Émilion: five suites, Spa TerreHappy® and event spaces.',
   jsonLdMeeting: 'Meeting and reception room',
   skip: 'Skip to content',
   homeLabel: 'Château Latour Ségur, home',
@@ -128,7 +128,7 @@ const en: Ui = {
   heroAlt: 'The stone façade of Château Latour Ségur, nestled in its wooded park',
   heroEyebrow: 'One house, three ways to reconnect',
   heroTitle: ['Far from the noise,', 'close to what matters.'],
-  heroSubtitle: ['Characterful suites, a secluded spa & one-of-a-kind events.', 'In the heart of the Saint-Émilion vineyards, a different sense of time.'],
+  heroSubtitle: ['A characterful bed & breakfast, a secluded spa & one-of-a-kind events.', 'In the heart of the Saint-Émilion vineyards, a different sense of time.'],
   heroDiscover: 'Step inside',
   heroLocation: 'Lussac · Saint-Émilion · France',
   scrollCue: 'Discover the three worlds',
@@ -146,7 +146,7 @@ const en: Ui = {
   domainEyebrow: 'The estate · Lussac, Saint-Émilion',
   domainTitle: ['Stone walls, a history.', 'And above all, a soul.'],
   domainLead: ['Some houses you visit.', 'Others feel like coming home.'],
-  domainText: 'On the doorstep of Saint-Émilion, Château Latour Ségur reveals itself among century-old trees, ponds and weathered stone. A living historic house where elegance is understated and the welcome deeply personal.',
+  domainText: 'In Lussac, on the doorstep of Saint-Émilion less than an hour from Bordeaux, Château Latour Ségur reveals itself among century-old trees, ponds and weathered stone. A living historic house, a bed & breakfast run by Corinne and André, where elegance is understated and the welcome deeply personal.',
   domainQuote: '“Our greatest joy is for you to feel a little at home here.”',
   hosts: 'Your hosts, quite simply',
   storyLink: 'The story of our house',
