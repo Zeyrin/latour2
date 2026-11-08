@@ -55,8 +55,10 @@ function SuitePhotoStrip({ photos, label, onOpen }: { photos: LightboxPhoto[]; l
 function jsonLd(lang: Lang) {
   return {
     '@context': 'https://schema.org',
-    '@type': 'Hotel',
+    '@type': 'BedAndBreakfast',
+    '@id': `${SITE_URL}/#etablissement`,
     name: 'Château Latour Ségur',
+    alternateName: 'Château Latour Ségur Suites & Spa',
     description: ui[lang].jsonLdDescription,
     url: `${SITE_URL}${paths.home[lang]}`,
     inLanguage: lang,
@@ -65,6 +67,9 @@ function jsonLd(lang: Lang) {
     email: contact.email,
     address: { '@type': 'PostalAddress', streetAddress: '1 Lieu dit Latour', postalCode: '33570', addressLocality: 'Lussac', addressRegion: 'Gironde', addressCountry: 'FR' },
     hasMap: contact.map,
+    areaServed: ['Saint-Émilion', 'Lussac', 'Libourne', 'Bordeaux'],
+    priceRange: '€€€',
+    numberOfRooms: 5,
     sameAs: ['https://www.instagram.com/chateaulatoursegur/', SPA_URL],
     amenityFeature: [{ '@type': 'LocationFeatureSpecification', name: 'Spa', value: true }, { '@type': 'LocationFeatureSpecification', name: ui[lang].jsonLdMeeting, value: true }],
   }
