@@ -95,7 +95,7 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
           </section>
 
           <section className="suite-spa page-width">
-            <a href={spaUrl('fiche-suite')} {...newWindow(p.spa)}><Picture name="spa-piscine" alt="" sizes="(max-width: 700px) 100vw, 40vw" /><span><span className="eyebrow">spaterrehappy.fr</span>{p.spa}<ArrowUpRight size={20} strokeWidth={1.2} /></span></a>
+            <a href={spaUrl('fiche-suite', lang)} {...newWindow(p.spa)}><Picture name="spa-piscine" alt="" sizes="(max-width: 700px) 100vw, 40vw" /><span><span className="eyebrow">spaterrehappy.fr</span>{p.spa}<ArrowUpRight size={20} strokeWidth={1.2} /></span></a>
           </section>
 
           <nav className="suite-others page-width" aria-labelledby="suite-others-heading">
