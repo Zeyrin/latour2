@@ -22,6 +22,9 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
   const photos = suitePhotos[id]
   const [booking, setBooking] = useState(false)
   const [photoIndex, setPhotoIndex] = useState<number | null>(null)
+  const [galleryExpanded, setGalleryExpanded] = useState(false)
+  const previewCount = 6
+  const shownPhotos = galleryExpanded ? photos : photos.slice(0, previewCount)
   const showPhoto = (step: number) => setPhotoIndex((current) => current === null ? null : (current + step + photos.length) % photos.length)
   const newWindow = (text: string) => ({ target: '_blank', rel: 'noopener', 'aria-label': `${text} ${t.newWindow}` })
 
@@ -87,7 +90,7 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
           <section className="suite-gallery page-width" aria-labelledby="suite-gallery-heading">
             <h2 id="suite-gallery-heading" className="suite-subheading">{p.photos}</h2>
             {photos.length > 0
-              ? <div className="suite-gallery-grid">{photos.map((src, index) => <button key={src} className="gallery-photo" onClick={() => setPhotoIndex(index)} aria-label={`${t.enlarge} ${t.suitePhotoAlt(label, index + 1)}`}><img src={src} alt="" loading="lazy" decoding="async" /><span className="gallery-photo-overlay" /><span className="gallery-plus"><Plus size={19} strokeWidth={1.2} /></span></button>)}</div>
+              ? <><div className="suite-gallery-grid">{shownPhotos.map((src, index) => <button key={src} className="gallery-photo" onClick={() => setPhotoIndex(index)} aria-label={`${t.enlarge} ${t.suitePhotoAlt(label, index + 1)}`}><img src={src} alt="" loading="lazy" decoding="async" /><span className="gallery-photo-overlay" /><span className="gallery-plus"><Plus size={19} strokeWidth={1.2} /></span></button>)}</div>{photos.length > previewCount && <div className="gallery-more"><button type="button" className="text-link" onClick={() => setGalleryExpanded((open) => !open)} aria-expanded={galleryExpanded}>{galleryExpanded ? t.showFewerPhotos : t.showAllPhotos(photos.length)}</button></div>}</>
               : <p className="suite-no-photos">{p.noPhotos}</p>}
           </section>
 

@@ -77,6 +77,7 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
   const langUniverses = universes[lang]
   const other: Lang = lang === 'fr' ? 'en' : 'fr'
   const [loading, setLoading] = useState(true)
+  const [galleryExpanded, setGalleryExpanded] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [modal, setModal] = useState<ModalState>(null)
@@ -89,8 +90,10 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
   const photosOfSuite = (id: SuiteId): LightboxPhoto[] => suitePhotos[id].map((src, index) => ({ id: src, src, alt: t.suitePhotoAlt(suiteLabel(id), index + 1), title: suiteLabel(id) }))
   const allSuitePhotos = suites[lang].flatMap((suite) => photosOfSuite(suite.id))
   const gallery: GalleryPhoto[] = [...galleryPhotos[lang], ...allSuitePhotos.map((photo) => ({ ...photo, category: 'suites' as const }))]
-  const galleryFilterIds = (['tous', 'domaine', 'suites', 'spa', 'evenements'] as GalleryFilter[]).filter((id) => id === 'tous' || gallery.some((photo) => photo.category === id))
-  const visiblePhotos = gallery.filter((photo) => filter === 'tous' || photo.category === filter)
+  const galleryFilterIds = (['tous', 'domaine', 'suites', 'evenements'] as GalleryFilter[]).filter((id) => id === 'tous' || gallery.some((photo) => photo.category === id))
+  const filteredPhotos = gallery.filter((photo) => filter === 'tous' || photo.category === filter)
+  const GALLERY_PREVIEW = 9
+  const visiblePhotos = galleryExpanded ? filteredPhotos : filteredPhotos.slice(0, GALLERY_PREVIEW)
   const photoSrc = (photo: GalleryPhoto) => photo.src ?? `/images/${photo.image}.webp`
   const showPhoto = (step: number) => setLightbox((current) => current && { ...current, index: (current.index + step + current.photos.length) % current.photos.length })
 
@@ -230,7 +233,6 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
 
         <div className="chapters">{langUniverses.map((universe) => <Fragment key={universe.id}>
           {universe.id === 'suites' && <Chapter universe={universe} caption={t.photoCaption} href="#les-suites" newWindow={t.newWindow} />}
-          {universe.id === 'spa' && <Chapter universe={universe} caption={t.photoCaption} href={SPA_URL} external newWindow={t.newWindow} />}
           {universe.id === 'evenements' && <Chapter universe={universe} caption={t.photoCaption} onDiscover={() => setModal({ type: 'universe', id: universe.id })} newWindow={t.newWindow} />}
           {universe.id === 'suites' && <section className="suites-list-section" id="les-suites" aria-labelledby="suites-list-heading"><div className="page-width">
             <Reveal className="section-heading"><div><p className="eyebrow">{t.suitesListEyebrow}</p><h2 id="suites-list-heading">{t.suitesListTitle[0]} <em>{t.suitesListTitle[1]}</em></h2></div><p className="section-intro">{t.suitesListIntro}</p></Reveal>
@@ -253,6 +255,7 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
           <Reveal className="gallery-heading"><p className="eyebrow">{t.galleryEyebrow}</p><h2 id="gallery-heading">{t.galleryTitle[0]} <em>{t.galleryTitle[1]}</em></h2><p>{t.galleryIntro}</p></Reveal>
           <div className="gallery-filters" aria-label={t.galleryFilterLabel}>{galleryFilterIds.map((id) => <button key={id} className={filter === id ? 'is-active' : ''} onClick={() => setFilter(id)} aria-pressed={filter === id}>{t.galleryFilters[id]}{filter === id && <motion.span className="filter-underline" layoutId="gallery-filter" transition={{ duration: 0.4 }} />}</button>)}</div>
           <motion.div layout className={`gallery-grid ${filter !== 'tous' ? 'is-filtered' : ''}`}><AnimatePresence mode="popLayout">{visiblePhotos.map((photo, index) => <motion.button layout key={photo.id} className="gallery-photo" onClick={() => setLightbox({ index, photos: visiblePhotos.map((item) => ({ id: item.id, src: photoSrc(item), alt: item.alt, title: item.title })) })} aria-label={`${t.enlarge} ${photo.title}`} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}>{photo.image ? <Picture name={photo.image} alt={photo.alt} sizes="(max-width: 640px) 50vw, 33vw" /> : <img src={photoSrc(photo)} alt={photo.alt} loading="lazy" decoding="async" />}<span className="gallery-photo-overlay" /><span className="gallery-photo-title">{photo.title}</span><span className="gallery-plus"><Plus size={19} strokeWidth={1.2} /></span></motion.button>)}</AnimatePresence></motion.div>
+          {filteredPhotos.length > GALLERY_PREVIEW && <div className="gallery-more"><button type="button" className="text-link" onClick={() => setGalleryExpanded((open) => !open)} aria-expanded={galleryExpanded}>{galleryExpanded ? t.showFewerPhotos : t.showAllPhotos(filteredPhotos.length)}</button></div>}
           <p className="gallery-note">{t.galleryNote}</p>
         </div></section>
 
