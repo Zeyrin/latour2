@@ -62,7 +62,7 @@ function jsonLd(lang: Lang) {
     description: ui[lang].jsonLdDescription,
     url: `${SITE_URL}${paths.home[lang]}`,
     inLanguage: lang,
-    image: [`${SITE_URL}/images/domaine.webp`, `${SITE_URL}/images/chateau-panorama.webp`, `${SITE_URL}/images/spa-piscine.webp`],
+    image: [`${SITE_URL}/images/domaine.webp`, `${SITE_URL}/images/chateau-panorama.webp`, `${SITE_URL}/images/cuvier.webp`],
     telephone: contact.phoneLink,
     email: contact.email,
     address: { '@type': 'PostalAddress', streetAddress: '1 Lieu dit Latour', postalCode: '33570', addressLocality: 'Lussac', addressRegion: 'Gironde', addressCountry: 'FR' },
