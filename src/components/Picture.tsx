@@ -15,13 +15,14 @@ const imageWidths: Record<string, number> = {
   'spa-soin': 1400,
   'art-de-vivre': 1000,
   vignes: 1600,
+  'domaine-pigeonnier': 1536,
 }
 
 export function Picture({ name, alt, className = '', priority = false, sizes = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 45vw' }: PictureProps) {
   return <img
     className={className}
     src={`/images/${name}.webp`}
-    srcSet={`/images/${name}-small.webp 640w, /images/${name}.webp ${imageWidths[name] || 1400}w`}
+    srcSet={`/images/${name}-small.webp 640w, /images/${name}.webp ${imageWidths[name] || (name.startsWith('domaine-') || ['cuvier', 'salle-a-manger', 'cave'].includes(name) ? 1600 : 1400)}w`}
     sizes={sizes}
     alt={alt}
     loading={priority ? 'eager' : 'lazy'}

@@ -93,7 +93,7 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
   const photosOfSuite = (id: SuiteId): LightboxPhoto[] => suitePhotos[id].map((src, index) => ({ id: src, src, alt: t.suitePhotoAlt(suiteLabel(id), index + 1), title: suiteLabel(id) }))
   const allSuitePhotos = suites[lang].flatMap((suite) => photosOfSuite(suite.id))
   const gallery: GalleryPhoto[] = [...galleryPhotos[lang], ...allSuitePhotos.map((photo) => ({ ...photo, category: 'suites' as const }))]
-  const galleryFilterIds = (['tous', 'suites', 'spa', 'evenements'] as GalleryFilter[]).filter((id) => id === 'tous' || gallery.some((photo) => photo.category === id))
+  const galleryFilterIds = (['tous', 'domaine', 'suites', 'spa', 'evenements'] as GalleryFilter[]).filter((id) => id === 'tous' || gallery.some((photo) => photo.category === id))
   const visiblePhotos = gallery.filter((photo) => filter === 'tous' || photo.category === filter)
   const photoSrc = (photo: GalleryPhoto) => photo.src ?? `/images/${photo.image}.webp`
   const showPhoto = (step: number) => setLightbox((current) => current && { ...current, index: (current.index + step + current.photos.length) % current.photos.length })

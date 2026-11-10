@@ -180,9 +180,10 @@ export const escapes: Record<Lang, Escape[]> = {
   ],
 }
 
-export type GalleryFilter = 'tous' | UniverseId
+export type GalleryCategory = UniverseId | 'domaine'
+export type GalleryFilter = 'tous' | GalleryCategory
 /** `image` : photo de public/images ; `src` : photo déposée dans src/assets/suites. */
-export interface GalleryPhoto { id: string; category: UniverseId; image?: string; src?: string; title: string; alt: string }
+export interface GalleryPhoto { id: string; category: GalleryCategory; image?: string; src?: string; title: string; alt: string }
 export const galleryPhotos: Record<Lang, GalleryPhoto[]> = {
   fr: [
     { id: 'spa-eau', category: 'spa', image: 'spa-piscine', title: 'L’heure suspendue', alt: 'L’eau du bassin et les lumières du spa à la nuit tombante' },
@@ -191,6 +192,18 @@ export const galleryPhotos: Record<Lang, GalleryPhoto[]> = {
     { id: 'spa-bain', category: 'spa', image: 'spa-bain', title: 'Un bain de minéraux', alt: 'Le bain à remous du spa, creusé dans la pierre, sous un miroir soleil' },
     { id: 'spa-soin', category: 'spa', image: 'spa-soin', title: 'Un retour à l’essentiel', alt: 'Une table de soin face à la piscine du spa' },
     { id: 'partage-vin', category: 'evenements', image: 'art-de-vivre', title: 'L’art de recevoir', alt: 'Verres de vin et moments de convivialité' },
+    { id: 'domaine-allee', category: 'domaine', image: 'domaine-allee', title: 'L’arrivée au château', alt: 'L’allée de gravier qui mène à la façade du château, entre pelouses et grands arbres' },
+    { id: 'domaine-facade', category: 'domaine', image: 'domaine-facade', title: 'La demeure', alt: 'La façade du château au printemps, derrière les arbres en fleurs du jardin' },
+    { id: 'cuvier', category: 'evenements', image: 'cuvier', title: 'Le cuvier', alt: 'La salle voûtée du cuvier, sa grande cheminée allumée et ses tables dressées' },
+    { id: 'domaine-etang', category: 'domaine', image: 'domaine-etang', title: 'Au bord de l’étang', alt: 'L’étang du domaine bordé d’arbres, sous un ciel d’été' },
+    { id: 'domaine-pigeonnier', category: 'domaine', image: 'domaine-pigeonnier', title: 'Le pigeonnier', alt: 'Le pigeonnier en pierre au milieu des vignes dorées' },
+    { id: 'salle-a-manger', category: 'evenements', image: 'salle-a-manger', title: 'La salle à manger', alt: 'La salle à manger du château aux lustres allumés, la table dressée aux chandelles' },
+    { id: 'domaine-allee-arbres', category: 'domaine', image: 'domaine-allee-arbres', title: 'L’allée centrale', alt: 'L’allée centrale du parc, ombragée par une double rangée d’arbres' },
+    { id: 'domaine-dependances', category: 'domaine', image: 'domaine-dependances', title: 'Les dépendances', alt: 'Les dépendances en pierre qui abritent les suites, devant la pelouse fleurie' },
+    { id: 'domaine-pont', category: 'domaine', image: 'domaine-pont', title: 'Le vieux pont', alt: 'Un petit pont de pierre ancien au bord des vignes' },
+    { id: 'cave', category: 'evenements', image: 'cave', title: 'La cave', alt: 'La cave voûtée et sa longue table de bois éclairée aux bougies' },
+    { id: 'domaine-automne', category: 'domaine', image: 'domaine-automne', title: 'L’automne', alt: 'Un arbre aux feuilles d’or au-dessus d’un tapis de feuilles mortes' },
+    { id: 'domaine-vignes-aube', category: 'domaine', image: 'domaine-vignes-aube', title: 'L’aube sur les vignes', alt: 'Le ciel rose de l’aube au-dessus des vignes dans la brume' },
   ],
   en: [
     { id: 'spa-eau', category: 'spa', image: 'spa-piscine', title: 'Time stands still', alt: 'The spa pool and its lights as night falls' },
@@ -199,6 +212,18 @@ export const galleryPhotos: Record<Lang, GalleryPhoto[]> = {
     { id: 'spa-bain', category: 'spa', image: 'spa-bain', title: 'A mineral bath', alt: 'The spa whirlpool bath set into the stone beneath a sunburst mirror' },
     { id: 'spa-soin', category: 'spa', image: 'spa-soin', title: 'Back to essentials', alt: 'A treatment table facing the spa pool' },
     { id: 'partage-vin', category: 'evenements', image: 'art-de-vivre', title: 'The art of hosting', alt: 'Glasses of wine and convivial moments' },
+    { id: 'domaine-allee', category: 'domaine', image: 'domaine-allee', title: 'Arriving at the château', alt: 'The gravel drive leading to the château façade, between lawns and tall trees' },
+    { id: 'domaine-facade', category: 'domaine', image: 'domaine-facade', title: 'The house', alt: 'The château façade in spring, behind the blossoming trees of the garden' },
+    { id: 'cuvier', category: 'evenements', image: 'cuvier', title: 'The vat room', alt: 'The vaulted vat room with its great open fire and laid tables' },
+    { id: 'domaine-etang', category: 'domaine', image: 'domaine-etang', title: 'By the pond', alt: 'The estate pond lined with trees under a summer sky' },
+    { id: 'domaine-pigeonnier', category: 'domaine', image: 'domaine-pigeonnier', title: 'The dovecote', alt: 'The stone dovecote among golden vines' },
+    { id: 'salle-a-manger', category: 'evenements', image: 'salle-a-manger', title: 'The dining room', alt: 'The château dining room with its chandeliers lit and a candlelit table' },
+    { id: 'domaine-allee-arbres', category: 'domaine', image: 'domaine-allee-arbres', title: 'The central avenue', alt: 'The park’s central avenue, shaded by a double row of trees' },
+    { id: 'domaine-dependances', category: 'domaine', image: 'domaine-dependances', title: 'The outbuildings', alt: 'The stone outbuildings that house the suites, beyond a flowering lawn' },
+    { id: 'domaine-pont', category: 'domaine', image: 'domaine-pont', title: 'The old bridge', alt: 'A small old stone bridge at the edge of the vines' },
+    { id: 'cave', category: 'evenements', image: 'cave', title: 'The cellar', alt: 'The vaulted cellar and its long wooden table lit by candles' },
+    { id: 'domaine-automne', category: 'domaine', image: 'domaine-automne', title: 'Autumn', alt: 'A tree with golden leaves above a carpet of fallen leaves' },
+    { id: 'domaine-vignes-aube', category: 'domaine', image: 'domaine-vignes-aube', title: 'Dawn over the vines', alt: 'The pink dawn sky above misty vineyards' },
   ],
 }
 
