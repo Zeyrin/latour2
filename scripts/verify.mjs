@@ -88,7 +88,7 @@ try {
   assert(await desktop.locator('#spa-terrehappy').count() === 0, 'Plus de section spa sur l’accueil')
   assert(await desktop.locator('#spa').count() === 0, 'Plus de chapitre spa sur l’accueil')
   assert(await desktop.locator('.universe-choice', { hasText: /spa/i }).count() === 0, 'Aucune réservation spa dans le formulaire')
-  assert(await desktop.locator('.universe-spa').getAttribute('href') === 'https://spaterrehappy.fr/', 'La carte spa renvoie vers spaterrehappy.fr')
+  assert(await desktop.locator('.universe-spa').getAttribute('href') === 'https://spaterrehappy.fr/?utm_source=chateaulatoursegur&utm_medium=referral&utm_campaign=site-chateau&utm_content=carte-univers', 'La carte spa renvoie vers spaterrehappy.fr')
   assert(await desktop.locator('a[href="https://chateaulatoursegur.secretbox.fr/"]').count() >= 2, 'Bons cadeaux sur Secretbox')
   await desktop.locator('#evenements .text-link').click()
   await desktop.locator('dialog summary').nth(1).click()

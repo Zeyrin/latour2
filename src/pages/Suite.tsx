@@ -7,7 +7,7 @@ import { BookingForm } from '../components/BookingForm'
 import { Modal } from '../components/Modal'
 import { Picture } from '../components/Picture'
 import { Seo } from '../components/Seo'
-import { GIFT_URL, SITE_URL, SPA_URL, contact, suiteCommon, suiteDetails, suiteIds, suitePhotos, suites, type SuiteId } from '../lib/content'
+import { GIFT_URL, SITE_URL, spaUrl, contact, suiteCommon, suiteDetails, suiteIds, suitePhotos, suites, type SuiteId } from '../lib/content'
 import { LangContext, paths, suitePaths, type Lang } from '../lib/i18n'
 import { ui } from '../lib/ui'
 
@@ -95,7 +95,7 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
           </section>
 
           <section className="suite-spa page-width">
-            <a href={SPA_URL} {...newWindow(p.spa)}><Picture name="spa-piscine" alt="" sizes="(max-width: 700px) 100vw, 40vw" /><span><span className="eyebrow">spaterrehappy.fr</span>{p.spa}<ArrowUpRight size={20} strokeWidth={1.2} /></span></a>
+            <a href={spaUrl('fiche-suite')} {...newWindow(p.spa)}><Picture name="spa-piscine" alt="" sizes="(max-width: 700px) 100vw, 40vw" /><span><span className="eyebrow">spaterrehappy.fr</span>{p.spa}<ArrowUpRight size={20} strokeWidth={1.2} /></span></a>
           </section>
 
           <nav className="suite-others page-width" aria-labelledby="suite-others-heading">
