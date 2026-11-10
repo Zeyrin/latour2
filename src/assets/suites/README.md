@@ -19,3 +19,9 @@ dans la fiche de la suite (« Explorer les suites »), au prochain déploiement.
 - **Taille** : idéalement 1600 px de large, en `.webp` ou `.jpg` compressé
   (moins de 400 Ko par photo) pour que le site reste rapide.
 - **Retirer une photo** : supprimer le fichier.
+
+## Provenance des photos
+
+- **Terre, Métal** et 3 photos de **Feu** : photos fournies par le propriétaire (envoi de novembre 2026).
+- **Eau, Bois, Feu (sauf balnéo, douche et entrée)** : provisoirement reprises des annonces Airbnb du château
+  (Suite du Chat'eau, Cottage Bois, Suite Feu), en attendant les originaux.

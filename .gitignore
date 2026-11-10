@@ -27,3 +27,7 @@ dist-ssr
 
 
 .env
+# Captures générées par scripts/verify.mjs
+artifacts
+# Photos brutes du propriétaire (à garder hors du dépôt)
+photos-brutes
