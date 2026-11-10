@@ -22,6 +22,6 @@ dans la fiche de la suite (« Explorer les suites »), au prochain déploiement.
 
 ## Provenance des photos
 
-- **Terre, Métal, Feu** : photos fournies par le propriétaire (envoi de novembre 2026).
-- **Eau, Bois** : provisoirement reprises des annonces Airbnb du château
-  (Suite du Chat'eau et Cottage Bois), en attendant les originaux.
+- **Terre, Métal** et 3 photos de **Feu** : photos fournies par le propriétaire (envoi de novembre 2026).
+- **Eau, Bois, Feu (sauf balnéo, douche et entrée)** : provisoirement reprises des annonces Airbnb du château
+  (Suite du Chat'eau, Cottage Bois, Suite Feu), en attendant les originaux.
