@@ -2,7 +2,7 @@ import type { Lang } from './i18n'
 import type { UniverseId } from './content'
 
 const fr = {
-  seoTitle: 'Château Latour Ségur — Chambres d’hôtes de charme & Spa près de Saint-Émilion',
+  seoTitle: 'Château Latour Ségur Suites & Spa — Chambres d’hôtes de charme près de Saint-Émilion',
   seoDescription: 'Chambres d’hôtes de charme dans un château historique à Lussac-Saint-Émilion, près de Bordeaux : cinq suites, Spa TerreHappy®, séminaires et réceptions. Réservez votre séjour.',
   jsonLdDescription: 'Chambres d’hôtes de charme dans un château historique près de Saint-Émilion : cinq suites, Spa TerreHappy® et espaces de réception.',
   jsonLdMeeting: 'Salle de séminaire et de réception',
@@ -130,7 +130,7 @@ const fr = {
 export type Ui = typeof fr
 
 const en: Ui = {
-  seoTitle: 'Château Latour Ségur — Boutique B&B & Spa near Saint-Émilion',
+  seoTitle: 'Château Latour Ségur Suites & Spa — Boutique B&B near Saint-Émilion',
   seoDescription: 'Boutique bed & breakfast in a historic château in Lussac-Saint-Émilion, Bordeaux wine country: five suites, Spa TerreHappy®, seminars and receptions. Book your stay.',
   jsonLdDescription: 'Boutique bed & breakfast in a historic château near Saint-Émilion: five suites, Spa TerreHappy® and event spaces.',
   jsonLdMeeting: 'Meeting and reception room',
