@@ -104,18 +104,19 @@ function MomentDialog({ lang, onClose, onBook }: { lang: Lang; onClose: () => vo
         </div>
       </div>
       <div className="moment-dialog-body">
-        <ul className="moment-cards">
+        <ul className="moment-list">
           {t.events.map((event) => (
-            <li key={event.id} className="moment-card">
-              <div className="moment-days" aria-label={event.date || t.dateTbc}>
-                {event.days.length ? event.days.map((day) => <span key={day.d + day.m} className="moment-day" aria-hidden="true"><strong>{day.d}</strong>{day.m}</span>) : <span className="moment-day is-tbc" aria-hidden="true"><strong>?</strong>{t.dateTbc}</span>}
+            <li key={event.id} className="moment-item">
+              <div className="moment-when">
+                <p className="moment-item-label">{event.label}</p>
+                {event.days.length
+                  ? event.days.map((day) => <p key={day.d + day.m} className="moment-range"><span>{day.d}</span> <em>{day.m}</em></p>)
+                  : <p className="moment-range is-tbc"><em>{t.dateTbc}</em></p>}
               </div>
-              <div className="moment-card-text">
-                <p className="moment-card-label">{event.label}</p>
+              <div className="moment-what">
                 <h3>{event.title}</h3>
-                <p className="moment-card-date">{event.date || t.dateTbc}</p>
                 <p>{event.text}</p>
-                <button className="moment-chip-button" onClick={() => onBook('evenements', event.request)}>{event.cta}<ArrowUpRight size={15} strokeWidth={1.5} /></button>
+                <button className="moment-link" onClick={() => onBook('evenements', event.request)} aria-label={`${event.cta} — ${event.title}, ${event.date || t.dateTbc}`}>{event.cta}<ArrowUpRight size={15} strokeWidth={1.4} /></button>
               </div>
             </li>
           ))}
