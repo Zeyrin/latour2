@@ -19,11 +19,16 @@
   .chapter-features li{font-size:10px;letter-spacing:.6px;line-height:1.8}
   .chapter-features{flex-wrap:wrap}
   .gallery-note,.form-note{font-size:13px}
+  .ancv{font-size:10px!important;letter-spacing:.8px}
+
+  /* Les cinq suites (accueil) : pastilles et chiffres à 10 px, compteur assez contrasté. */
+  .showcase-pill,.showcase-intro li,.showcase-tags>span{font-size:10px;letter-spacing:.9px}
+  .showcase-count>span{color:#71685c}
 
   /* Bas de l’accueil plein écran : textes lisibles, sans chevaucher le logo. */
   .hero-bottom{align-items:flex-end}
   .hero-location{max-width:170px;line-height:1.6}
-  .heritage-mark>span{font-size:8px;letter-spacing:.8px;line-height:1.7}
+  .heritage-mark>span{font-size:9px;letter-spacing:.6px;line-height:1.6}
 
   /* Légende verticale coupée par le bord de l’écran : masquée sur téléphone. */
   .vertical-caption{display:none}
@@ -67,6 +72,6 @@
   .closing-choices>:is(button,a){font-size:11px;padding-inline:16px}
   .hero-eyebrow{font-size:10px;letter-spacing:.6px}
   .hero-location{font-size:9px}
-  .heritage-mark>span{font-size:8px}
+  .heritage-mark>span{font-size:9px}
   .chapter-features li{font-size:10px;letter-spacing:.4px}
 }
