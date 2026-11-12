@@ -9,8 +9,9 @@ import { Modal } from './components/Modal'
 import { Picture } from './components/Picture'
 import { BookingForm } from './components/BookingForm'
 import { Seo } from './components/Seo'
-import { GIFT_URL, SITE_URL, SPA_URL, spaUrl, contact, escapes, galleryPhotos, suiteDetails, suitePhotos, suites, universes, type SuiteId, type GalleryFilter, type GalleryPhoto, type Universe, type UniverseId } from './lib/content'
-import { LangContext, paths, suitePaths, type Lang } from './lib/i18n'
+import { SuitesShowcase } from './components/SuitesShowcase'
+import { GIFT_URL, SITE_URL, SPA_URL, spaUrl, contact, escapes, galleryPhotos, suitePhotos, suites, universes, type SuiteId, type GalleryFilter, type GalleryPhoto, type Universe, type UniverseId } from './lib/content'
+import { LangContext, paths, type Lang } from './lib/i18n'
 import { ui } from './lib/ui'
 
 type ModalState =
@@ -239,18 +240,7 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
         </section>
 
         <div className="chapters">{langUniverses.map((universe) => <Fragment key={universe.id}>
-          {universe.id === 'suites' && <section className="suites-block" id="suites" aria-labelledby="heading-suites"><div className="page-width" id="les-suites">
-            <Reveal className="suites-block-head">
-              <div><p className="eyebrow"><span className="chapter-number">{universe.number}</span>{universe.label}</p><h2 id="heading-suites">{universe.heading[0]}<br /><em>{universe.heading[1]}</em></h2></div>
-              <div><p>{universe.description}</p><p>{universe.detail}</p><ul className="chapter-features">{universe.features.map((feature) => <li key={feature}>{feature}</li>)}</ul></div>
-            </Reveal>
-            <Reveal className="suites-mosaic">{suites[lang].map((suite, index) => { const detail = suiteDetails[lang][suite.id]; const cover = suitePhotos[suite.id][0]; return <Link key={suite.id} to={suitePaths(suite.id)[lang]} className={`suite-tile suite-tile-${suite.id}`}>
-              {cover ? <img src={cover} alt="" loading="lazy" decoding="async" /> : <span className="suite-tile-mark" aria-hidden="true">{suite.label.split(' ').at(-1)}</span>}
-              <span className="suite-tile-shade" />
-              <span className="suite-tile-top"><span>0{index + 1}</span><span>{detail.surface} · {detail.guests}</span></span>
-              <span className="suite-tile-bottom"><h3>{suite.label}</h3><span className="suite-tile-tagline">{detail.tagline}</span><span className="suite-tile-link">{t.seeSuite} <ArrowRight size={15} strokeWidth={1.25} /></span></span>
-            </Link> })}</Reveal>
-          </div></section>}
+          {universe.id === 'suites' && <SuitesShowcase universe={universe} lang={lang} />}
           {universe.id === 'spa' && <Chapter universe={universe} caption={t.photoCaption} href={spaUrl('chapitre', lang)} external newWindow={t.newWindow} />}
           {universe.id === 'evenements' && <Chapter universe={universe} caption={t.photoCaption} onDiscover={() => setModal({ type: 'universe', id: universe.id })} newWindow={t.newWindow} />}
         </Fragment>)}</div>
