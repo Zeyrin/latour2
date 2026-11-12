@@ -167,8 +167,8 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
       <header className={`site-header ${scrolled ? 'is-scrolled' : ''}`}>
         <a href="#accueil" className="header-brand" aria-label={t.homeLabel}><Brand /></a>
         <nav className="desktop-nav" aria-label={t.mainNav}>
-          <a href="#domaine">{t.nav.domaine}</a>
           <a href="#univers">{t.nav.univers}</a>
+          <a href="#domaine">{t.nav.domaine}</a>
           <a href={spaUrl('nav', lang)} {...externalProps(t.nav.spa)}>{t.nav.spa}</a>
           <a href="#echappees">{t.nav.echappees}</a>
           <a href="#galerie">{t.nav.galerie}</a>
