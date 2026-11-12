@@ -33,7 +33,7 @@ export const MIN_NIGHTS = 1
 /** Durée maximum d'un séjour réservable en ligne, en nuits. */
 export const MAX_NIGHTS = 30
 /** Taxe de séjour, en centimes, par personne et par nuit (0 pour ne pas l'ajouter). */
-export const TOURIST_TAX_PER_GUEST_NIGHT = 0
+export const TOURIST_TAX_PER_GUEST_NIGHT = 100
 /** Délai minimum entre la réservation et l'arrivée, en jours (0 : arrivée possible le jour même). */
 export const MIN_DAYS_BEFORE_ARRIVAL = 1
 
