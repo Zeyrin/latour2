@@ -1,17 +1,22 @@
 import type { Lang } from './i18n'
 
 /**
- * Section « En ce moment » de la page d'accueil.
+ * « En ce moment » : petite notification sur l'accueil, qui ouvre une fiche détaillée.
  *
  * Pour la mettre à jour : modifier les textes ci-dessous (FR et EN).
  * Pour la masquer : passer `enabled` à false, ou laisser `hideAfter` la retirer seule.
+ * Pour la reproposer à ceux qui l'ont fermée : changer `id` (ex. 'paques-2027').
  * Pour un événement daté : remplir `date` (texte affiché) ; laisser vide affiche « Date à confirmer ».
  *
  * ⚠️ TEXTES PROVISOIRES : les dates, horaires et détails des événements
  * sont à confirmer par Corinne & André avant la mise en ligne (voir les TODO).
  */
 export const moment = {
+  /** Identifiant de la campagne : la fermeture de la notification est mémorisée par campagne. */
+  id: 'noel-2026',
   enabled: true,
+  /** Délai d'apparition une fois le haut de page dépassé (ms). */
+  delay: 1200,
   /** Après ce jour (inclus), la section disparaît d'elle-même (AAAA-MM-JJ). */
   hideAfter: '2027-01-06',
   /** Photo principale (fichier dans public/images, sans extension). */
@@ -32,7 +37,8 @@ export interface MomentEvent {
 
 export interface MomentContent {
   eyebrow: string
-  badge: string
+  /** Petite notification (coin de l'écran). */
+  notice: { title: string; line: string; open: string; close: string }
   title: [string, string]
   intro: string
   alt: string
@@ -44,8 +50,8 @@ export interface MomentContent {
 
 export const momentContent: Record<Lang, MomentContent> = {
   fr: {
-    eyebrow: 'En ce moment au château',
-    badge: 'Noël au château',
+    eyebrow: 'En ce moment',
+    notice: { title: 'Noël au château', line: 'Marché de Noël · Portes ouvertes', open: 'Découvrir', close: 'Fermer la notification' },
     title: ['Noël s’installe', 'à Latour Ségur.'],
     intro: 'Les bougies s’allument, le sapin prend place près de la cheminée et la grande table se pare de verdure. Pour les fêtes, le château ouvre ses portes.',
     alt: 'La salle à manger du château décorée pour Noël : sapin, guirlande de sapin sur la grande table et bougies rouges allumées devant la cheminée',
@@ -76,8 +82,8 @@ export const momentContent: Record<Lang, MomentContent> = {
     ],
   },
   en: {
-    eyebrow: 'Happening now at the château',
-    badge: 'Christmas at the château',
+    eyebrow: 'Happening now',
+    notice: { title: 'Christmas at the château', line: 'Christmas market · Open days', open: 'Discover', close: 'Dismiss notification' },
     title: ['Christmas comes', 'to Latour Ségur.'],
     intro: 'Candles are lit, the tree takes its place by the fireplace and the long table is dressed in greenery. For the festive season, the château opens its doors.',
     alt: 'The château dining room decorated for Christmas: a tree, fir garland along the long table and lit red candles in front of the fireplace',

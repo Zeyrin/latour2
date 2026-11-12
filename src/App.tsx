@@ -9,7 +9,7 @@ import { Modal } from './components/Modal'
 import { Picture } from './components/Picture'
 import { BookingForm } from './components/BookingForm'
 import { Seo } from './components/Seo'
-import { MomentSection } from './components/MomentSection'
+import { MomentNotice } from './components/MomentNotice'
 import { GIFT_URL, SITE_URL, SPA_URL, spaUrl, contact, escapes, galleryPhotos, suiteDetails, suitePhotos, suites, universes, type SuiteId, type GalleryFilter, type GalleryPhoto, type Universe, type UniverseId } from './lib/content'
 import { LangContext, paths, suitePaths, type Lang } from './lib/i18n'
 import { ui } from './lib/ui'
@@ -205,8 +205,6 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
           </div>
         </section>
 
-        <MomentSection lang={lang} onBook={book} />
-
         <section className="universes-section section-space" id="univers" aria-labelledby="universes-heading">
           <div className="page-width">
             <Reveal className="section-heading triptych-heading">
@@ -288,6 +286,8 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
         {modal.type === 'escape' && (() => { const escape = escapes[lang].find((item) => item.id === modal.id)!; return <><div className="detail-image"><Picture name={escape.image} alt={escape.alt} /></div><div className="detail-body"><p className="eyebrow">{escape.label}</p><h2>{escape.title}</h2><p>{escape.text}</p><p>{t.escapeText}</p><p className="detail-note">{t.escapeNote}</p><button className="button button-burgundy" onClick={() => book(escape.universe, escape.request)}>{t.composeEscape} <ArrowRight size={17} /></button></div></> })()}
         {modal.type === 'story' && <><div className="detail-image"><Picture name="domaine" alt={t.storyAlt} /></div><div className="detail-body"><p className="eyebrow">{t.storyEyebrow}</p><h2>{t.storyTitle[0]}<br /><em>{t.storyTitle[1]}</em></h2>{t.story.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}<span className="story-signature">{t.storySignature}</span><button className="button button-burgundy" onClick={() => book()}>{t.storyCta} <ArrowRight size={17} /></button></div></>}
       </Modal>}
+
+      <MomentNotice lang={lang} onBook={book} />
 
       {lightbox && lightboxPhoto && <Modal title={`${t.photo} ${lightboxPhoto.title}`} onClose={() => setLightbox(null)} className="lightbox"><div className="lightbox-image"><AnimatePresence mode="wait"><motion.img key={lightboxPhoto.id} src={lightboxPhoto.src} alt={lightboxPhoto.alt} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.22 }} /></AnimatePresence></div><div className="lightbox-bottom"><div><p>{lightboxPhoto.title}</p><span>{String(lightbox.index + 1).padStart(2, '0')} / {String(lightbox.photos.length).padStart(2, '0')}</span></div><div className="lightbox-controls"><button className="icon-button" aria-label={t.prevPhoto} onClick={() => showPhoto(-1)}><ArrowLeft size={22} strokeWidth={1.25} /></button><button className="icon-button" aria-label={t.nextPhoto} onClick={() => showPhoto(1)}><ArrowRight size={22} strokeWidth={1.25} /></button></div></div></Modal>}
     </MotionConfig>
