@@ -3,11 +3,10 @@
 //   POST { booking }      page d'annulation : le client a quitté le paiement, on libère ses dates
 // Ne renvoie aucune coordonnée du client.
 
-import { recordPaidSession } from './_lib/bookings.js'
+import { bookingIdOf, isBookingId, recordPaidSession } from './_lib/bookings.js'
 import { getStripe, stripeConfigured } from './_lib/stripe.js'
 import { rpc, supabaseConfig, type BookingRow } from './_lib/supabase.js'
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const noStore = { 'Cache-Control': 'no-store' }
 
 function publicView(booking: BookingRow) {
@@ -21,10 +20,10 @@ export async function GET(request: Request) {
   if (!/^cs_[A-Za-z0-9_]{10,250}$/.test(sessionId)) return Response.json({ error: 'invalid' }, { status: 400, headers: noStore })
   try {
     const session = await getStripe().checkout.sessions.retrieve(sessionId)
-    const bookingId = session.client_reference_id || session.metadata?.booking_id
-    if (!bookingId || !UUID.test(bookingId)) return Response.json({ error: 'not_found' }, { status: 404, headers: noStore })
-    if (session.payment_status === 'paid') await recordPaidSession(session)
-    const booking = await rpc<BookingRow | null>('get_booking', { p_id: bookingId })
+    const bookingId = bookingIdOf(session)
+    if (!bookingId) return Response.json({ error: 'not_found' }, { status: 404, headers: noStore })
+    const paid = session.payment_status === 'paid' ? await recordPaidSession(session) : null
+    const booking = paid?.booking ?? await rpc<BookingRow | null>('get_booking', { p_id: bookingId })
     if (!booking || (booking.stripe_session_id && booking.stripe_session_id !== session.id)) return Response.json({ error: 'not_found' }, { status: 404, headers: noStore })
     return Response.json(publicView(booking), { headers: noStore })
   } catch (error) {
@@ -41,7 +40,7 @@ export async function POST(request: Request) {
     const body = await request.json() as { booking?: unknown }
     bookingId = typeof body.booking === 'string' ? body.booking : ''
   } catch { /* corps invalide */ }
-  if (!UUID.test(bookingId)) return Response.json({ error: 'invalid' }, { status: 400, headers: noStore })
+  if (!isBookingId(bookingId)) return Response.json({ error: 'invalid' }, { status: 400, headers: noStore })
   try {
     const booking = await rpc<BookingRow | null>('get_booking', { p_id: bookingId })
     if (!booking) return Response.json({ error: 'not_found' }, { status: 404, headers: noStore })
@@ -52,6 +51,7 @@ export async function POST(request: Request) {
       if (session.status === 'open') await stripe.checkout.sessions.expire(session.id)
       else if (session.payment_status === 'paid') await recordPaidSession(session)
     }
+    // release_booking ne touche qu'à une réservation encore en attente et renvoie son état actuel (paid, conflict…).
     const status = booking.status === 'pending' ? await rpc<string>('release_booking', { p_id: bookingId, p_status: 'cancelled' }) : booking.status
     return Response.json({ ...publicView(booking), status }, { headers: noStore })
   } catch (error) {

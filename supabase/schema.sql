@@ -125,6 +125,7 @@ create table if not exists public.bookings (
   beds24_error text,
   check (departure > arrival)
 );
+alter table public.bookings add column if not exists client_ip text;
 
 alter table public.bookings enable row level security;
 -- Aucune politique : table privée (coordonnées des clients).
@@ -136,7 +137,9 @@ alter table public.bookings add constraint bookings_no_overlap
   exclude using gist (suite with =, daterange(arrival, departure) with &&)
   where (status in ('pending','paid'));
 
-create index if not exists bookings_email_created_idx on public.bookings (email, created_at);
+drop index if exists public.bookings_email_created_idx;
+create index if not exists bookings_email_lower_created_idx on public.bookings (lower(email), created_at);
+create index if not exists bookings_ip_created_idx on public.bookings (client_ip, created_at);
 create index if not exists bookings_payment_intent_idx on public.bookings (stripe_payment_intent);
 
 -- Le calendrier du site tient compte des réservations payées et des paiements en cours.
@@ -154,12 +157,13 @@ with (security_invoker = true) as
 revoke all on public.availability from anon, authenticated;
 grant select on public.availability to service_role;
 
+drop function if exists public.create_pending_booking(text, date, date, int, int, text, text, text, text, text, int, int);
 -- Crée une réservation en attente de paiement si la suite est libre.
 -- Renvoie {"ok":true,"id":…} ou {"ok":false,"error":"unavailable"|"rate_limited"}.
 create or replace function public.create_pending_booking(
   p_suite text, p_arrival date, p_departure date, p_nights int, p_guests int,
   p_name text, p_email text, p_phone text, p_message text, p_lang text,
-  p_amount_total int, p_hold_minutes int
+  p_amount_total int, p_hold_minutes int, p_client_ip text default null
 )
 returns jsonb
 language plpgsql
@@ -175,6 +179,13 @@ begin
   if (select count(*) from bookings where lower(email) = lower(p_email) and created_at > now() - interval '1 hour') >= 5 then
     return jsonb_build_object('ok', false, 'error', 'rate_limited');
   end if;
+  -- Par adresse IP : 3 paiements en cours à la fois et 10 tentatives par heure, pour qu'on ne puisse
+  -- pas bloquer tout le calendrier avec des adresses e-mail jetables.
+  if p_client_ip is not null and (
+       (select count(*) from bookings where client_ip = p_client_ip and status = 'pending' and hold_until > now()) >= 3
+    or (select count(*) from bookings where client_ip = p_client_ip and created_at > now() - interval '1 hour') >= 10) then
+    return jsonb_build_object('ok', false, 'error', 'rate_limited');
+  end if;
 
   -- Paiements abandonnés dont le délai est passé (si le webhook d'expiration n'est pas arrivé).
   update bookings set status = 'expired'
@@ -186,9 +197,9 @@ begin
     return jsonb_build_object('ok', false, 'error', 'unavailable');
   end if;
 
-  insert into bookings (suite, arrival, departure, nights, guests, name, email, phone, message, lang, amount_total, hold_until)
+  insert into bookings (suite, arrival, departure, nights, guests, name, email, phone, message, lang, amount_total, hold_until, client_ip)
     values (p_suite, p_arrival, p_departure, p_nights, p_guests, p_name, p_email, p_phone, p_message, p_lang,
-            p_amount_total, now() + make_interval(mins => p_hold_minutes))
+            p_amount_total, now() + make_interval(mins => p_hold_minutes), p_client_ip)
     returning id into new_id;
   return jsonb_build_object('ok', true, 'id', new_id);
 exception when exclusion_violation then
@@ -253,20 +264,33 @@ begin
 end;
 $$;
 
--- Remboursement intégral reçu de Stripe : dates libérées.
+-- Remboursement intégral reçu de Stripe : dates libérées. Renvoie la réservation (ou null).
+drop function if exists public.mark_booking_refunded(text);
 create or replace function public.mark_booking_refunded(p_payment_intent text)
-returns text
+returns jsonb
 language plpgsql
 security definer
 set search_path = public
 as $$
-declare result text;
+declare b bookings;
 begin
   update bookings set status = 'refunded'
     where stripe_payment_intent = p_payment_intent and status in ('paid','conflict')
-    returning status into result;
-  return result;
+    returning * into b;
+  return case when b.id is null then null else to_jsonb(b) end;
 end;
+$$;
+
+-- Réservations payées pas encore créées dans Beds24 (retentées par api/sync-beds24).
+create or replace function public.bookings_missing_in_beds24()
+returns jsonb
+language sql
+security definer
+set search_path = public
+as $$
+  select coalesce(jsonb_agg(to_jsonb(b)), '[]'::jsonb) from bookings b
+  where status = 'paid' and beds24_booking_id is null and departure > current_date
+    and paid_at < now() - interval '2 minutes';
 $$;
 
 -- Rattache la session Stripe Checkout créée pour la réservation.
@@ -302,14 +326,16 @@ $$;
 revoke all on function public.attach_stripe_session(uuid, text) from public, anon, authenticated;
 revoke all on function public.set_beds24_result(uuid, text, text) from public, anon, authenticated;
 revoke all on function public.get_booking(uuid) from public, anon, authenticated;
+revoke all on function public.bookings_missing_in_beds24() from public, anon, authenticated;
+grant execute on function public.bookings_missing_in_beds24() to service_role;
 grant execute on function public.attach_stripe_session(uuid, text) to service_role;
 grant execute on function public.set_beds24_result(uuid, text, text) to service_role;
 grant execute on function public.get_booking(uuid) to service_role;
-revoke all on function public.create_pending_booking(text, date, date, int, int, text, text, text, text, text, int, int) from public, anon, authenticated;
+revoke all on function public.create_pending_booking(text, date, date, int, int, text, text, text, text, text, int, int, text) from public, anon, authenticated;
 revoke all on function public.mark_booking_paid(uuid, text, text, int) from public, anon, authenticated;
 revoke all on function public.release_booking(uuid, text) from public, anon, authenticated;
 revoke all on function public.mark_booking_refunded(text) from public, anon, authenticated;
-grant execute on function public.create_pending_booking(text, date, date, int, int, text, text, text, text, text, int, int) to service_role;
+grant execute on function public.create_pending_booking(text, date, date, int, int, text, text, text, text, text, int, int, text) to service_role;
 grant execute on function public.mark_booking_paid(uuid, text, text, int) to service_role;
 grant execute on function public.release_booking(uuid, text) to service_role;
 grant execute on function public.mark_booking_refunded(text) to service_role;

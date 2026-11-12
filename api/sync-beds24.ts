@@ -8,18 +8,12 @@
 //   CRON_SECRET                secret partagé : Vercel l'envoie dans Authorization, le webhook dans ?key=
 
 import { timingSafeEqual } from 'node:crypto'
+import { ROOMS, retryBeds24Pushes } from './_lib/bookings.js'
+
+export { ROOMS }
 
 const BEDS24_API = 'https://api.beds24.com/v2'
 const DAYS_AHEAD = 540
-
-/** roomId Beds24 → identifiant de la suite sur le site. */
-export const ROOMS: Record<number, string> = {
-  130293: 'terre',
-  130319: 'eau',
-  130316: 'metal',
-  130318: 'feu',
-  130321: 'bois',
-}
 
 interface RoomAvailability {
   roomId: number
@@ -91,6 +85,8 @@ async function sync(request: Request) {
   if (!token || !supabaseUrl || !serviceKey) return Response.json({ error: 'Variables d’environnement manquantes' }, { status: 500 })
 
   try {
+    // D'abord les réservations payées sur le site qui ne sont pas encore dans Beds24.
+    const retried = await retryBeds24Pushes().catch((error) => { console.error('sync-beds24 retry', error); return 0 })
     const rooms = await fetchAvailability(token)
     // Ne rien effacer si Beds24 ne renvoie aucune des suites attendues.
     if (!rooms.some((room) => ROOMS[room.roomId])) throw new Error('Beds24 n’a renvoyé aucune des suites attendues')
@@ -101,7 +97,7 @@ async function sync(request: Request) {
       body: JSON.stringify({ blocks }),
     })
     if (!response.ok) throw new Error(`Supabase ${response.status} : ${await response.text()}`)
-    return Response.json({ ok: true, rooms: rooms.length, blocks: blocks.length })
+    return Response.json({ ok: true, rooms: rooms.length, blocks: blocks.length, retried })
   } catch (error) {
     console.error('sync-beds24', error)
     return Response.json({ error: error instanceof Error ? error.message : 'Erreur inconnue' }, { status: 502 })

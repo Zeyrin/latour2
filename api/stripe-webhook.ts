@@ -4,9 +4,9 @@
 // puis copier le « secret de signature » (whsec_…) dans STRIPE_WEBHOOK_SECRET.
 
 import type Stripe from 'stripe'
-import { recordPaidSession } from './_lib/bookings.js'
+import { bookingIdOf, cancelInBeds24, recordPaidSession } from './_lib/bookings.js'
 import { getStripe } from './_lib/stripe.js'
-import { rpc } from './_lib/supabase.js'
+import { rpc, type BookingRow } from './_lib/supabase.js'
 
 export async function POST(request: Request) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       case 'checkout.session.expired':
       case 'checkout.session.async_payment_failed': {
         const session = event.data.object
-        const bookingId = session.client_reference_id || session.metadata?.booking_id
+        const bookingId = bookingIdOf(session)
         if (bookingId) await rpc('release_booking', { p_id: bookingId, p_status: 'expired' })
         break
       }
@@ -45,7 +45,10 @@ export async function POST(request: Request) {
         const charge = event.data.object
         const pi = typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id
         // Remboursement partiel : la réservation reste valable.
-        if (pi && charge.refunded) await rpc('mark_booking_refunded', { p_payment_intent: pi })
+        if (pi && charge.refunded) {
+          const refunded = await rpc<BookingRow | null>('mark_booking_refunded', { p_payment_intent: pi })
+          if (refunded) await cancelInBeds24(refunded)
+        }
         break
       }
       default:

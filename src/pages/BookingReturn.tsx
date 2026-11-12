@@ -85,15 +85,16 @@ function Confirmed({ lang }: { lang: Lang }) {
 
   const booking = state.phase === 'done' ? state.booking : null
   const paid = booking?.status === 'paid'
-  const title = state.phase === 'error' ? p.failedTitle : paid ? p.confirmedTitle : p.checkingTitle
-  const text = state.phase === 'error' ? p.failedText
-    : !booking ? p.checkingText
-      : paid ? p.confirmedText
-        : booking.status === 'conflict' ? p.conflictText : p.pendingText
+  // Une fois la vérification terminée, chaque cas a son propre titre (rien n'affiche « confirmée » à tort).
+  const [eyebrow, title, text] = state.phase === 'error' ? [p.failedEyebrow, p.failedTitle, p.failedText]
+    : !booking ? [p.checkingEyebrow, p.checkingTitle, p.checkingText]
+      : paid ? [p.confirmedEyebrow, p.confirmedTitle, p.confirmedText]
+        : booking.status === 'conflict' ? [p.conflictEyebrow, p.conflictTitle, p.conflictText]
+          : [p.pendingEyebrow, p.pendingTitle, p.pendingText]
   return (
-    <Layout lang={lang} page="bookingConfirmed" title={p.confirmedEyebrow}>
+    <Layout lang={lang} page="bookingConfirmed" title={eyebrow}>
       {paid && <span className="confirmation-icon"><Check size={28} strokeWidth={1.2} /></span>}
-      <p className="eyebrow">{p.confirmedEyebrow}</p>
+      <p className="eyebrow">{eyebrow}</p>
       <h1>{title[0]}<br /><em>{title[1]}</em></h1>
       <p>{text}</p>
       {booking && <Summary booking={booking} lang={lang} />}
@@ -128,6 +129,16 @@ function Cancelled({ lang }: { lang: Lang }) {
       <p>{p.confirmedText}</p>
       <Summary booking={booking} lang={lang} />
       <Link className="button button-burgundy" to={paths.home[lang]}>{p.back} <ArrowRight size={17} /></Link>
+    </Layout>
+  )
+
+  if (booking?.status === 'conflict') return (
+    <Layout lang={lang} page="bookingCancelled" title={p.conflictEyebrow}>
+      <p className="eyebrow">{p.conflictEyebrow}</p>
+      <h1>{p.conflictTitle[0]}<br /><em>{p.conflictTitle[1]}</em></h1>
+      <p>{p.conflictText}</p>
+      <Summary booking={booking} lang={lang} />
+      <CallUs lang={lang} />
     </Layout>
   )
 

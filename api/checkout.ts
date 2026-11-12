@@ -43,6 +43,12 @@ function longDate(iso: string, lang: 'fr' | 'en') {
   return new Intl.DateTimeFormat(lang === 'fr' ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${iso}T12:00:00Z`))
 }
 
+/** Adresse IP du visiteur (fournie par Vercel), pour limiter les blocages de dates par une même personne. */
+function clientIp(request: Request) {
+  const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for')?.split(',')[0]
+  return ip?.trim().slice(0, 64) || null
+}
+
 export function GET() {
   return Response.json({ enabled: onlineBookingEnabled() }, { headers: { 'Cache-Control': 'no-store' } })
 }
@@ -84,6 +90,7 @@ export async function POST(request: Request) {
       p_lang: lang,
       p_amount_total: priced.total,
       p_hold_minutes: HOLD_MINUTES,
+      p_client_ip: clientIp(request),
     })
     if (!created.ok || !created.id) {
       const status = created.error === 'rate_limited' ? 429 : 409

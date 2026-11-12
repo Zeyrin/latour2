@@ -1,18 +1,30 @@
-// Étapes communes au webhook Stripe et à la page de confirmation.
+// Étapes communes au webhook Stripe, à la page de confirmation et à la synchronisation Beds24.
 
 import type Stripe from 'stripe'
 import { rpc, type BookingRow, type PaidResult } from './supabase.js'
 
-const BEDS24_API = 'https://api.beds24.com/v2'
+// BEDS24_API_BASE : uniquement pour les tests (faux Beds24 local).
+const BEDS24_API = process.env.BEDS24_API_BASE || 'https://api.beds24.com/v2'
 
-/** roomId Beds24 de chaque suite (même table que api/sync-beds24.ts). */
-const BEDS24_ROOMS: Record<string, number> = {
-  terre: 130293,
-  eau: 130319,
-  metal: 130316,
-  feu: 130318,
-  bois: 130321,
+/** roomId Beds24 → identifiant de la suite sur le site (utilisé aussi par api/sync-beds24.ts). */
+export const ROOMS: Record<number, string> = {
+  130293: 'terre',
+  130319: 'eau',
+  130316: 'metal',
+  130318: 'feu',
+  130321: 'bois',
 }
+const ROOM_OF_SUITE = Object.fromEntries(Object.entries(ROOMS).map(([id, suite]) => [suite, Number(id)]))
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/** Identifiant de réservation porté par une session Checkout, ou null si elle ne vient pas de ce site. */
+export function bookingIdOf(session: Stripe.Checkout.Session) {
+  const id = session.client_reference_id || session.metadata?.booking_id
+  return id && UUID.test(id) ? id : null
+}
+
+export const isBookingId = (value: string) => UUID.test(value)
 
 function paymentIntentId(session: Stripe.Checkout.Session) {
   const pi = session.payment_intent
@@ -24,7 +36,7 @@ function paymentIntentId(session: Stripe.Checkout.Session) {
  * de confirmation peuvent l'appeler tous les deux, dans n'importe quel ordre.
  */
 export async function recordPaidSession(session: Stripe.Checkout.Session): Promise<PaidResult> {
-  const bookingId = session.client_reference_id || session.metadata?.booking_id
+  const bookingId = bookingIdOf(session)
   if (!bookingId || session.payment_status !== 'paid') return { status: 'not_found' }
   const result = await rpc<PaidResult>('mark_booking_paid', {
     p_id: bookingId,
@@ -39,49 +51,73 @@ export async function recordPaidSession(session: Stripe.Checkout.Session): Promi
   return result
 }
 
+async function beds24Request(token: string, payload: Record<string, unknown>) {
+  const response = await fetch(`${BEDS24_API}/bookings`, {
+    method: 'POST',
+    headers: { token, 'Content-Type': 'application/json' },
+    body: JSON.stringify([payload]),
+    signal: AbortSignal.timeout(10_000),
+  })
+  const body = await response.json().catch(() => null) as { success?: boolean; new?: { id?: number }; errors?: unknown }[] | null
+  const first = Array.isArray(body) ? body[0] : null
+  if (!response.ok || !first?.success) throw new Error(`Beds24 ${response.status} : ${JSON.stringify(first?.errors ?? body)}`)
+  return first
+}
+
 /**
  * Crée la réservation payée dans Beds24, pour fermer les dates sur les autres canaux (Airbnb, Booking…).
  * Nécessite BEDS24_WRITE_TOKEN (long life token avec le droit d'écriture des réservations).
- * Un échec n'annule rien : il est noté dans bookings.beds24_error et dans les journaux.
+ * Un échec n'annule rien : il est noté dans bookings.beds24_error et retenté par api/sync-beds24.
  */
 export async function pushToBeds24(booking: BookingRow) {
   const token = process.env.BEDS24_WRITE_TOKEN
-  if (!token) return
+  if (!token || booking.beds24_booking_id) return
   let beds24Id: string | null = null
   let error: string | null = null
   try {
     const [firstName, ...rest] = booking.name.split(/\s+/)
-    const response = await fetch(`${BEDS24_API}/bookings`, {
-      method: 'POST',
-      headers: { token, 'Content-Type': 'application/json' },
-      body: JSON.stringify([{
-        roomId: BEDS24_ROOMS[booking.suite],
-        status: 'confirmed',
-        arrival: booking.arrival,
-        departure: booking.departure,
-        numAdult: booking.guests,
-        firstName: rest.length ? firstName : '',
-        lastName: rest.length ? rest.join(' ') : firstName,
-        email: booking.email,
-        mobile: booking.phone ?? '',
-        lang: booking.lang,
-        price: booking.amount_total / 100,
-        referer: 'Site du château (Stripe)',
-        apiReference: booking.id,
-        comments: booking.message ?? '',
-      }]),
+    const created = await beds24Request(token, {
+      roomId: ROOM_OF_SUITE[booking.suite],
+      status: 'confirmed',
+      arrival: booking.arrival,
+      departure: booking.departure,
+      numAdult: booking.guests,
+      firstName: rest.length ? firstName : '',
+      lastName: rest.length ? rest.join(' ') : firstName,
+      email: booking.email,
+      mobile: booking.phone ?? '',
+      lang: booking.lang,
+      price: booking.amount_total / 100,
+      referer: 'Site du château (Stripe)',
+      apiReference: booking.id,
+      comments: booking.message ?? '',
     })
-    const body = await response.json().catch(() => null) as { success?: boolean; new?: { id?: number }; errors?: unknown }[] | null
-    const first = Array.isArray(body) ? body[0] : null
-    if (!response.ok || !first?.success) throw new Error(`Beds24 ${response.status} : ${JSON.stringify(first?.errors ?? body)}`)
-    beds24Id = first.new?.id ? String(first.new.id) : null
+    beds24Id = created.new?.id ? String(created.new.id) : null
+    if (!beds24Id) throw new Error('Beds24 n’a pas renvoyé d’identifiant')
   } catch (cause) {
     error = cause instanceof Error ? cause.message.slice(0, 500) : 'Erreur inconnue'
     console.error('beds24 push', booking.id, error)
   }
+  await rpc('set_beds24_result', { p_id: booking.id, p_beds24_id: beds24Id, p_error: error }).catch((cause) => console.error('beds24 result', cause))
+}
+
+/** Annule dans Beds24 une réservation remboursée, pour rouvrir les dates sur tous les canaux. */
+export async function cancelInBeds24(booking: BookingRow) {
+  const token = process.env.BEDS24_WRITE_TOKEN
+  if (!token || !booking.beds24_booking_id) return
   try {
-    await rpc('set_beds24_result', { p_id: booking.id, p_beds24_id: beds24Id, p_error: error })
+    await beds24Request(token, { id: Number(booking.beds24_booking_id), status: 'cancelled' })
   } catch (cause) {
-    console.error('beds24 result', cause)
+    const error = cause instanceof Error ? cause.message.slice(0, 500) : 'Erreur inconnue'
+    console.error('beds24 cancel', booking.id, error)
+    await rpc('set_beds24_result', { p_id: booking.id, p_beds24_id: null, p_error: `annulation : ${error}` }).catch(() => undefined)
   }
+}
+
+/** Retente l'envoi vers Beds24 des réservations payées qui n'y sont pas encore (appelé par api/sync-beds24). */
+export async function retryBeds24Pushes() {
+  if (!process.env.BEDS24_WRITE_TOKEN) return 0
+  const pending = await rpc<BookingRow[] | null>('bookings_missing_in_beds24', {})
+  for (const booking of pending ?? []) await pushToBeds24(booking)
+  return pending?.length ?? 0
 }

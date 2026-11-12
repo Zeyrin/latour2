@@ -24,6 +24,7 @@ if (!DATABASE_URL) throw new Error('DATABASE_URL manquante (base PostgreSQL loca
 const APP_PORT = 4181
 const SUPABASE_PORT = 4182
 const STRIPE_PORT = 4183
+const BEDS24_PORT = 4184
 const APP = `http://127.0.0.1:${APP_PORT}`
 const WEBHOOK_SECRET = 'whsec_test_local'
 
@@ -32,6 +33,7 @@ process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-test'
 process.env.STRIPE_SECRET_KEY = 'sk_test_local'
 process.env.STRIPE_WEBHOOK_SECRET = WEBHOOK_SECRET
 process.env.STRIPE_API_BASE = `http://127.0.0.1:${STRIPE_PORT}`
+process.env.BEDS24_API_BASE = `http://127.0.0.1:${BEDS24_PORT}`
 delete process.env.BEDS24_WRITE_TOKEN
 
 const db = new pg.Pool({ connectionString: DATABASE_URL })
@@ -45,6 +47,18 @@ const handlers: Record<string, Record<string, (request: Request) => Response | P
   availability: await import('../api/availability.ts'),
 }
 const { parisToday, quote, RATES } = await import('../src/lib/pricing.ts')
+const { retryBeds24Pushes } = await import('../api/_lib/bookings.ts')
+
+// ─── Faux Beds24 : POST /bookings ───────────────────────────────────────────
+const beds24 = { calls: [] as Record<string, unknown>[], failNext: false, nextId: 9000 }
+const beds24Server = createServer(async (request, response) => {
+  const body = JSON.parse(await readBody(request) || '[]') as Record<string, unknown>[]
+  if (request.headers.token !== 'beds24-write' || request.method !== 'POST' || request.url !== '/bookings') { response.writeHead(401); return response.end('[]') }
+  beds24.calls.push(body[0])
+  response.writeHead(200, { 'Content-Type': 'application/json' })
+  if (beds24.failNext) { beds24.failNext = false; return response.end(JSON.stringify([{ success: false, errors: [{ message: 'Panne simulée' }] }])) }
+  response.end(JSON.stringify([{ success: true, ...(body[0].id ? { modified: { id: body[0].id } } : { new: { id: beds24.nextId++ } }) }]))
+})
 
 // ─── Utilitaires ────────────────────────────────────────────────────────────
 
@@ -284,6 +298,7 @@ await Promise.all([
   new Promise<void>((resolve) => supabase.listen(SUPABASE_PORT, '127.0.0.1', resolve)),
   new Promise<void>((resolve) => stripeServer.listen(STRIPE_PORT, '127.0.0.1', resolve)),
   new Promise<void>((resolve) => app.listen(APP_PORT, '127.0.0.1', resolve)),
+  new Promise<void>((resolve) => beds24Server.listen(BEDS24_PORT, '127.0.0.1', resolve)),
 ])
 
 // ─── Scénarios ──────────────────────────────────────────────────────────────
@@ -297,8 +312,8 @@ async function booking(id: string) {
 async function bookings() {
   return (await db.query('select * from public.bookings order by created_at')).rows
 }
-function checkout(body: Record<string, unknown>) {
-  return fetch(`${APP}/api/checkout`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+function checkout(body: Record<string, unknown>, headers: Record<string, string> = {}) {
+  return fetch(`${APP}/api/checkout`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body) })
 }
 const guest = { name: 'Camille Dupont', email: 'camille@example.fr', phone: '0600000000', lang: 'fr' }
 const stay = (suite: string, start: number, nights: number, guests = 2) => ({ ...guest, suite, arrival: addDays(today, start), departure: addDays(today, start + nights), guests })
@@ -597,6 +612,76 @@ try {
     delete process.env.ONLINE_BOOKING
   }
 
+  console.log('\n20. Relecture : cas limites corrigés')
+  await reset()
+  {
+    const foreign = { id: 'cs_test_autre', object: 'checkout.session', payment_status: 'paid', status: 'complete', client_reference_id: 'spa-123', metadata: {}, amount_total: 5000 }
+    assert((await sendEvent('checkout.session.completed', foreign)).status === 200, 'Paiement Stripe étranger au site (référence non UUID) ignoré sans erreur 500')
+    assert((await sendEvent('checkout.session.expired', foreign)).status === 200, 'Expiration étrangère au site ignorée sans erreur 500')
+
+    const ip = { 'x-real-ip': '203.0.113.7' }
+    const holds = []
+    for (let index = 0; index < 4; index++) holds.push((await checkout({ ...stay(['terre', 'eau', 'feu', 'bois'][index], 120, 1), email: `jetable${index}@example.fr` }, ip)).status)
+    assert(holds.join() === '200,200,200,429', `Au plus 3 paiements en cours par adresse IP (${holds.join(', ')})`)
+    assert((await checkout({ ...stay('metal', 120, 1), email: 'voisin@example.fr' }, { 'x-real-ip': '203.0.113.8' })).status === 200, 'Une autre adresse IP n’est pas bloquée')
+  }
+  await reset()
+  {
+    // Conflit vu depuis la page d'annulation (paiement fait dans un autre onglet, dates prises entre-temps).
+    const created = await (await checkout(stay('eau', 130, 2))).json() as { url: string }
+    const session = sessionOf(created.url)
+    await db.query(`insert into public.availability_blocks (resource, start_date, end_date, source) values ('eau', $1, $2, 'manuel')`, [addDays(today, 130), addDays(today, 131)])
+    stripeControl.webhookOnPay = false
+    await paySession(session)
+    stripeControl.webhookOnPay = true
+    const conflictPage = await context.newPage()
+    await conflictPage.goto(session.cancel_url)
+    await conflictPage.getByRole('heading', { name: /Nous allons/ }).waitFor()
+    assert(!(await txt(conflictPage.locator('main'))).includes('Rien n’a'), 'Page d’annulation : un paiement en conflit n’affiche pas « rien n’a été débité »')
+
+    const missing = await context.newPage()
+    await missing.goto(`${APP}/reservation/confirmation?session_id=cs_test_inconnue000000`)
+    await missing.getByRole('heading', { name: /introuvable/ }).waitFor()
+    assert(!(await txt(missing.locator('main'))).includes('Réservation confirmée'), 'Session inconnue : la page n’affiche pas « Réservation confirmée »')
+  }
+  {
+    const requestPage = await context.newPage()
+    await requestPage.goto(`${APP}/`, { waitUntil: 'networkidle' })
+    await requestPage.locator('.header-cta').click()
+    await requestPage.locator('input[name="universe"][value="suites"]').check()
+    await requestPage.getByRole('button', { name: /Envoyez-nous plutôt une demande/ }).click()
+    assert((await txt(requestPage.locator('.form-submit'))).includes('Préparer ma demande'), 'Demande sur mesure toujours possible pour les suites (sans paiement)')
+  }
+
+  console.log('\n21. Beds24 (fermeture des dates sur Airbnb, Booking…)')
+  await reset()
+  process.env.BEDS24_WRITE_TOKEN = 'beds24-write'
+  {
+    const created = await (await checkout(stay('terre', 140, 2, 3))).json() as { url: string }
+    const session = sessionOf(created.url)
+    await paySession(session)
+    let [row] = await bookings()
+    assert(row.status === 'paid' && row.beds24_booking_id === '9000', 'Réservation payée créée dans Beds24')
+    const sent = beds24.calls.at(-1)!
+    assert(sent.roomId === 130293, 'Bonne chambre Beds24 (Suite Terre = 130293)')
+    assert(sent.status === 'confirmed' && sent.numAdult === 3 && sent.apiReference === row.id, 'Statut, personnes et référence transmis à Beds24')
+
+    await sendEvent('charge.refunded', { id: 'ch_2', object: 'charge', payment_intent: session.payment_intent, refunded: true })
+    assert(beds24.calls.at(-1)!.id === 9000 && beds24.calls.at(-1)!.status === 'cancelled', 'Remboursement : réservation annulée dans Beds24')
+
+    beds24.failNext = true
+    const second = await (await checkout(stay('feu', 140, 2))).json() as { url: string }
+    await paySession(sessionOf(second.url))
+    row = (await bookings()).find((b) => b.suite === 'feu')
+    assert(row.status === 'paid' && !row.beds24_booking_id && row.beds24_error, 'Panne Beds24 : réservation payée gardée, erreur notée')
+    await db.query(`update public.bookings set paid_at = now() - interval '5 minutes'`)
+    assert(await retryBeds24Pushes() === 1, 'La synchronisation quotidienne retente l’envoi')
+    row = (await bookings()).find((b) => b.suite === 'feu')
+    assert(row.beds24_booking_id && !row.beds24_error, 'Réservation finalement créée dans Beds24')
+    assert(await retryBeds24Pushes() === 0, 'Rien à retenter ensuite')
+  }
+  delete process.env.BEDS24_WRITE_TOKEN
+
   assert(pageErrors.length === 0, `Aucune erreur JavaScript dans les pages (${pageErrors.join(' | ')})`)
 } catch (error) {
   failed = true
@@ -604,7 +689,7 @@ try {
 } finally {
   await browser.close()
   await db.end()
-  app.close(); supabase.close(); stripeServer.close()
+  app.close(); supabase.close(); stripeServer.close(); beds24Server.close()
 }
 console.log(`\n${results.length} vérifications réussies${failed ? ', puis un échec' : ''}. Appels Supabase : ${supabaseCalls}.`)
 process.exit(failed ? 1 : 0)

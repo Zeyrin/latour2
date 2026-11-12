@@ -91,13 +91,16 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
   const [paying, setPaying] = useState(false)
   const [payError, setPayError] = useState('')
   const [guests, setGuests] = useState('2')
+  const [requestMode, setRequestMode] = useState(false)
   const p = payUi[lang]
   const datesRef = useRef<HTMLFieldSetElement>(null)
   const now = new Date()
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   const resources = resourcesFor(universe, suite)
   const nights = arrival && departure ? nightsBetween(arrival, departure) : 0
-  const online = payOnline && universe === 'suites'
+  const online = payOnline && universe === 'suites' && !requestMode
+  // Même date du jour que le serveur (heure de Paris), quel que soit le fuseau du visiteur.
+  const firstBookable = addDays(parisToday(), MIN_DAYS_BEFORE_ARRIVAL)
   const maxGuests = online && isPricedSuite(suite) ? RATES[suite].maxGuests : 500
   const priced = online && suite && arrival && departure ? quote(suite, arrival, departure, Number(guests), parisToday()) : null
   const currentQuote: Quote | null = priced && !('error' in priced) ? priced : null
@@ -285,7 +288,7 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
         <fieldset className="universe-fieldset dates-fieldset" ref={datesRef}>
           <legend>{universe === 'suites' ? <>{t.myStayDates} <span aria-hidden="true">*</span></> : t.myDate}</legend>
           {universe
-            ? <AvailabilityCalendar key={universe} mode={universe === 'suites' ? 'range' : 'single'} resources={resources} blocks={blocks} min={online ? addDays(today, MIN_DAYS_BEFORE_ARRIVAL) : today} arrival={arrival} departure={departure} onChange={changeDates} />
+            ? <AvailabilityCalendar key={universe} mode={universe === 'suites' ? 'range' : 'single'} resources={resources} blocks={blocks} min={online && firstBookable > today ? firstBookable : today} arrival={arrival} departure={departure} onChange={changeDates} />
             : <p className="dates-placeholder">{t.datesPlaceholder}</p>}
           <input type="hidden" name="arrival" value={arrival} />
           <input type="hidden" name="departure" value={universe === 'suites' ? departure : ''} />
@@ -318,6 +321,7 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
           {online ? (paying ? p.submitting : currentQuote ? p.submit(money(currentQuote.total)) : p.submit('').trim()) : t.submit} <ArrowRight size={17} />
         </button>
         <p className="form-note">{online ? p.note : t.formNote}</p>
+        {payOnline && universe === 'suites' && <button type="button" className="text-link request-toggle" onClick={() => { setRequestMode(!requestMode); setPayError('') }}>{requestMode ? p.payInstead : p.requestInstead} <ArrowRight size={16} /></button>}
       </form>
       <a className="booking-phone" href={`tel:${contact.phoneLink}`}><Phone size={15} strokeWidth={1.25} /> {t.callUs} <span>{contact.phone}</span></a>
     </div>
