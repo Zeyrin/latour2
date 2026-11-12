@@ -9,8 +9,9 @@ import { Modal } from './components/Modal'
 import { Picture } from './components/Picture'
 import { BookingForm } from './components/BookingForm'
 import { Seo } from './components/Seo'
-import { GIFT_URL, SITE_URL, SPA_URL, spaUrl, contact, escapes, galleryPhotos, suiteDetails, suitePhotos, suites, universes, type SuiteId, type GalleryFilter, type GalleryPhoto, type Universe, type UniverseId } from './lib/content'
-import { LangContext, paths, suitePaths, type Lang } from './lib/i18n'
+import { SuitesShowcase } from './components/SuitesShowcase'
+import { GIFT_URL, SITE_URL, SPA_URL, spaUrl, contact, escapes, galleryPhotos, suitePhotos, suites, universes, type SuiteId, type GalleryFilter, type GalleryPhoto, type Universe, type UniverseId } from './lib/content'
+import { LangContext, paths, type Lang } from './lib/i18n'
 import { ui } from './lib/ui'
 
 type ModalState =
@@ -239,16 +240,9 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
         </section>
 
         <div className="chapters">{langUniverses.map((universe) => <Fragment key={universe.id}>
-          {universe.id === 'suites' && <Chapter universe={universe} caption={t.photoCaption} href="#les-suites" newWindow={t.newWindow} />}
+          {universe.id === 'suites' && <SuitesShowcase universe={universe} lang={lang} />}
           {universe.id === 'spa' && <Chapter universe={universe} caption={t.photoCaption} href={spaUrl('chapitre', lang)} external newWindow={t.newWindow} />}
           {universe.id === 'evenements' && <Chapter universe={universe} caption={t.photoCaption} onDiscover={() => setModal({ type: 'universe', id: universe.id })} newWindow={t.newWindow} />}
-          {universe.id === 'suites' && <section className="suites-list-section" id="les-suites" aria-labelledby="suites-list-heading"><div className="page-width">
-            <Reveal className="section-heading"><div><p className="eyebrow">{t.suitesListEyebrow}</p><h2 id="suites-list-heading">{t.suitesListTitle[0]} <em>{t.suitesListTitle[1]}</em></h2></div><p className="section-intro">{t.suitesListIntro}</p></Reveal>
-            <div className="suites-list">{suites[lang].map((suite, index) => { const detail = suiteDetails[lang][suite.id]; const cover = suitePhotos[suite.id][0]; return <Reveal key={suite.id} delay={index * 0.06}><Link to={suitePaths(suite.id)[lang]} className={`suite-card suite-card-${suite.id}`}>
-              <div className="suite-card-image">{cover ? <img src={cover} alt="" loading="lazy" decoding="async" /> : <span className="suite-card-mark" aria-hidden="true">{suite.label.split(' ').at(-1)}</span>}<span className="suite-card-number">0{index + 1}</span></div>
-              <div className="suite-card-body"><h3>{suite.label}</h3><p>{detail.tagline}</p><p className="suite-card-facts">{detail.surface} · {detail.guests}</p><span className="text-link">{t.seeSuite} <ArrowRight size={16} strokeWidth={1.25} /></span></div>
-            </Link></Reveal> })}</div>
-          </div></section>}
         </Fragment>)}</div>
 
         <section className="escapes-section section-space" id="echappees" aria-labelledby="escapes-heading"><div className="page-width">
