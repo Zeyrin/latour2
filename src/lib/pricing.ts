@@ -3,7 +3,7 @@
 // le serveur recalcule toujours le prix, le navigateur ne fait que l'afficher.
 // Aucun import ici : ce fichier est aussi chargé par les fonctions serveur de api/.
 //
-// ⚠️ TARIFS PROVISOIRES : à remplacer par les vrais prix avant d'activer le paiement en production.
+// Tarifs et durées minimum repris de Beds24 (novembre 2026). Les modifier ici si les prix changent dans Beds24.
 
 export type PricedSuite = 'terre' | 'eau' | 'metal' | 'feu' | 'bois'
 
@@ -16,17 +16,19 @@ export interface SuiteRate {
   weekend?: number
   /** Nombre maximum de personnes. */
   maxGuests: number
+  /** Durée minimum du séjour, en nuits. Sinon `MIN_NIGHTS`. */
+  minNights?: number
 }
 
 export const RATES: Record<PricedSuite, SuiteRate> = {
-  terre: { night: 19000, maxGuests: 3 },
-  eau: { night: 15000, maxGuests: 2 },
-  metal: { night: 22000, maxGuests: 4 },
-  feu: { night: 16000, maxGuests: 2 },
-  bois: { night: 17000, maxGuests: 2 },
+  terre: { night: 24000, maxGuests: 3, minNights: 2 },
+  eau: { night: 19500, maxGuests: 2 },
+  metal: { night: 39500, maxGuests: 4, minNights: 2 },
+  feu: { night: 24000, maxGuests: 2, minNights: 2 },
+  bois: { night: 19500, maxGuests: 2, minNights: 2 },
 }
 
-/** Durée minimum d'un séjour, en nuits. */
+/** Durée minimum d'un séjour par défaut, en nuits. */
 export const MIN_NIGHTS = 1
 /** Durée maximum d'un séjour réservable en ligne, en nuits. */
 export const MAX_NIGHTS = 30
@@ -96,7 +98,7 @@ export function quote(suite: unknown, arrival: string, departure: string, guests
     if (nights > MAX_NIGHTS) return { error: 'too-long' }
     lodging += isWeekendNight(day) && rate.weekend ? rate.weekend : rate.night
   }
-  if (nights < MIN_NIGHTS) return { error: 'too-short' }
+  if (nights < (rate.minNights ?? MIN_NIGHTS)) return { error: 'too-short' }
   const touristTax = TOURIST_TAX_PER_GUEST_NIGHT * guests * nights
   return { suite, arrival, departure, nights, guests, lodging, touristTax, total: lodging + touristTax }
 }

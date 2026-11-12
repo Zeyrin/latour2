@@ -339,7 +339,7 @@ try {
   await page.locator('.header-cta').click()
   await page.locator('input[name="universe"][value="suites"]').check()
   await page.locator('label.suite-choice', { hasText: 'La Suite Eau' }).click()
-  assert(await txt(page.locator('#suite-hint-eau')) === 'dès 150 € la nuit', 'Prix « dès … la nuit » affiché sur chaque suite')
+  assert(await txt(page.locator('#suite-hint-eau')) === 'dès 195 € la nuit', 'Prix « dès … la nuit » affiché sur chaque suite')
   await page.waitForFunction(() => document.querySelectorAll('.calendar-day:not([aria-disabled])').length > 10)
   const free = page.locator('.calendar-day:not([aria-disabled])')
   const arrivalDate = await free.nth(3).getAttribute('data-date') as string
@@ -347,8 +347,8 @@ try {
   await page.locator(`.calendar-day[data-date="${addDays(arrivalDate, 2)}"]`).click()
   const expected = quote('eau', arrivalDate, addDays(arrivalDate, 2), 2, today)
   assert(!('error' in expected), 'Séjour de test valide')
-  assert((await txt(page.locator('.price-summary'))).includes('300'), 'Récapitulatif du prix affiché (2 nuits × 150 €)')
-  assert((await txt(page.locator('.form-submit'))).includes('Réserver et payer 300'), 'Bouton « Réserver et payer » avec le total')
+  assert((await txt(page.locator('.price-summary'))).includes('390'), 'Récapitulatif du prix affiché (2 nuits × 195 €)')
+  assert((await txt(page.locator('.form-submit'))).includes('Réserver et payer 390'), 'Bouton « Réserver et payer » avec le total')
   await page.screenshot({ path: 'artifacts/booking-pay-form.png' })
   await accessible(page, 'Formulaire de réservation payante')
   await page.locator('input[name="guests"]').fill('3')
@@ -359,15 +359,15 @@ try {
   await page.locator('input[name="consent"]').check()
   await page.locator('.form-submit').click()
   await page.waitForURL(/127\.0\.0\.1:4183\/pay\//)
-  assert(await txt(page.locator('#amount')) === '300.00 eur', 'Page de paiement Stripe au bon montant, calculé par le serveur')
+  assert(await txt(page.locator('#amount')) === '390.00 eur', 'Page de paiement Stripe au bon montant, calculé par le serveur')
   let [row] = await bookings()
-  assert(row.status === 'pending' && row.suite === 'eau' && row.amount_total === 30000 && row.stripe_session_id, 'Réservation « pending » créée avec la session Stripe')
+  assert(row.status === 'pending' && row.suite === 'eau' && row.amount_total === 39000 && row.stripe_session_id, 'Réservation « pending » créée avec la session Stripe')
   assert(new Date(row.hold_until).getTime() - Date.now() > 30 * 60_000, 'Dates bloquées plus longtemps que la session Stripe (30 min)')
   assert((await blockedFor('eau')).some((block) => block.start_date === arrivalDate), 'Dates retirées du calendrier pendant le paiement')
   await page.getByRole('button', { name: 'Payer' }).click()
   await page.waitForURL(/\/reservation\/confirmation\?session_id=cs_test_/)
   await page.getByRole('heading', { name: /Merci/ }).waitFor()
-  assert((await txt(page.locator('.booking-confirmation'))).includes('300'), 'Page de confirmation : réservation payée et montant')
+  assert((await txt(page.locator('.booking-confirmation'))).includes('390'), 'Page de confirmation : réservation payée et montant')
   await page.screenshot({ path: 'artifacts/booking-confirmed.png' })
   await accessible(page, 'Page de confirmation')
   row = await booking(row.id)
@@ -423,7 +423,7 @@ try {
     const days = page.locator('.calendar-day:not([aria-disabled])')
     const start = await days.nth(5).getAttribute('data-date') as string
     await days.nth(5).click()
-    await page.locator(`.calendar-day[data-date="${addDays(start, 1)}"]`).click()
+    await page.locator(`.calendar-day[data-date="${addDays(start, 2)}"]`).click()
     await page.locator('input[name="name"]').fill('Alex Martin')
     await page.locator('input[name="email"]').fill('alex@example.fr')
     await page.locator('input[name="consent"]').check()
@@ -494,7 +494,7 @@ try {
   await reset()
   {
     await db.query(`insert into public.availability_blocks (resource, start_date, end_date, source) values ('feu', $1, $2, 'beds24')`, [addDays(today, 15), addDays(today, 18)])
-    assert((await checkout(stay('feu', 16, 1))).status === 409, 'Période Beds24 refusée')
+    assert((await checkout(stay('feu', 16, 2))).status === 409, 'Période Beds24 refusée')
     const created = await (await checkout(stay('feu', 18, 2))).json() as { url: string }
     assert(created.url, 'Arrivée le jour de fin du blocage acceptée')
     await db.query(`insert into public.availability_blocks (resource, start_date, end_date, source) values ('feu', $1, $2, 'beds24')`, [addDays(today, 19), addDays(today, 20)])
@@ -550,6 +550,7 @@ try {
       [{ ...stay('eau', 0, 1) }, 'too-soon'],
       [{ ...stay('eau', -3, 1) }, 'too-soon'],
       [{ ...stay('eau', 5, 31) }, 'too-long'],
+      [{ ...stay('feu', 5, 1) }, 'too-short'],
       [{ ...stay('eau', 5, 2), departure: addDays(today, 5) }, 'dates'],
       [{ ...stay('eau', 5, 2), arrival: '2027-02-30' }, 'dates'],
       [{ ...stay('spa', 5, 2) }, 'suite'],
@@ -587,7 +588,7 @@ try {
   console.log('\n18. Version anglaise')
   await reset()
   {
-    const created = await (await checkout({ ...stay('feu', 90, 1), lang: 'en' })).json() as { url: string }
+    const created = await (await checkout({ ...stay('feu', 90, 2), lang: 'en' })).json() as { url: string }
     const session = sessionOf(created.url)
     assert(session.locale === 'en' && session.success_url.includes('/en/booking/confirmation') && session.cancel_url.includes('/en/booking/cancelled'), 'Stripe en anglais et retour vers les pages anglaises')
     const enPage = await context.newPage()
@@ -621,9 +622,9 @@ try {
 
     const ip = { 'x-real-ip': '203.0.113.7' }
     const holds = []
-    for (let index = 0; index < 4; index++) holds.push((await checkout({ ...stay(['terre', 'eau', 'feu', 'bois'][index], 120, 1), email: `jetable${index}@example.fr` }, ip)).status)
+    for (let index = 0; index < 4; index++) holds.push((await checkout({ ...stay(['terre', 'eau', 'feu', 'bois'][index], 120, 2), email: `jetable${index}@example.fr` }, ip)).status)
     assert(holds.join() === '200,200,200,429', `Au plus 3 paiements en cours par adresse IP (${holds.join(', ')})`)
-    assert((await checkout({ ...stay('metal', 120, 1), email: 'voisin@example.fr' }, { 'x-real-ip': '203.0.113.8' })).status === 200, 'Une autre adresse IP n’est pas bloquée')
+    assert((await checkout({ ...stay('metal', 120, 2), email: 'voisin@example.fr' }, { 'x-real-ip': '203.0.113.8' })).status === 200, 'Une autre adresse IP n’est pas bloquée')
   }
   await reset()
   {
