@@ -134,6 +134,13 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
     return () => window.removeEventListener('keydown', handleKey)
   }, [lightbox])
 
+  // Lien « ?reserver » (page d'annulation du paiement) : ouvre directement la réservation des suites.
+  useEffect(() => {
+    if (!new URLSearchParams(window.location.search).has('reserver')) return
+    const timer = window.setTimeout(() => setModal({ type: 'booking', universe: 'suites' }), 0)
+    return () => window.clearTimeout(timer)
+  }, [])
+
   function book(universe?: UniverseId, message?: string) {
     setMenuOpen(false)
     setModal({ type: 'booking', universe, message })

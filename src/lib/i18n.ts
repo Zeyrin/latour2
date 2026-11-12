@@ -10,6 +10,9 @@ export const paths = {
   home: { fr: '/', en: '/en' },
   legal: { fr: '/mentions-legales', en: '/en/legal-notice' },
   privacy: { fr: '/confidentialite', en: '/en/privacy' },
+  // Pages de retour du paiement Stripe (mêmes chemins que RETURN_PATHS dans api/checkout.ts).
+  bookingConfirmed: { fr: '/reservation/confirmation', en: '/en/booking/confirmation' },
+  bookingCancelled: { fr: '/reservation/annulation', en: '/en/booking/cancelled' },
 } satisfies Record<string, Record<Lang, string>>
 
 export type PageKey = keyof typeof paths
