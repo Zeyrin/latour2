@@ -49,9 +49,15 @@ const handlers: Record<string, Record<string, (request: Request) => Response | P
 const { parisToday, quote, RATES } = await import('../src/lib/pricing.ts')
 const { retryBeds24Pushes } = await import('../api/_lib/bookings.ts')
 
-// ─── Faux Beds24 : POST /bookings ───────────────────────────────────────────
-const beds24 = { calls: [] as Record<string, unknown>[], failNext: false, nextId: 9000 }
+// ─── Faux Beds24 : GET /authentication/token, POST /bookings ────────────────
+const beds24 = { calls: [] as Record<string, unknown>[], failNext: false, nextId: 9000, tokenRequests: 0 }
 const beds24Server = createServer(async (request, response) => {
+  if (request.method === 'GET' && request.url === '/authentication/token') {
+    if (request.headers.refreshtoken !== 'beds24-refresh') { response.writeHead(401); return response.end('{}') }
+    beds24.tokenRequests++
+    response.writeHead(200, { 'Content-Type': 'application/json' })
+    return response.end(JSON.stringify({ token: 'beds24-write', expiresIn: 86400 }))
+  }
   const body = JSON.parse(await readBody(request) || '[]') as Record<string, unknown>[]
   if (request.headers.token !== 'beds24-write' || request.method !== 'POST' || request.url !== '/bookings') { response.writeHead(401); return response.end('[]') }
   beds24.calls.push(body[0])
@@ -659,7 +665,7 @@ try {
 
   console.log('\n21. Beds24 (fermeture des dates sur Airbnb, Booking…)')
   await reset()
-  process.env.BEDS24_WRITE_TOKEN = 'beds24-write'
+  process.env.BEDS24_REFRESH_TOKEN = 'beds24-refresh'
   {
     const created = await (await checkout(stay('terre', 140, 2, 3))).json() as { url: string }
     const session = sessionOf(created.url)
@@ -683,8 +689,9 @@ try {
     row = (await bookings()).find((b) => b.suite === 'feu')
     assert(row.beds24_booking_id && !row.beds24_error, 'Réservation finalement créée dans Beds24')
     assert(await retryBeds24Pushes() === 0, 'Rien à retenter ensuite')
+    assert(beds24.tokenRequests === 1, 'Jeton d’écriture tiré du refresh token une seule fois, puis réutilisé')
   }
-  delete process.env.BEDS24_WRITE_TOKEN
+  delete process.env.BEDS24_REFRESH_TOKEN
 
   assert(pageErrors.length === 0, `Aucune erreur JavaScript dans les pages (${pageErrors.join(' | ')})`)
 } catch (error) {

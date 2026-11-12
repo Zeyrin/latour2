@@ -39,6 +39,7 @@ Voir `.env.example` : `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `BEDS24_TOKEN
 2. Dans Stripe (mode test d'abord) : Développeurs → Webhooks → ajouter `https://<site>/api/stripe-webhook` avec les événements `checkout.session.completed`, `checkout.session.expired`, `charge.refunded`.
 3. Renseigner `STRIPE_SECRET_KEY` et `STRIPE_WEBHOOK_SECRET` dans Vercel, puis redéployer. Sans ces clés, le site garde le formulaire de demande par e-mail.
 4. Activer les reçus par e-mail dans Stripe (Paramètres → E-mails clients → Paiements réussis).
+5. Facultatif, pour que les réservations payées apparaissent dans Beds24 (et ferment les dates sur Airbnb, Booking…) : dans Beds24, Paramètres → Marketplace → API, créer un code d'invitation avec les droits de lecture et d'écriture des réservations (pas « long life token », qui ne permet que la lecture). L'échanger contre un refresh token : `curl -H "code: <code>" https://api.beds24.com/v2/authentication/setup`, puis mettre le `refreshToken` obtenu dans `BEDS24_REFRESH_TOKEN`. Il expire après 30 jours sans usage ; la tâche quotidienne `api/sync-beds24` s'en sert chaque jour.
 
 Les réservations sont dans la table `bookings` : `paid` (confirmée), `conflict` (payée mais dates prises entre-temps : à rembourser depuis Stripe), `expired` / `cancelled` (abandon), `refunded`. Carte de test : `4242 4242 4242 4242`, date future, CVC quelconque.
 `VITE_RYBBIT_SITE_ID` (statistiques, valeur publique) a une valeur par défaut dans `.env.production`.
