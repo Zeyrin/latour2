@@ -1,0 +1,77 @@
+/*
+ * Lisibilité et confort sur téléphone.
+ * Chargé après index.css : ces règles ont le dernier mot sous 700 px.
+ * Repères : aucun texte sous 10 px (hors logo), zones tactiles d’au moins 44 px,
+ * rien qui déborde de l’écran.
+ */
+@media(max-width:700px){
+  /* Petites capitales : 10 px minimum, espacement resserré pour garder la même largeur. */
+  .eyebrow,.domain-copy .eyebrow,.host-signature .eyebrow,.chapter-copy .eyebrow,.escape-card-content .eyebrow,.interlude-content .eyebrow,.closing-content .eyebrow,.gallery-heading .eyebrow,.detail-body>.eyebrow,
+  .booking-content>.eyebrow,.booking-confirmation>.eyebrow,.hero-eyebrow,.hero-discover,.hero-location,.scroll-cue>span:first-child,
+  .text-link,.domain-copy>.text-link,.chapter-copy .text-link,.escape-card .text-link,.gift-note .text-link,.booking-confirmation .text-link,
+  .universe-top,.universe-link,.photo-caption,.image-index,.lang-switch,.menu-toggle,
+  .footer-column h3,.footer-map,.footer-bottom,.footer-bottom button,.footer-bottom>div a,.instagram-link,
+  .detail-body>.button,.booking-confirmation .button,.copy-button,.mobile-menu .button,.form-submit,
+  .universe-fieldset legend,.form-field>span,.choice-number,.calendar-legend,.lightbox-bottom span,.legal-lang,
+  .suite-card-number,.suite-card-body .suite-card-facts,.suite-card-body .text-link,
+  .suite-key-label,.suite-others-facts,.suite-carousel-count,.suite-carousel-all,.suite-spa-link,.suite-subheading,.suite-footer-links a,.suite-mobile-bar span,
+  .suite-page .ancv,.site-footer .ancv{font-size:10px;letter-spacing:1px}
+  .chapter-features li{font-size:10px;letter-spacing:.6px;line-height:1.8}
+  .chapter-features{flex-wrap:wrap}
+  .gallery-note,.form-note{font-size:13px}
+  .ancv{font-size:10px!important;letter-spacing:.8px}
+
+  /* Les cinq suites (accueil) : pastilles et chiffres à 10 px, compteur assez contrasté. */
+  .showcase-pill,.showcase-intro li,.showcase-tags>span{font-size:10px;letter-spacing:.9px}
+  .showcase-count>span{color:#71685c}
+
+  /* Bas de l’accueil plein écran : textes lisibles, sans chevaucher le logo. */
+  .hero-bottom{align-items:flex-end}
+  .hero-location{max-width:170px;line-height:1.6}
+  .heritage-mark>span{font-size:9px;letter-spacing:.6px;line-height:1.6}
+
+  /* Légende verticale coupée par le bord de l’écran : masquée sur téléphone. */
+  .vertical-caption{display:none}
+  .domain-visual{margin-left:0}
+
+  /* Filtres de la galerie : passent à la ligne au lieu de s’écraser. */
+  .gallery-filters{flex-wrap:wrap;justify-content:center;gap:0 22px}
+  .gallery-filters button{font-size:10px;letter-spacing:.8px;min-height:44px}
+
+  /* « Séjourner / Se ressourcer / Se réunir » : un bouton par ligne, lisible. */
+  .closing-choices{grid-template-columns:1fr;max-width:340px}
+  .closing-choices>:is(button,a){font-size:11px;letter-spacing:1.2px;padding:15px 18px;min-height:52px}
+
+  /* Pied de page : le bloc logo débordait à droite (ANCV) et le slogan s’écrasait mot à mot. */
+  .footer-brand{flex-wrap:wrap;align-items:center;gap:14px 20px}
+  .footer-brand p{max-width:none;flex:1 1 140px;font-size:15px}
+  .footer-brand .ancv{flex-basis:100%;margin:0}
+  .footer-column>a,.footer-column>button,.footer-contact>a{min-height:44px;display:inline-flex;align-items:center}
+  .footer-column{gap:0}
+  .footer-bottom>div{flex-wrap:wrap;gap:0 18px}
+  .footer-bottom>div a,.instagram-link{min-height:44px;display:inline-flex;align-items:center}
+
+  /* Zones tactiles trop petites. */
+  .hero-discover{min-height:44px}
+  .lang-switch{min-width:44px;justify-content:center}
+  .lightbox-controls .icon-button{width:44px;height:44px}
+  .suite-carousel-all,.suite-spa-link{min-height:44px}
+  .suite-footer-links a,.suite-footer address a{display:inline-flex;align-items:center;min-height:44px}
+  .legal-page .legal-content a{display:inline-block;padding-block:12px;margin-block:-12px}
+  .legal-lang{min-height:44px;display:inline-flex;align-items:center}
+
+  /* Fenêtres (réservation, fiches) : la croix de fermeture reste dans une barre à elle,
+     au lieu de flotter par-dessus le formulaire (elle masquait la flèche du calendrier). */
+  .content-modal>.modal-toolbar{height:auto;background:var(--cream);border-bottom:1px solid var(--hairline)}
+  .content-modal>.modal-toolbar .modal-close{margin:6px 8px}
+  .content-modal .booking-content,.content-modal .booking-confirmation{padding-top:26px}
+}
+@media(max-width:374px){
+  .gallery-filters{gap:0 16px}
+  .gallery-filters button{font-size:10px;letter-spacing:.5px}
+  .closing-choices>:is(button,a){font-size:11px;padding-inline:16px}
+  .hero-eyebrow{font-size:10px;letter-spacing:.6px}
+  .hero-location{font-size:9px}
+  .heritage-mark>span{font-size:9px}
+  .chapter-features li{font-size:10px;letter-spacing:.4px}
+}
