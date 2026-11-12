@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowRight, ArrowUpRight, CalendarDays, X } from 'lucide-react'
-import { Modal } from './Modal'
+import { ArrowRight, ArrowUpRight, X } from 'lucide-react'
 import { Picture } from './Picture'
 import { isMomentVisible, moment, momentContent } from '../lib/moment'
 import type { Lang } from '../lib/i18n'
@@ -62,29 +62,70 @@ export function MomentNotice({ lang, onBook }: { lang: Lang; onBook: (universe?:
         )}
       </AnimatePresence>
 
-      {open && (
-        <Modal title={t.notice.title} onClose={() => setOpen(false)} className="content-modal moment-modal">
-          <div className="detail-image"><Picture name={moment.image} alt={t.alt} /></div>
-          <div className="detail-body">
-            <p className="eyebrow">{t.eyebrow}</p>
-            <h2>{t.title[0]}<br /><em>{t.title[1]}</em></h2>
-            <p>{t.intro}</p>
-            <ul className="moment-events">
-              {t.events.map((event) => (
-                <li key={event.id} className="moment-event">
-                  <p className="eyebrow">{event.label}</p>
-                  <h3>{event.title}</h3>
-                  <p className={`moment-date${event.date ? '' : ' is-tbc'}`}><CalendarDays size={15} strokeWidth={1.25} aria-hidden="true" />{event.date || t.dateTbc}</p>
-                  <p className="moment-text">{event.text}</p>
-                  <button className="text-link" onClick={() => book('evenements', event.request)}>{event.cta}<ArrowUpRight size={16} strokeWidth={1.25} /></button>
-                </li>
-              ))}
-            </ul>
-            <p className="detail-note">{t.stayNote[0]} {t.stayNote[1]}</p>
-            <button className="button button-burgundy" onClick={() => book('suites')}>{t.stayCta} <ArrowRight size={17} /></button>
-          </div>
-        </Modal>
-      )}
+      {open && <MomentDialog lang={lang} onClose={() => setOpen(false)} onBook={book} />}
     </>
+  )
+}
+
+/** Fiche des événements : grande photo titrée, dates en pastilles ; volet depuis le bas sur mobile. */
+function MomentDialog({ lang, onClose, onBook }: { lang: Lang; onClose: () => void; onBook: (universe: UniverseId, message?: string) => void }) {
+  const ref = useRef<HTMLDialogElement>(null)
+  const t = momentContent[lang]
+
+  useEffect(() => {
+    const dialog = ref.current
+    const previousFocus = document.activeElement as HTMLElement | null
+    const previousOverflow = document.documentElement.style.overflow
+    dialog?.showModal()
+    document.documentElement.style.overflow = 'hidden'
+    return () => {
+      dialog?.close()
+      document.documentElement.style.overflow = previousOverflow
+      previousFocus?.focus({ preventScroll: true })
+    }
+  }, [])
+
+  return createPortal(
+    <dialog
+      ref={ref}
+      className="moment-dialog"
+      aria-labelledby="moment-dialog-title"
+      onCancel={(event) => { event.preventDefault(); onClose() }}
+      onClick={(event) => { if (event.target === event.currentTarget) onClose() }}
+      data-lenis-prevent
+    >
+      <button className="moment-dialog-close" onClick={onClose} aria-label={t.close}><X size={18} strokeWidth={1.5} /></button>
+      <div className="moment-dialog-hero">
+        <Picture name={moment.image} alt={t.alt} sizes="(max-width: 700px) 100vw, 480px" />
+        <div className="moment-dialog-hero-text">
+          <span className="moment-dialog-pill"><span className="moment-dot" aria-hidden="true" />{t.eyebrow}</span>
+          <h2 id="moment-dialog-title">{t.title[0]} <em>{t.title[1]}</em></h2>
+          <p>{t.intro}</p>
+        </div>
+      </div>
+      <div className="moment-dialog-body">
+        <ul className="moment-cards">
+          {t.events.map((event) => (
+            <li key={event.id} className="moment-card">
+              <div className="moment-days" aria-label={event.date || t.dateTbc}>
+                {event.days.length ? event.days.map((day) => <span key={day.d + day.m} className="moment-day" aria-hidden="true"><strong>{day.d}</strong>{day.m}</span>) : <span className="moment-day is-tbc" aria-hidden="true"><strong>?</strong>{t.dateTbc}</span>}
+              </div>
+              <div className="moment-card-text">
+                <p className="moment-card-label">{event.label}</p>
+                <h3>{event.title}</h3>
+                <p className="moment-card-date">{event.date || t.dateTbc}</p>
+                <p>{event.text}</p>
+                <button className="moment-chip-button" onClick={() => onBook('evenements', event.request)}>{event.cta}<ArrowUpRight size={15} strokeWidth={1.5} /></button>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <div className="moment-dialog-stay">
+          <span>{t.stayNote[0]} <em>{t.stayNote[1]}</em></span>
+          <button className="moment-stay-button" onClick={() => onBook('suites')}>{t.stayCta}<ArrowRight size={16} strokeWidth={1.5} /></button>
+        </div>
+      </div>
+    </dialog>,
+    document.body,
   )
 }

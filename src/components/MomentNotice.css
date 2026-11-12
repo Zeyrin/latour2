@@ -16,21 +16,64 @@
 .moment-dot{width:6px;height:6px;border-radius:50%;background:#c9573f;animation:moment-pulse 2.4s ease-out infinite}
 @keyframes moment-pulse{0%{box-shadow:0 0 0 0 #c9573f88}70%{box-shadow:0 0 0 7px #c9573f00}100%{box-shadow:0 0 0 0 #c9573f00}}
 
-.moment-modal .detail-image>img{filter:none;object-position:50% 75%}
-.moment-events{list-style:none;margin:6px 0 26px;padding:0;border-top:1px solid var(--hairline)}
-.moment-event{padding:22px 0 14px;border-bottom:1px solid var(--hairline)}
-.moment-event>.eyebrow{color:var(--gold);margin-bottom:6px}
-.moment-event h3{font-size:25px;line-height:1.2}
-.moment-date{display:inline-flex;align-items:center;gap:9px;margin-top:9px;font-family:var(--sans);font-size:10.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--wine)}
-.moment-date svg{color:var(--gold)}
-.moment-date.is-tbc{color:var(--stone)}
-.moment-text{margin-top:9px;font-size:17px;line-height:1.6;font-weight:300}
-
 @media(max-width:700px){
   .moment-notice{left:12px;right:12px;bottom:12px;width:auto;max-width:none;margin-bottom:env(safe-area-inset-bottom)}
   .moment-notice-thumb{width:64px;height:64px}
   .moment-notice-text strong{font-size:17px}
-  .moment-event h3{font-size:22px}
-  .moment-text{font-size:16px}
 }
 @media(prefers-reduced-motion:reduce){.moment-dot{animation:none}.moment-notice-thumb img,.moment-notice-open svg{transition:none}}
+
+/* Fiche des événements : fenêtre arrondie, photo titrée à gauche, cartes à droite ; volet depuis le bas sur mobile */
+.moment-dialog{padding:0;border:0;margin:auto;width:min(1040px,calc(100% - 48px));max-width:none;height:min(720px,calc(100dvh - 48px));max-height:none;display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);overflow:hidden;border-radius:22px;background:var(--cream);color:var(--stone);box-shadow:0 40px 100px -30px #0d0805a6;animation:moment-dialog-in .5s cubic-bezier(.22,1,.36,1)}
+.moment-dialog:not([open]){display:none}
+.moment-dialog::backdrop{background:#1a120c8c;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:backdrop-arrive .35s ease-out}
+@keyframes moment-dialog-in{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+.moment-dialog-close{position:absolute;z-index:3;top:16px;right:16px;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:#fffffff0;color:var(--wine);box-shadow:0 4px 14px #2a1c121f;transition:transform .3s,background .3s}
+.moment-dialog-close:hover{transform:rotate(90deg);background:#fff}
+.moment-dialog-hero{position:relative;overflow:hidden;background:#1f1914}
+.moment-dialog-hero img{position:absolute;inset:0;width:100%;height:100%;object-position:30% 72%;filter:brightness(1.18) saturate(1.05)}
+.moment-dialog-hero:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#1a120c00 30%,#1a120ccc 78%,#1a120cf0 100%)}
+.moment-dialog-hero-text{position:absolute;z-index:1;left:32px;right:32px;bottom:32px;color:#efe7dc}
+.moment-dialog-pill{display:inline-flex;align-items:center;gap:9px;padding:7px 13px;border-radius:999px;background:#ffffff1f;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid #ffffff2e;font-family:var(--sans);font-size:9px;letter-spacing:1.6px;text-transform:uppercase;color:#fff}
+.moment-dialog-hero h2{margin-top:16px;color:#fff;font-size:clamp(34px,3.4vw,46px);line-height:1.08;letter-spacing:-1.2px}
+.moment-dialog-hero p{margin-top:14px;font-size:16px;line-height:1.6;font-weight:300;max-width:400px}
+.moment-dialog-body{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:68px 32px 28px;display:flex;flex-direction:column;gap:22px}
+.moment-cards{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.moment-card{display:flex;gap:20px;padding:20px;border-radius:16px;background:#fff;border:1px solid #ebe4da;transition:border-color .3s,box-shadow .3s}
+.moment-card:hover{border-color:#dccfbf;box-shadow:0 12px 30px -18px #2a1c1240}
+.moment-days{display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+.moment-day{display:flex;flex-direction:column;align-items:center;justify-content:center;width:72px;padding:10px 4px 9px;border-radius:12px;background:#f4ede4;color:var(--wine);font-family:var(--sans);font-size:9px;letter-spacing:1.3px;text-transform:uppercase;text-align:center}
+.moment-day strong{font-family:Newsreader,Georgia,serif;font-weight:400;font-size:21px;letter-spacing:-.3px;text-transform:none;line-height:1.1;margin-bottom:2px}
+.moment-day.is-tbc{font-size:7.5px;letter-spacing:.8px}
+.moment-card-text{min-width:0}
+.moment-card-label{font-family:var(--sans);font-size:9px;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold)}
+.moment-card h3{margin-top:5px;font-size:23px;line-height:1.2;letter-spacing:-.3px}
+.moment-card-date{margin-top:5px;font-family:var(--sans);font-size:11.5px;color:var(--wine);opacity:.8}
+.moment-card-text>p:not(.moment-card-label):not(.moment-card-date){margin-top:9px;font-size:15.5px;line-height:1.55;font-weight:300}
+.moment-chip-button{display:inline-flex;align-items:center;gap:10px;margin-top:14px;padding:10px 16px;border-radius:999px;border:1px solid #d8cbbb;color:var(--wine);font-family:var(--sans);font-size:9.5px;letter-spacing:1.3px;text-transform:uppercase;transition:background .3s,color .3s,border-color .3s}
+.moment-chip-button:hover{background:var(--wine);border-color:var(--wine);color:var(--cream)}
+.moment-dialog-stay{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 20px;border-radius:16px;background:#efe7dc;color:var(--wine);font-size:18px;line-height:1.3}
+.moment-stay-button{flex-shrink:0;display:inline-flex;align-items:center;gap:12px;padding:13px 20px;border-radius:999px;background:var(--wine);color:var(--cream);font-family:var(--sans);font-size:9.5px;letter-spacing:1.4px;text-transform:uppercase;transition:background .3s}
+.moment-stay-button:hover{background:#642d20}
+.moment-stay-button svg,.moment-chip-button svg{transition:transform .3s}
+.moment-stay-button:hover svg{transform:translateX(3px)}
+.moment-chip-button:hover svg{transform:translate(2px,-2px)}
+@media(max-width:860px){.moment-dialog{display:block;height:auto;max-height:calc(100dvh - 48px);width:min(620px,calc(100% - 32px));overflow-y:auto;overscroll-behavior:contain}.moment-dialog:not([open]){display:none}.moment-dialog-close{position:sticky;display:flex;top:14px;margin:14px 14px -54px auto}.moment-dialog-hero{height:300px}.moment-dialog-hero img{object-position:50% 72%}.moment-dialog-body{overflow:visible;padding:24px}}
+@media(max-width:700px){
+  .moment-dialog{width:100%;max-width:100%;margin:auto 0 0;max-height:92dvh;border-radius:22px 22px 0 0;animation:moment-sheet-in .5s cubic-bezier(.22,1,.36,1)}
+  .moment-dialog-hero{height:260px}
+  .moment-dialog-hero:before{content:'';position:absolute;z-index:2;top:8px;left:50%;width:40px;height:4px;margin-left:-20px;border-radius:4px;background:#ffffff8c}
+  .moment-dialog-hero-text{left:20px;right:20px;bottom:20px}
+  .moment-dialog-hero h2{font-size:32px}
+  .moment-dialog-hero p{font-size:14.5px}
+  .moment-dialog-close{width:36px;height:36px;margin-bottom:-50px}
+  .moment-dialog-body{padding:18px 14px calc(18px + env(safe-area-inset-bottom));gap:14px}
+  .moment-card{gap:14px;padding:16px}
+  .moment-day{width:60px}
+  .moment-day strong{font-size:18px}
+  .moment-card h3{font-size:20px}
+  .moment-dialog-stay{flex-direction:column;align-items:stretch;text-align:center;font-size:17px;padding:16px}
+  .moment-stay-button{justify-content:center}
+}
+@keyframes moment-sheet-in{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.moment-dialog,.moment-dialog::backdrop{animation:none}.moment-dialog-close,.moment-chip-button svg,.moment-stay-button svg{transition:none}}

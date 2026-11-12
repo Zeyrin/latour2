@@ -27,6 +27,8 @@ export interface MomentEvent {
   id: string
   label: string
   title: string
+  /** Pastilles de dates (jour(s) + mois abrégé), affichées dans la fiche. */
+  days: { d: string; m: string }[]
   /** Texte de la date, ex. « Samedi 6 et dimanche 7 décembre · 10 h – 18 h ». Vide = à confirmer. */
   date: string
   text: string
@@ -44,6 +46,7 @@ export interface MomentContent {
   alt: string
   dateTbc: string
   stayNote: [string, string]
+  close: string
   stayCta: string
   events: MomentEvent[]
 }
@@ -57,12 +60,14 @@ export const momentContent: Record<Lang, MomentContent> = {
     alt: 'La salle à manger du château décorée pour Noël : sapin, guirlande de sapin sur la grande table et bougies rouges allumées devant la cheminée',
     dateTbc: 'Date à confirmer',
     stayNote: ['Et pourquoi ne pas rester', 'pour la nuit ?'],
+    close: 'Fermer',
     stayCta: 'Réserver une suite',
     events: [
       {
         id: 'marche-noel',
         label: 'Marché de Noël',
         title: 'Le marché de Noël du château',
+        days: [{ d: '19–20', m: 'déc.' }],
         date: 'Samedi 19 et dimanche 20 décembre', // TODO : horaires à ajouter
         // TODO : texte provisoire, à valider (exposants, produits, animations, entrée libre ?)
         text: 'Producteurs et artisans de la région, vins du vignoble et douceurs de saison, au cœur du domaine illuminé. Une belle occasion de trouver des cadeaux qui ont du sens.',
@@ -73,6 +78,7 @@ export const momentContent: Record<Lang, MomentContent> = {
         id: 'portes-ouvertes',
         label: 'Portes ouvertes',
         title: 'Portes ouvertes de novembre & décembre',
+        days: [{ d: '20–27', m: 'nov.' }, { d: '14–20', m: 'déc.' }],
         date: 'Du 20 au 27 novembre · du 14 au 20 décembre', // TODO : horaires à ajouter
         // TODO : texte provisoire, à valider (visite des suites ? du spa ? dégustation ?)
         text: 'Venez découvrir la maison : les suites, le spa et les salons décorés pour les fêtes. Corinne et André vous accueillent pour une visite et un moment d’échange.',
@@ -89,12 +95,14 @@ export const momentContent: Record<Lang, MomentContent> = {
     alt: 'The château dining room decorated for Christmas: a tree, fir garland along the long table and lit red candles in front of the fireplace',
     dateTbc: 'Date to be confirmed',
     stayNote: ['Why not stay', 'for the night?'],
+    close: 'Close',
     stayCta: 'Book a suite',
     events: [
       {
         id: 'marche-noel',
         label: 'Christmas market',
         title: 'The château Christmas market',
+        days: [{ d: '19–20', m: 'Dec' }],
         date: 'Saturday 19 & Sunday 20 December', // TODO: add times
         text: 'Local producers and craftspeople, wines from the vineyards and seasonal treats, at the heart of the illuminated estate. A lovely way to find gifts that mean something.',
         cta: 'I’d like to come',
@@ -104,6 +112,7 @@ export const momentContent: Record<Lang, MomentContent> = {
         id: 'portes-ouvertes',
         label: 'Open days',
         title: 'November & December open days',
+        days: [{ d: '20–27', m: 'Nov' }, { d: '14–20', m: 'Dec' }],
         date: '20–27 November · 14–20 December', // TODO: add times
         text: 'Come and discover the house: the suites, the spa and the lounges dressed for the holidays. Corinne and André welcome you for a visit and a chat.',
         cta: 'Let us know you’re coming',
