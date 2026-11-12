@@ -12,7 +12,14 @@ export async function GET() {
     })
     if (!response.ok) throw new Error(`Supabase ${response.status} : ${await response.text()}`)
     const blocks = await response.json() as { resource: string; start_date: string; end_date: string }[]
-    return Response.json(blocks, { headers: { 'Cache-Control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=300' } })
+    return Response.json(blocks, {
+      headers: {
+        // Navigateur : toujours redemander (sinon stale-while-revalidate montre des dates déjà réservées).
+        'Cache-Control': 'no-cache',
+        // CDN Vercel : cache court ; la réservation reste de toute façon vérifiée par api/checkout.
+        'CDN-Cache-Control': 'public, max-age=20, stale-while-revalidate=40',
+      },
+    })
   } catch (error) {
     console.error('availability', error)
     return Response.json({ error: 'Disponibilités indisponibles' }, { status: 502 })
