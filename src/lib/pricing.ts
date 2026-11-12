@@ -39,6 +39,12 @@ export const MIN_DAYS_BEFORE_ARRIVAL = 1
 
 export const CURRENCY = 'eur'
 
+/** Conditions d'annulation, affichées sur le formulaire, la page de paiement Stripe et la confirmation. */
+export const CANCELLATION_TERMS = {
+  fr: 'Annulation gratuite pendant 24 h après la réservation (appelez-nous ou écrivez-nous) : vous êtes remboursé intégralement. Passé ce délai, le séjour n’est plus remboursable.',
+  en: 'Free cancellation within 24 hours of booking (call or email us) for a full refund. After that, the stay is non-refundable.',
+} as const
+
 export interface Quote {
   suite: PricedSuite
   arrival: string

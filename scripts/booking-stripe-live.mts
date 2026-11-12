@@ -201,6 +201,7 @@ try {
     const session = await stripe.checkout.sessions.retrieve(row.stripe_session_id, { expand: ['line_items'] })
     assert(session.amount_total === 79000 && session.currency === 'eur', 'Session Stripe réelle créée au bon montant (790,00 €)')
     assert(session.livemode === false, 'Session en mode test')
+    assert(session.custom_text?.submit?.message?.includes('24 h'), 'Conditions d’annulation affichées sur la page Stripe')
     console.log('    ', session.line_items?.data.map((item) => `${item.description} : ${item.amount_total / 100} €`).join(' | '))
     await page.waitForLoadState('networkidle').catch(() => {})
     await page.screenshot({ path: 'artifacts/stripe-live-checkout.png' })

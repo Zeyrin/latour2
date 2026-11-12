@@ -1,5 +1,6 @@
 import type { Lang } from './i18n'
 import type { UniverseId } from './content'
+import { CANCELLATION_TERMS } from './pricing'
 
 const fr = {
   seoTitle: 'Château Latour Ségur Suites & Spa — Chambres d’hôtes de charme près de Saint-Émilion',
@@ -434,6 +435,7 @@ export const payUi = {
     submit: (total: string) => `Réserver et payer ${total}`,
     submitting: 'Redirection vers le paiement…',
     note: '* Champs obligatoires. Paiement sécurisé par Stripe. Vos dates sont bloquées pendant 30 minutes, le temps du paiement.',
+    cancellation: CANCELLATION_TERMS.fr,
     errors: {
       unavailable: 'Ces dates viennent d’être réservées. Choisissez-en d’autres.',
       rate_limited: 'Trop de tentatives. Réessayez dans une heure ou appelez-nous.',
@@ -483,6 +485,7 @@ export const payUi = {
     submit: (total: string) => `Book and pay ${total}`,
     submitting: 'Redirecting to payment…',
     note: '* Required fields. Secure payment by Stripe. Your dates are held for 30 minutes while you pay.',
+    cancellation: CANCELLATION_TERMS.en,
     errors: {
       unavailable: 'These dates have just been booked. Please choose others.',
       rate_limited: 'Too many attempts. Please try again in an hour or call us.',

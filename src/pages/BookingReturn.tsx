@@ -98,6 +98,7 @@ function Confirmed({ lang }: { lang: Lang }) {
       <h1>{title[0]}<br /><em>{title[1]}</em></h1>
       <p>{text}</p>
       {booking && <Summary booking={booking} lang={lang} />}
+      {paid && <p className="form-note booking-cancellation">{p.cancellation}</p>}
       <Link className="button button-burgundy" to={paths.home[lang]}>{p.back} <ArrowRight size={17} /></Link>
       <CallUs lang={lang} />
     </Layout>

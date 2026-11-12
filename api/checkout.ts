@@ -6,7 +6,7 @@
 // Variables d'environnement : STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
 // ONLINE_BOOKING=off désactive le paiement en ligne sans retirer les clés.
 
-import { CURRENCY, quote, parisToday } from '../src/lib/pricing.js'
+import { CANCELLATION_TERMS, CURRENCY, quote, parisToday } from '../src/lib/pricing.js'
 import { getStripe, stripeConfigured } from './_lib/stripe.js'
 import { rpc, supabaseConfig } from './_lib/supabase.js'
 
@@ -119,6 +119,8 @@ export async function POST(request: Request) {
       client_reference_id: bookingId,
       metadata,
       payment_intent_data: { metadata, description: `${suiteName} — ${priced.arrival} → ${priced.departure}` },
+      // Conditions d'annulation affichées sous le bouton « Payer » de Stripe.
+      custom_text: { submit: { message: CANCELLATION_TERMS[lang] } },
       expires_at: Math.floor(Date.now() / 1000) + SESSION_MINUTES * 60,
       line_items: [
         { quantity: 1, price_data: { currency: CURRENCY, unit_amount: priced.lodging, product_data: { name: `${suiteName} — Château Latour Ségur`, description: stay } } },

@@ -316,6 +316,7 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
           {currentQuote.touristTax > 0 && <div><dt>{p.touristTax}</dt><dd>{money(currentQuote.touristTax)}</dd></div>}
           <div className="price-total"><dt>{p.total}</dt><dd>{money(currentQuote.total)}</dd></div>
         </dl>}
+        {online && currentQuote && <p className="form-note booking-cancellation">{p.cancellation}</p>}
         <div role="status" className="form-status pay-error">{payError}</div>
         <button className="button button-burgundy form-submit" type="submit" disabled={paying} aria-busy={paying || undefined}>
           {online ? (paying ? p.submitting : currentQuote ? p.submit(money(currentQuote.total)) : p.submit('').trim()) : t.submit} <ArrowRight size={17} />
