@@ -8,7 +8,8 @@ import { Modal } from '../components/Modal'
 import { Picture } from '../components/Picture'
 import { Seo } from '../components/Seo'
 import { GIFT_URL, SITE_URL, spaUrl, contact, suiteCommon, suiteDetails, suiteIds, suitePhotos, suites, type SuiteId } from '../lib/content'
-import { LangContext, paths, suitePaths, type Lang } from '../lib/i18n'
+import { LangContext, locales, paths, suitePaths, type Lang } from '../lib/i18n'
+import { MIN_NIGHTS, RATES, formatEuros } from '../lib/pricing'
 import { ui } from '../lib/ui'
 
 /** La page détaillée d'une suite : caractéristiques, photographies et réservation. */
@@ -20,6 +21,9 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
   const label = suites[lang].find((suite) => suite.id === id)!.label
   const number = suiteIds.indexOf(id) + 1
   const photos = suitePhotos[id]
+  const rate = RATES[id]
+  const price = p.fromPerNight(formatEuros(rate.night, locales[lang]))
+  const minNights = rate.minNights ?? MIN_NIGHTS
   const [booking, setBooking] = useState(false)
   const [photoIndex, setPhotoIndex] = useState<number | null>(null)
   const [slideIndex, setSlideIndex] = useState(0)
@@ -119,6 +123,7 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
             </div>
             <aside className="suite-book-card" aria-label={p.book}>
               <p className="suite-book-title">{label}</p>
+              <p className="suite-book-price">{price}{minNights > 1 && <span>{p.minNights(minNights)}</span>}</p>
               <dl>{facts.map((fact) => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl>
               <button className="button button-burgundy" onClick={() => setBooking(true)}>{p.book} <ArrowRight size={17} /></button>
               <p className="suite-note">{p.note}</p>
@@ -133,7 +138,7 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
           </nav>
         </main>
 
-        <div className="suite-mobile-bar"><span><strong>{label}</strong>{detail.surface} · {detail.guests}</span><button className="button button-burgundy" onClick={() => setBooking(true)}>{p.bookShort}</button></div>
+        <div className="suite-mobile-bar"><span><strong>{label}</strong>{price}</span><button className="button button-burgundy" onClick={() => setBooking(true)}>{p.bookShort}</button></div>
 
         <footer className="suite-footer">
           <div className="page-width">
