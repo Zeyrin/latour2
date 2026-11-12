@@ -9,6 +9,7 @@ import { Modal } from './components/Modal'
 import { Picture } from './components/Picture'
 import { BookingForm } from './components/BookingForm'
 import { Seo } from './components/Seo'
+import { MomentSection } from './components/MomentSection'
 import { GIFT_URL, SITE_URL, SPA_URL, spaUrl, contact, escapes, galleryPhotos, suiteDetails, suitePhotos, suites, universes, type SuiteId, type GalleryFilter, type GalleryPhoto, type Universe, type UniverseId } from './lib/content'
 import { LangContext, paths, suitePaths, type Lang } from './lib/i18n'
 import { ui } from './lib/ui'
@@ -203,6 +204,8 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
             <div className="heritage-mark"><ChateauSketch /><span>{t.heritage[0]}<br /><span>{t.heritage[1]}</span></span></div>
           </div>
         </section>
+
+        <MomentSection lang={lang} onBook={book} />
 
         <section className="universes-section section-space" id="univers" aria-labelledby="universes-heading">
           <div className="page-width">

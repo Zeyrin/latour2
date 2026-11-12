@@ -13,6 +13,7 @@ const imageWidths: Record<string, number> = {
   'spa-piscine': 1012,
   vignes: 1600,
   'domaine-pigeonnier': 1536,
+  'noel-salle-a-manger': 1600,
 }
 
 export function Picture({ name, alt, className = '', priority = false, sizes = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 45vw' }: PictureProps) {
