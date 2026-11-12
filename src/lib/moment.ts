@@ -8,8 +8,8 @@ import type { Lang } from './i18n'
  * Pour la reproposer à ceux qui l'ont fermée : changer `id` (ex. 'paques-2027').
  * Pour un événement daté : remplir `date` (texte affiché) ; laisser vide affiche « Date à confirmer ».
  *
- * ⚠️ TEXTES PROVISOIRES : les dates, horaires et détails des événements
- * sont à confirmer par Corinne & André avant la mise en ligne (voir les TODO).
+ * ⚠️ TEXTES PROVISOIRES : dates confirmées par donkey le 12/11/2026 ; horaires et descriptions
+ * restent à confirmer par Corinne & André avant la mise en ligne (voir les TODO).
  */
 export const moment = {
   /** Identifiant de la campagne : la fermeture de la notification est mémorisée par campagne. */
@@ -18,7 +18,7 @@ export const moment = {
   /** Délai d'apparition une fois le haut de page dépassé (ms). */
   delay: 1200,
   /** Après ce jour (inclus), la section disparaît d'elle-même (AAAA-MM-JJ). */
-  hideAfter: '2027-01-06',
+  hideAfter: '2026-12-21',
   /** Photo principale (fichier dans public/images, sans extension). */
   image: 'noel-salle-a-manger',
 }
@@ -63,7 +63,7 @@ export const momentContent: Record<Lang, MomentContent> = {
         id: 'marche-noel',
         label: 'Marché de Noël',
         title: 'Le marché de Noël du château',
-        date: '', // TODO : date(s) et horaires à confirmer
+        date: 'Samedi 19 et dimanche 20 décembre', // TODO : horaires à ajouter
         // TODO : texte provisoire, à valider (exposants, produits, animations, entrée libre ?)
         text: 'Producteurs et artisans de la région, vins du vignoble et douceurs de saison, au cœur du domaine illuminé. Une belle occasion de trouver des cadeaux qui ont du sens.',
         cta: 'Je souhaite venir',
@@ -73,7 +73,7 @@ export const momentContent: Record<Lang, MomentContent> = {
         id: 'portes-ouvertes',
         label: 'Portes ouvertes',
         title: 'Portes ouvertes de novembre & décembre',
-        date: '', // TODO : date(s) et horaires à confirmer
+        date: 'Du 20 au 27 novembre · du 14 au 20 décembre', // TODO : horaires à ajouter
         // TODO : texte provisoire, à valider (visite des suites ? du spa ? dégustation ?)
         text: 'Venez découvrir la maison : les suites, le spa et les salons décorés pour les fêtes. Corinne et André vous accueillent pour une visite et un moment d’échange.',
         cta: 'Prévenir de ma visite',
@@ -95,7 +95,7 @@ export const momentContent: Record<Lang, MomentContent> = {
         id: 'marche-noel',
         label: 'Christmas market',
         title: 'The château Christmas market',
-        date: '', // TODO: date(s) and times to be confirmed
+        date: 'Saturday 19 & Sunday 20 December', // TODO: add times
         text: 'Local producers and craftspeople, wines from the vineyards and seasonal treats, at the heart of the illuminated estate. A lovely way to find gifts that mean something.',
         cta: 'I’d like to come',
         request: 'Hello, I would like to come to the château Christmas market. Could you send me the practical details?',
@@ -104,7 +104,7 @@ export const momentContent: Record<Lang, MomentContent> = {
         id: 'portes-ouvertes',
         label: 'Open days',
         title: 'November & December open days',
-        date: '', // TODO: date(s) and times to be confirmed
+        date: '20–27 November · 14–20 December', // TODO: add times
         text: 'Come and discover the house: the suites, the spa and the lounges dressed for the holidays. Corinne and André welcome you for a visit and a chat.',
         cta: 'Let us know you’re coming',
         request: 'Hello, I would like to come to the château open days. Could you send me the practical details?',
