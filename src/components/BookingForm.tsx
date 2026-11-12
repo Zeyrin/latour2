@@ -267,9 +267,9 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
         <fieldset className="universe-fieldset">
           <legend>{t.comingFor}</legend>
           <div className="booking-universes">
-            {universes[lang].filter((item) => item.id !== 'spa').map((item) => <label key={item.id} className={`universe-choice ${universe === item.id ? 'is-selected' : ''}`}>
+            {universes[lang].filter((item) => item.id !== 'spa').map((item, index) => <label key={item.id} className={`universe-choice ${universe === item.id ? 'is-selected' : ''}`}>
               <input type="radio" name="universe" value={item.id} checked={universe === item.id} onChange={() => changeUniverse(item.id)} required />
-              <span className="choice-number">{item.number}</span>
+              <span className="choice-number">{String(index + 1).padStart(2, '0')}</span>
               <span>{t.choices[item.id]}</span>
               <Check size={14} className="choice-check" />
             </label>)}

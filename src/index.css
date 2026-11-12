@@ -523,6 +523,8 @@ em{font-weight:300}
 .suite-checklist-common li{font-size:16px;color:var(--stone)}
 .suite-book-card{position:sticky;top:96px;align-self:start;background:#f2ede4;border:1px solid var(--hairline);padding:28px 28px 24px}
 .suite-book-title{font-size:26px;letter-spacing:-.5px;color:var(--wine);margin-bottom:14px}
+.suite-book-price{font-size:21px;line-height:1.3;color:var(--wine);margin:-6px 0 16px}
+.suite-book-price span{display:block;font-family:var(--sans);font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--stone);margin-top:6px}
 .suite-book-card dl{margin:0 0 22px;border-top:1px solid var(--hairline)}
 .suite-book-card dl>div{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:11px 0;border-bottom:1px solid var(--hairline)}
 .suite-book-card dt{font-family:var(--sans);font-size:9px;letter-spacing:1.3px;text-transform:uppercase;color:var(--stone)}
