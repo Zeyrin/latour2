@@ -46,7 +46,7 @@ const handlers: Record<string, Record<string, (request: Request) => Response | P
   'booking-status': await import('../api/booking-status.ts'),
   availability: await import('../api/availability.ts'),
 }
-const { parisToday, quote, RATES } = await import('../src/lib/pricing.ts')
+const { parisToday, quote, RATES, TOURIST_TAX_PER_GUEST_NIGHT } = await import('../src/lib/pricing.ts')
 const { retryBeds24Pushes } = await import('../api/_lib/bookings.ts')
 
 // ─── Faux Beds24 : GET /authentication/token, POST /bookings ────────────────
@@ -353,8 +353,8 @@ try {
   await page.locator(`.calendar-day[data-date="${addDays(arrivalDate, 2)}"]`).click()
   const expected = quote('eau', arrivalDate, addDays(arrivalDate, 2), 2, today)
   assert(!('error' in expected), 'Séjour de test valide')
-  assert((await txt(page.locator('.price-summary'))).includes('390'), 'Récapitulatif du prix affiché (2 nuits × 195 €)')
-  assert((await txt(page.locator('.form-submit'))).includes('Réserver et payer 390'), 'Bouton « Réserver et payer » avec le total')
+  assert((await txt(page.locator('.price-summary'))).includes('Taxe de séjour') && (await txt(page.locator('.price-summary'))).includes('4 €') && (await txt(page.locator('.price-summary'))).includes('394'), 'Récapitulatif du prix affiché (2 nuits × 195 € + taxe de séjour 2 pers. × 2 nuits × 1 €)')
+  assert((await txt(page.locator('.form-submit'))).includes('Réserver et payer 394'), 'Bouton « Réserver et payer » avec le total')
   assert((await txt(page.locator('form .booking-cancellation'))).includes('Annulation gratuite pendant 24 h'), 'Conditions d’annulation affichées avant le paiement')
   await page.screenshot({ path: 'artifacts/booking-pay-form.png' })
   await accessible(page, 'Formulaire de réservation payante')
@@ -367,15 +367,15 @@ try {
   await page.locator('input[name="consent"]').check()
   await page.locator('.form-submit').click()
   await page.waitForURL(/127\.0\.0\.1:4183\/pay\//)
-  assert(await txt(page.locator('#amount')) === '390.00 eur', 'Page de paiement Stripe au bon montant, calculé par le serveur')
+  assert(await txt(page.locator('#amount')) === '394.00 eur', 'Page de paiement Stripe au bon montant, calculé par le serveur')
   let [row] = await bookings()
-  assert(row.status === 'pending' && row.suite === 'eau' && row.amount_total === 39000 && row.stripe_session_id, 'Réservation « pending » créée avec la session Stripe')
+  assert(row.status === 'pending' && row.suite === 'eau' && row.amount_total === 39400 && row.stripe_session_id, 'Réservation « pending » créée avec la session Stripe')
   assert(new Date(row.hold_until).getTime() - Date.now() > 30 * 60_000, 'Dates bloquées plus longtemps que la session Stripe (30 min)')
   assert((await blockedFor('eau')).some((block) => block.start_date === arrivalDate), 'Dates retirées du calendrier pendant le paiement')
   await page.getByRole('button', { name: 'Payer' }).click()
   await page.waitForURL(/\/reservation\/confirmation\?session_id=cs_test_/)
   await page.getByRole('heading', { name: /Merci/ }).waitFor()
-  assert((await txt(page.locator('.booking-confirmation'))).includes('390'), 'Page de confirmation : réservation payée et montant')
+  assert((await txt(page.locator('.booking-confirmation'))).includes('394'), 'Page de confirmation : réservation payée et montant')
   assert((await txt(page.locator('.booking-confirmation .booking-cancellation'))).includes('24 h'), 'Conditions d’annulation rappelées sur la confirmation')
   await page.screenshot({ path: 'artifacts/booking-confirmed.png' })
   await accessible(page, 'Page de confirmation')
@@ -415,7 +415,7 @@ try {
     const session = sessionOf(created.url)
     await paySession(session)
     const status = await (await fetch(`${APP}/api/booking-status?session_id=${session.id}`)).json()
-    assert(status.status === 'paid' && status.amount_total === 3 * RATES.terre.night && !('email' in status) && !('name' in status), 'La page de confirmation vérifie Stripe et confirme sans attendre le webhook (sans exposer les coordonnées)')
+    assert(status.status === 'paid' && status.amount_total === 3 * RATES.terre.night + 3 * 3 * TOURIST_TAX_PER_GUEST_NIGHT && !('email' in status) && !('name' in status), 'La page de confirmation vérifie Stripe et confirme sans attendre le webhook (sans exposer les coordonnées)')
     await sendEvent('checkout.session.completed', session)
     assert((await bookings()).filter((b) => b.status === 'paid').length === 1, 'Webhook arrivé ensuite : aucun doublon')
   }
@@ -433,7 +433,8 @@ try {
     const start = await days.nth(5).getAttribute('data-date') as string
     await days.nth(5).click()
     await page.locator(`.calendar-day[data-date="${addDays(start, 2)}"]`).click()
-    await page.locator('input[name="name"]').fill('Alex Martin')
+    await page.locator('input[name="given-name"]').fill('Alex')
+    await page.locator('input[name="family-name"]').fill('Martin')
     await page.locator('input[name="email"]').fill('alex@example.fr')
     await page.locator('input[name="consent"]').check()
     await page.locator('.form-submit').click()
@@ -516,7 +517,7 @@ try {
   {
     const created = await (await checkout({ ...stay('eau', 50, 1), amount: 1, price: 1, total: 1 })).json() as { url: string }
     const session = sessionOf(created.url)
-    assert(session.amount_total === RATES.eau.night, 'Le prix envoyé par le navigateur est ignoré')
+    assert(session.amount_total === RATES.eau.night + 2 * TOURIST_TAX_PER_GUEST_NIGHT, 'Le prix envoyé par le navigateur est ignoré')
     session.amount_total = 100
     await paySession(session)
     assert((await bookings())[0].status === 'conflict', 'Montant payé différent du prix : « conflict », pas de confirmation')
