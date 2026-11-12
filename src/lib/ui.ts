@@ -29,7 +29,7 @@ const fr = {
   universesTitle: ['Une maison.', 'Trois parenthèses.'],
   universesIntro: ['Séjourner. Se ressourcer. Se réunir.', 'Trois portes ouvertes sur l’essentiel.'],
   discoverUniverse: 'Découvrir cet univers',
-  triptychNote: 'Un même lieu. Une même attention. Infiniment de possibles.',
+  triptychNote: 'Un même lieu. Une même attention. Une infinité de possibles.',
   domainParcAlt: 'L’allée de cyprès du parc du château, une invitation à la promenade',
   domainStoneAlt: 'Les vieilles pierres et les dépendances du domaine',
   domainSmall: 'Le charme des choses qui durent.',
