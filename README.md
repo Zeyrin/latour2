@@ -43,3 +43,13 @@ Voir `.env.example` : `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `BEDS24_TOKEN
 
 Les réservations sont dans la table `bookings` : `paid` (confirmée), `conflict` (payée mais dates prises entre-temps : à rembourser depuis Stripe), `expired` / `cancelled` (abandon), `refunded`. Carte de test : `4242 4242 4242 4242`, date future, CVC quelconque.
 `VITE_RYBBIT_SITE_ID` (statistiques, valeur publique) a une valeur par défaut dans `.env.production`.
+
+## E-mails (Resend)
+
+Le site envoie trois e-mails avec [Resend](https://resend.com) (`api/_lib/email.ts`) : une alerte au château pour chaque réservation payée, une alerte pour chaque demande du formulaire, et une confirmation au client après paiement. Un paiement reçu pour des dates déjà prises (`conflict`) déclenche une alerte « à rembourser ».
+
+1. Créer un compte Resend avec l'adresse qui doit recevoir les alertes, puis une clé API « Sending access ». Mettre `RESEND_API_KEY` et `OWNER_EMAIL` (cette même adresse) dans Vercel. Les alertes partent alors de `onboarding@resend.dev`, qui ne peut écrire qu'à l'adresse du compte Resend.
+2. Dans Resend → Domains, ajouter `mail.chambredhotesaintemilion.fr` (région Irlande, eu-west-1) et faire ajouter ses enregistrements DNS chez Infomaniak, avec un `_dmarc` s'il n'y en a pas.
+3. Une fois le domaine vérifié, mettre `EMAIL_FROM="Château Latour Ségur <reservations@mail.chambredhotesaintemilion.fr>"` dans Vercel et redéployer : la confirmation au client part aussi. Les réponses vont à `contact@chateaulatoursegur.com` (`EMAIL_REPLY_TO` pour changer).
+
+Un e-mail qui échoue ne bloque jamais une réservation ; l'erreur apparaît dans les journaux Vercel (`email …`).

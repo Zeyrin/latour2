@@ -1,6 +1,8 @@
 // Enregistre une demande du formulaire de réservation dans Supabase (table booking_requests).
 // Écriture côté serveur avec SUPABASE_SERVICE_ROLE_KEY : seuls les champs ci-dessous, validés, sont acceptés.
 
+import { sendOwnerRequestAlert } from './_lib/email.js'
+
 const UNIVERSES = ['suites', 'spa', 'evenements']
 const SUITES = ['terre', 'eau', 'metal', 'feu', 'bois']
 const MAX_BODY = 10_000
@@ -73,6 +75,7 @@ export async function POST(request: Request) {
       body: JSON.stringify(row),
     })
     if (!response.ok) throw new Error(`Supabase ${response.status} : ${await response.text()}`)
+    await sendOwnerRequestAlert(row, crypto.randomUUID())
     return new Response(null, { status: 204 })
   } catch (error) {
     console.error('booking-request', error)

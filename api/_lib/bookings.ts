@@ -1,6 +1,7 @@
 // Étapes communes au webhook Stripe, à la page de confirmation et à la synchronisation Beds24.
 
 import type Stripe from 'stripe'
+import { sendGuestConfirmation, sendOwnerBookingAlert } from './email.js'
 import { rpc, type BookingRow, type PaidResult } from './supabase.js'
 
 // BEDS24_API_BASE : uniquement pour les tests (faux Beds24 local).
@@ -45,8 +46,13 @@ export async function recordPaidSession(session: Stripe.Checkout.Session): Promi
     p_amount_total: session.amount_total,
   })
   if (result.changed && result.booking) {
-    if (result.status === 'paid') await pushToBeds24(result.booking)
-    else console.error('booking conflict: paiement reçu mais réservation impossible, à rembourser', { id: result.booking.id, reason: result.reason })
+    if (result.status === 'paid') {
+      await pushToBeds24(result.booking)
+      await Promise.all([sendGuestConfirmation(result.booking), sendOwnerBookingAlert(result.booking)])
+    } else {
+      console.error('booking conflict: paiement reçu mais réservation impossible, à rembourser', { id: result.booking.id, reason: result.reason })
+      await sendOwnerBookingAlert(result.booking, true)
+    }
   }
   return result
 }
