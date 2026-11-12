@@ -364,8 +364,8 @@ export const galleryPhotos: Record<Lang, GalleryPhoto[]> = {
 
 
 export const contact = {
-  phone: '+33 (0)5 57 51 06 72',
-  phoneLink: '+33557510672',
+  phone: '+33 (0)6 24 53 75 50',
+  phoneLink: '+33624537550',
   email: 'contact@chateaulatoursegur.com',
   address: '1, lieu-dit Latour',
   locality: '33570 Lussac — Saint-Émilion',
