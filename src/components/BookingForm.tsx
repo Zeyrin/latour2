@@ -47,6 +47,10 @@ async function loadOnlineBooking() {
   }
 }
 
+function fullName(values: FormData) {
+  return [values.get('firstName'), values.get('lastName')].map((part) => String(part || '').trim()).filter(Boolean).join(' ')
+}
+
 async function saveRequest(values: FormData, universe?: UniverseId, suite?: SuiteId | '') {
   if (values.get('website')) return
   try {
@@ -55,7 +59,7 @@ async function saveRequest(values: FormData, universe?: UniverseId, suite?: Suit
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: String(values.get('name') || '').trim(),
+        name: fullName(values),
         email: String(values.get('email') || '').trim(),
         phone: String(values.get('phone') || '').trim() || null,
         universe: universe ?? null,
@@ -154,7 +158,7 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
           arrival,
           departure,
           guests: Number(values.get('guests')),
-          name: String(values.get('name') || '').trim(),
+          name: fullName(values),
           email: String(values.get('email') || '').trim(),
           phone: String(values.get('phone') || '').trim() || null,
           message: String(values.get('message') || '').trim() || null,
@@ -199,7 +203,7 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
     setSavedValues(Object.fromEntries(Array.from(values.entries()).map(([key, value]) => [key, String(value)])))
     setCopied(false)
     setCopyError(false)
-    const name = String(values.get('name') || '').trim()
+    const name = fullName(values)
     setGuestName(name)
     const category = universes[lang].find((item) => item.id === universe)?.label || t.defaultCategory
     const suiteLabel = suites[lang].find((item) => item.id === suite)?.label || t.noPreference
@@ -290,8 +294,8 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
           {universe
             ? <AvailabilityCalendar key={universe} mode={universe === 'suites' ? 'range' : 'single'} resources={resources} blocks={blocks} min={online && firstBookable > today ? firstBookable : today} arrival={arrival} departure={departure} onChange={changeDates} />
             : <p className="dates-placeholder">{t.datesPlaceholder}</p>}
-          <input type="hidden" name="arrival" value={arrival} />
-          <input type="hidden" name="departure" value={universe === 'suites' ? departure : ''} />
+          <input type="hidden" name="arrival" autoComplete="off" value={arrival} />
+          <input type="hidden" name="departure" autoComplete="off" value={universe === 'suites' ? departure : ''} />
           <div className="dates-summary" role="status">
             {dateError
               ? <span className="dates-error">{dateError}</span>
@@ -303,11 +307,12 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
           {universe && universe !== 'suites' && <p className="dates-note">{t.optional}</p>}
         </fieldset>
         <div className="form-grid">
-          <label className="form-field"><span>{t.name} <span aria-hidden="true">*</span></span><input name="name" autoComplete="name" required maxLength={100} defaultValue={savedValues.name || ''} placeholder={t.namePlaceholder} /></label>
-          <label className="form-field"><span>{t.email} <span aria-hidden="true">*</span></span><input name="email" type="email" autoComplete="email" required maxLength={200} defaultValue={savedValues.email || ''} placeholder={t.emailPlaceholder} /></label>
-          <label className="form-field"><span>{t.phone}</span><input type="tel" name="phone" autoComplete="tel" maxLength={40} defaultValue={savedValues.phone || ''} placeholder={t.phonePlaceholder} /></label>
-          <label className="form-field"><span>{t.guests} <span aria-hidden="true">*</span></span><input name="guests" type="number" min="1" max={maxGuests} step="1" value={guests} onChange={(event) => { setGuests(event.target.value); setPayError('') }} required aria-describedby={online && Number(guests) > maxGuests ? 'guests-error' : undefined} />{online && Number(guests) > maxGuests && <small id="guests-error" className="dates-error">{p.maxGuests(maxGuests)}</small>}</label>
-          <label className="form-field form-field-wide"><span>{t.message}</span><textarea name="message" rows={3} maxLength={2000} defaultValue={savedValues.message ?? initialMessage} placeholder={t.messagePlaceholder} /></label>
+          <label className="form-field"><span>{t.firstName} <span aria-hidden="true">*</span></span><input id="booking-given-name" name="firstName" autoComplete="section-booking given-name" required maxLength={50} defaultValue={savedValues.firstName || ''} placeholder={t.firstNamePlaceholder} /></label>
+          <label className="form-field"><span>{t.lastName} <span aria-hidden="true">*</span></span><input id="booking-family-name" name="lastName" autoComplete="section-booking family-name" required maxLength={50} defaultValue={savedValues.lastName || ''} placeholder={t.lastNamePlaceholder} /></label>
+          <label className="form-field"><span>{t.email} <span aria-hidden="true">*</span></span><input id="booking-email" name="email" type="email" autoComplete="section-booking email" required maxLength={200} defaultValue={savedValues.email || ''} placeholder={t.emailPlaceholder} /></label>
+          <label className="form-field"><span>{t.phone}</span><input id="booking-tel" type="tel" name="phone" autoComplete="section-booking tel" maxLength={40} defaultValue={savedValues.phone || ''} placeholder={t.phonePlaceholder} /></label>
+          <label className="form-field"><span>{t.guests} <span aria-hidden="true">*</span></span><input id="booking-guests" name="guests" type="number" autoComplete="off" data-1p-ignore data-lpignore="true" data-form-type="other" min="1" max={maxGuests} step="1" value={guests} onChange={(event) => { setGuests(event.target.value); setPayError('') }} required aria-describedby={online && Number(guests) > maxGuests ? 'guests-error' : undefined} />{online && Number(guests) > maxGuests && <small id="guests-error" className="dates-error">{p.maxGuests(maxGuests)}</small>}</label>
+          <label className="form-field form-field-wide"><span>{t.message}</span><textarea id="booking-message" name="message" autoComplete="off" rows={3} maxLength={2000} defaultValue={savedValues.message ?? initialMessage} placeholder={t.messagePlaceholder} /></label>
         </div>
         <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: 'absolute', left: '-9999px' }} />
         <label className="consent"><input type="checkbox" name="consent" required defaultChecked={savedValues.consent === 'on'} /><span>{t.consent} <span aria-hidden="true">*</span></span></label>
