@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowRight, ArrowUpRight, X } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, CalendarDays, X } from 'lucide-react'
 import { Picture } from './Picture'
 import { isMomentVisible, moment, momentContent } from '../lib/moment'
 import type { Lang } from '../lib/i18n'
@@ -104,19 +104,16 @@ function MomentDialog({ lang, onClose, onBook }: { lang: Lang; onClose: () => vo
         </div>
       </div>
       <div className="moment-dialog-body">
-        <ul className="moment-list">
+        <ul className="moment-cards">
           {t.events.map((event) => (
-            <li key={event.id} className="moment-item">
-              <div className="moment-when">
-                <p className="moment-item-label">{event.label}</p>
-                {event.days.length
-                  ? event.days.map((day) => <p key={day.d + day.m} className="moment-range"><span>{day.d}</span> <em>{day.m}</em></p>)
-                  : <p className="moment-range is-tbc"><em>{t.dateTbc}</em></p>}
-              </div>
-              <div className="moment-what">
+            <li key={event.id} className="moment-card">
+              <div className="moment-card-image"><Picture name={event.image} alt={event.imageAlt} sizes="(max-width: 700px) 100vw, 220px" /></div>
+              <div className="moment-card-text">
+                <p className="moment-card-label">{event.label}</p>
                 <h3>{event.title}</h3>
-                <p>{event.text}</p>
-                <button className="moment-link" onClick={() => onBook('evenements', event.request)} aria-label={`${event.cta} — ${event.title}, ${event.date || t.dateTbc}`}>{event.cta}<ArrowUpRight size={15} strokeWidth={1.4} /></button>
+                <p className="moment-card-date"><CalendarDays size={14} strokeWidth={1.4} aria-hidden="true" />{event.date || t.dateTbc}</p>
+                <p className="moment-card-desc">{event.text}</p>
+                <button className="moment-link" onClick={() => onBook('evenements', event.request)} aria-label={`${event.cta} — ${event.title}`}>{event.cta}<ArrowUpRight size={15} strokeWidth={1.4} /></button>
               </div>
             </li>
           ))}
