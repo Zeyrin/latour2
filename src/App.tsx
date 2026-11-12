@@ -239,16 +239,20 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
         </section>
 
         <div className="chapters">{langUniverses.map((universe) => <Fragment key={universe.id}>
-          {universe.id === 'suites' && <Chapter universe={universe} caption={t.photoCaption} href="#les-suites" newWindow={t.newWindow} />}
+          {universe.id === 'suites' && <section className="suites-block" id="suites" aria-labelledby="heading-suites"><div className="page-width" id="les-suites">
+            <Reveal className="suites-block-head">
+              <div><p className="eyebrow"><span className="chapter-number">{universe.number}</span>{universe.label}</p><h2 id="heading-suites">{universe.heading[0]}<br /><em>{universe.heading[1]}</em></h2></div>
+              <div><p>{universe.description}</p><p>{universe.detail}</p><ul className="chapter-features">{universe.features.map((feature) => <li key={feature}>{feature}</li>)}</ul></div>
+            </Reveal>
+            <Reveal className="suites-mosaic">{suites[lang].map((suite, index) => { const detail = suiteDetails[lang][suite.id]; const cover = suitePhotos[suite.id][0]; return <Link key={suite.id} to={suitePaths(suite.id)[lang]} className={`suite-tile suite-tile-${suite.id}`}>
+              {cover ? <img src={cover} alt="" loading="lazy" decoding="async" /> : <span className="suite-tile-mark" aria-hidden="true">{suite.label.split(' ').at(-1)}</span>}
+              <span className="suite-tile-shade" />
+              <span className="suite-tile-top"><span>0{index + 1}</span><span>{detail.surface} · {detail.guests}</span></span>
+              <span className="suite-tile-bottom"><h3>{suite.label}</h3><span className="suite-tile-tagline">{detail.tagline}</span><span className="suite-tile-link">{t.seeSuite} <ArrowRight size={15} strokeWidth={1.25} /></span></span>
+            </Link> })}</Reveal>
+          </div></section>}
           {universe.id === 'spa' && <Chapter universe={universe} caption={t.photoCaption} href={spaUrl('chapitre', lang)} external newWindow={t.newWindow} />}
           {universe.id === 'evenements' && <Chapter universe={universe} caption={t.photoCaption} onDiscover={() => setModal({ type: 'universe', id: universe.id })} newWindow={t.newWindow} />}
-          {universe.id === 'suites' && <section className="suites-list-section" id="les-suites" aria-labelledby="suites-list-heading"><div className="page-width">
-            <Reveal className="section-heading"><div><p className="eyebrow">{t.suitesListEyebrow}</p><h2 id="suites-list-heading">{t.suitesListTitle[0]} <em>{t.suitesListTitle[1]}</em></h2></div><p className="section-intro">{t.suitesListIntro}</p></Reveal>
-            <div className="suites-list">{suites[lang].map((suite, index) => { const detail = suiteDetails[lang][suite.id]; const cover = suitePhotos[suite.id][0]; return <Reveal key={suite.id} delay={index * 0.06}><Link to={suitePaths(suite.id)[lang]} className={`suite-card suite-card-${suite.id}`}>
-              <div className="suite-card-image">{cover ? <img src={cover} alt="" loading="lazy" decoding="async" /> : <span className="suite-card-mark" aria-hidden="true">{suite.label.split(' ').at(-1)}</span>}<span className="suite-card-number">0{index + 1}</span></div>
-              <div className="suite-card-body"><h3>{suite.label}</h3><p>{detail.tagline}</p><p className="suite-card-facts">{detail.surface} · {detail.guests}</p><span className="text-link">{t.seeSuite} <ArrowRight size={16} strokeWidth={1.25} /></span></div>
-            </Link></Reveal> })}</div>
-          </div></section>}
         </Fragment>)}</div>
 
         <section className="escapes-section section-space" id="echappees" aria-labelledby="escapes-heading"><div className="page-width">
