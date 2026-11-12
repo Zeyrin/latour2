@@ -12,6 +12,7 @@ const { chromium } = createRequire(import.meta.url)('playwright')
 const here = dirname(fileURLToPath(import.meta.url))
 const pub = resolve(here, '../../public')
 const tmp = mkdtempSync(join(tmpdir(), 'po-video-'))
+// PO_DATES (texte de fin, HTML) et PO_OUT (chemin du .mp4) permettent de réutiliser le montage pour d'autres dates.
 const outDir = join(here, 'videos')
 mkdirSync(outDir, { recursive: true })
 
@@ -27,7 +28,7 @@ const scenes = [
   { photo: 'salle-cheminee-table', focus: 0.4, pan: 'right', dur: 2.8, kicker: '03', text: 'Repas d’affaires<br><em>au coin du feu</em>' },
   { photo: 'soiree-musiciens', focus: 0.45, pan: 'left', dur: 2.8, kicker: '04', text: 'Soirées<br><em>&amp; événements</em>' },
   { photo: 'spa-couloir-piscine', focus: 0.5, pan: 'up', dur: 2.8, kicker: '05', text: 'Et un spa<br><em>pour prolonger</em>' },
-  { photo: 'porte-ouverte-couloir', focus: 0.47, pan: 'zoom', dur: 4.2, kicker: 'Portes ouvertes', text: 'Du 14 au<br><em>21 octobre</em>', end: true },
+  { photo: 'porte-ouverte-couloir', focus: 0.47, pan: 'zoom', dur: 4.2, kicker: 'Portes ouvertes', text: process.env.PO_DATES || 'Du 14 au<br><em>21 octobre</em>', end: true },
 ]
 
 const css = `
@@ -106,6 +107,7 @@ for (let i = 1; i < scenes.length; i++) {
   chain += `${prev}[${i}:v]xfade=transition=fade:duration=${FADE}:offset=${offset.toFixed(2)}${lab};`
   prev = lab
 }
-const out = join(outDir, 'reel-portes-ouvertes-salle-spa.mp4')
+const out = process.env.PO_OUT ? resolve(process.env.PO_OUT) : join(outDir, 'reel-portes-ouvertes-salle-spa.mp4')
+mkdirSync(dirname(out), { recursive: true })
 ff([...inputs, '-filter_complex', chain.slice(0, -1), '-map', '[v]', '-c:v', 'libx264', '-crf', '20', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', out])
 console.log('→', out)
