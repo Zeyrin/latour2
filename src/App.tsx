@@ -233,6 +233,7 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
 
         <div className="chapters">{langUniverses.map((universe) => <Fragment key={universe.id}>
           {universe.id === 'suites' && <Chapter universe={universe} caption={t.photoCaption} href="#les-suites" newWindow={t.newWindow} />}
+          {universe.id === 'spa' && <Chapter universe={universe} caption={t.photoCaption} href={spaUrl('chapitre', lang)} external newWindow={t.newWindow} />}
           {universe.id === 'evenements' && <Chapter universe={universe} caption={t.photoCaption} onDiscover={() => setModal({ type: 'universe', id: universe.id })} newWindow={t.newWindow} />}
           {universe.id === 'suites' && <section className="suites-list-section" id="les-suites" aria-labelledby="suites-list-heading"><div className="page-width">
             <Reveal className="section-heading"><div><p className="eyebrow">{t.suitesListEyebrow}</p><h2 id="suites-list-heading">{t.suitesListTitle[0]} <em>{t.suitesListTitle[1]}</em></h2></div><p className="section-intro">{t.suitesListIntro}</p></Reveal>
