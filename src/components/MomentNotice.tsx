@@ -107,7 +107,18 @@ function MomentDialog({ lang, onClose, onBook }: { lang: Lang; onClose: () => vo
         <ul className="moment-cards">
           {t.events.map((event) => (
             <li key={event.id} className="moment-card">
-              <div className="moment-card-image"><Picture name={event.image} alt={event.imageAlt} sizes="(max-width: 700px) 100vw, 220px" /></div>
+              <div className={`moment-card-image${event.poster ? ' is-poster' : ''}`}>
+                <Picture name={event.image} alt={event.imageAlt} sizes="(max-width: 700px) 100vw, 260px" />
+                {event.poster && (
+                  <div className="moment-poster" aria-hidden="true">
+                    <span className="moment-poster-kicker">{event.poster.kicker}</span>
+                    <span className="moment-poster-title">{event.poster.title[0]}<em>{event.poster.title[1]}</em></span>
+                    <span className="moment-poster-rule" />
+                    <span className="moment-poster-date">{event.poster.date}</span>
+                    <span className="moment-poster-place">{event.poster.place}</span>
+                  </div>
+                )}
+              </div>
               <div className="moment-card-text">
                 <p className="moment-card-label">{event.label}</p>
                 <h3>{event.title}</h3>

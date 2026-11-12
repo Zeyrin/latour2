@@ -45,6 +45,16 @@
 .moment-card-image img{position:absolute;inset:0;width:100%;height:100%;transition:transform 1s cubic-bezier(.22,1,.36,1)}
 .moment-card:hover .moment-card-image img{transform:scale(1.05)}
 .moment-card-text{padding:20px 22px 18px;min-width:0}
+.moment-card:has(.is-poster){grid-template-columns:250px minmax(0,1fr)}
+.moment-card-image.is-poster img{filter:brightness(.92) saturate(1.05)}
+.moment-card-image.is-poster:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#140c0794 0%,#140c0726 30%,#140c0740 55%,#140c07e6 100%)}
+.moment-poster{position:absolute;z-index:1;inset:12px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:18px 12px 20px;border:1px solid #f6ead680;border-radius:10px;color:#fbf3e6;text-align:center}
+.moment-poster-kicker{font-family:var(--sans);font-size:8px;letter-spacing:2.4px;text-transform:uppercase;opacity:.9}
+.moment-poster-title{display:flex;flex-direction:column;margin-top:auto;font-size:40px;line-height:.98;letter-spacing:-1px;color:#fff;text-shadow:0 2px 18px #00000059}
+.moment-poster-title em{font-size:1.02em}
+.moment-poster-rule{width:34px;height:1px;margin:14px 0 12px;background:#e9c98f}
+.moment-poster-date{font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:2.2px;text-transform:uppercase;color:#f2d7a6}
+.moment-poster-place{margin-top:6px;font-size:13px;font-style:italic;opacity:.85}
 .moment-card-label{font-family:var(--sans);font-size:9px;letter-spacing:1.7px;text-transform:uppercase;color:var(--gold)}
 .moment-card h3{margin-top:6px;font-size:22px;line-height:1.2;letter-spacing:-.3px}
 .moment-card-date{display:flex;align-items:center;gap:8px;margin-top:8px;font-family:var(--sans);font-size:11.5px;color:var(--wine)}
@@ -71,6 +81,9 @@
   .moment-dialog-body{padding:18px 14px calc(18px + env(safe-area-inset-bottom));gap:14px}
   .moment-card{grid-template-columns:1fr}
   .moment-card-image{height:170px}
+  .moment-card:has(.is-poster){grid-template-columns:1fr}
+  .moment-card-image.is-poster{height:340px}
+  .moment-poster-title{font-size:46px}
   .moment-card-text{padding:16px 18px}
   .moment-card h3{font-size:20px}
   .moment-dialog-stay{flex-direction:column;align-items:stretch;text-align:center;font-size:17px;padding:16px}

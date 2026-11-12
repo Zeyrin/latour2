@@ -30,6 +30,8 @@ export interface MomentEvent {
   /** Photo de la carte (fichier dans public/images, sans extension). */
   image: string
   imageAlt: string
+  /** Optionnel : textes posés sur la photo, façon affiche d'événement. */
+  poster?: { kicker: string; title: [string, string]; date: string; place: string }
   /** Texte de la date, ex. « Samedi 6 et dimanche 7 décembre · 10 h – 18 h ». Vide = à confirmer. */
   date: string
   text: string
@@ -69,6 +71,7 @@ export const momentContent: Record<Lang, MomentContent> = {
         label: 'Marché de Noël',
         image: 'cuvier',
         imageAlt: 'Le cuvier du château, sa grande cheminée allumée',
+        poster: { kicker: 'Château Latour Ségur', title: ['Marché', 'de Noël'], date: '19 & 20 déc.', place: 'Lussac · Saint-Émilion' },
         title: 'Le marché de Noël du château',
         date: 'Samedi 19 et dimanche 20 décembre', // TODO : horaires à ajouter
         // TODO : texte provisoire, à valider (exposants, produits, animations, entrée libre ?)
@@ -106,6 +109,7 @@ export const momentContent: Record<Lang, MomentContent> = {
         label: 'Christmas market',
         image: 'cuvier',
         imageAlt: 'The château’s old winery hall with its large lit fireplace',
+        poster: { kicker: 'Château Latour Ségur', title: ['Christmas', 'market'], date: '19 & 20 Dec', place: 'Lussac · Saint-Émilion' },
         title: 'The château Christmas market',
         date: 'Saturday 19 & Sunday 20 December', // TODO: add times
         text: 'Local producers and craftspeople, wines from the vineyards and seasonal treats, at the heart of the illuminated estate. A lovely way to find gifts that mean something.',
