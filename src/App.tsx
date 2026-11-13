@@ -111,7 +111,7 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      lenisRef.current = new Lenis({ autoRaf: true, duration: 1.15, smoothWheel: true, anchors: { offset: -88 } })
+      lenisRef.current = new Lenis({ autoRaf: true, duration: 1.15, smoothWheel: true, anchors: true })
     }
     return () => {
       cancelled = true
@@ -153,7 +153,7 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
     window.setTimeout(() => {
       const target = document.getElementById(id)
       if (!target) return
-      if (lenisRef.current) lenisRef.current.scrollTo(target, { offset: -80, force: true })
+      if (lenisRef.current) lenisRef.current.scrollTo(target, { force: true })
       else target.scrollIntoView({ behavior: 'auto' })
       window.history.replaceState(null, '', `#${id}`)
     }, 80)

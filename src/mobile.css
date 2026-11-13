@@ -14,7 +14,7 @@
   .detail-body>.button,.booking-confirmation .button,.copy-button,.mobile-menu .button,.form-submit,
   .universe-fieldset legend,.form-field>span,.choice-number,.calendar-legend,.lightbox-bottom span,.legal-lang,
   .suite-card-number,.suite-card-body .suite-card-facts,.suite-card-body .text-link,
-  .suite-key-label,.suite-others-facts,.suite-carousel-count,.suite-carousel-all,.suite-spa-link,.suite-subheading,.suite-footer-links a,.suite-mobile-bar span,
+  .suite-key-label,.suite-others-facts,.suite-gallery-count,.suite-gallery-all,.suite-spa-link,.suite-subheading,.suite-footer-links a,.suite-mobile-bar span,
   .suite-page .ancv,.site-footer .ancv{font-size:10px;letter-spacing:1px}
   .chapter-features li{font-size:10px;letter-spacing:.6px;line-height:1.8}
   .chapter-features{flex-wrap:wrap}
@@ -55,7 +55,7 @@
   .hero-discover{min-height:44px}
   .lang-switch{min-width:44px;justify-content:center}
   .lightbox-controls .icon-button{width:44px;height:44px}
-  .suite-carousel-all,.suite-spa-link{min-height:44px}
+  .suite-gallery-all,.suite-spa-link{min-height:44px}
   .suite-footer-links a,.suite-footer address a{display:inline-flex;align-items:center;min-height:44px}
   .legal-page .legal-content a{display:inline-block;padding-block:12px;margin-block:-12px}
   .legal-lang{min-height:44px;display:inline-flex;align-items:center}
