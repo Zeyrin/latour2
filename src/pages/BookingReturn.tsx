@@ -30,9 +30,7 @@ function Layout({ lang, page, title, children }: { lang: Lang; page: PageKey; ti
   return (
     <LangContext.Provider value={lang}>
       <div className="booking-return legal-page">
-        <Seo lang={lang} page={page} title={`${title} — Château Latour Ségur Suites & Spa`} description={title}>
-          <meta name="robots" content="noindex" />
-        </Seo>
+        <Seo lang={lang} page={page} title={`${title} — Château Latour Ségur Suites & Spa`} description={title} noindex />
         <header><Link to={paths.home[lang]} aria-label="Château Latour Ségur Suites & Spa"><Brand /></Link></header>
         <main><div className="booking-confirmation" role="status">{children}</div></main>
       </div>

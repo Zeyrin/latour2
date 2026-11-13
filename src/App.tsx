@@ -11,12 +11,14 @@ import { BookingForm } from './components/BookingForm'
 import { Seo } from './components/Seo'
 import { MomentNotice } from './components/MomentNotice'
 import { SuitesShowcase } from './components/SuitesShowcase'
-import { GIFT_URL, SITE_URL, SPA_URL, spaUrl, contact, escapes, galleryPhotos, suitePhotos, suites, universes, type SuiteId, type GalleryFilter, type GalleryPhoto, type Universe, type UniverseId } from './lib/content'
-import { LangContext, paths, type Lang } from './lib/i18n'
+import { GIFT_URL, SITE_URL, SPA_URL, spaUrl, contact, escapes, galleryPhotos, suiteCommon, suitePhotos, suites, universes, type SuiteId, type GalleryFilter, type GalleryPhoto, type Universe, type UniverseId } from './lib/content'
+import { LangContext, paths, suitePaths, type Lang } from './lib/i18n'
+import { RATES } from './lib/pricing'
 import { ui } from './lib/ui'
+import { readBookingLink, type BookingLink } from './lib/deeplink'
 
 type ModalState =
-  | { type: 'booking'; universe?: UniverseId; message?: string }
+  | { type: 'booking'; universe?: UniverseId; message?: string; link?: BookingLink }
   | { type: 'universe'; id: UniverseId }
   | { type: 'escape'; id: string }
   | { type: 'story' }
@@ -70,7 +72,10 @@ function jsonLd(lang: Lang) {
     priceRange: '€€€',
     numberOfRooms: 5,
     sameAs: ['https://www.instagram.com/chateaulatoursegur/', SPA_URL],
-    amenityFeature: [{ '@type': 'LocationFeatureSpecification', name: 'Spa', value: true }, { '@type': 'LocationFeatureSpecification', name: ui[lang].jsonLdMeeting, value: true }],
+    amenityFeature: [{ '@type': 'LocationFeatureSpecification', name: 'Spa', value: true }, { '@type': 'LocationFeatureSpecification', name: ui[lang].jsonLdMeeting, value: true }, ...suiteCommon[lang].map((name) => ({ '@type': 'LocationFeatureSpecification', name, value: true }))],
+    // Les fiches suites décrivent chaque chambre en détail (pages/Suite.tsx).
+    containsPlace: suites[lang].map((suite) => ({ '@type': 'HotelRoom', '@id': `${SITE_URL}${suitePaths(suite.id)[lang]}#suite`, name: suite.label, url: `${SITE_URL}${suitePaths(suite.id)[lang]}` })),
+    makesOffer: suites[lang].map((suite) => ({ '@type': 'Offer', itemOffered: { '@id': `${SITE_URL}${suitePaths(suite.id)[lang]}#suite` }, priceSpecification: { '@type': 'UnitPriceSpecification', price: RATES[suite.id].night / 100, priceCurrency: 'EUR', unitText: lang === 'fr' ? 'nuit' : 'night' } })),
   }
 }
 
@@ -136,10 +141,12 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
     return () => window.removeEventListener('keydown', handleKey)
   }, [lightbox])
 
-  // Lien « ?reserver » (page d'annulation du paiement) : ouvre directement la réservation des suites.
+  // Lien « ?reserver » (page d'annulation, publicités, partenaires) : ouvre la réservation des suites,
+  // pré-remplie si l'adresse donne la suite, les dates ou le nombre de personnes (lib/deeplink.ts).
   useEffect(() => {
-    if (!new URLSearchParams(window.location.search).has('reserver')) return
-    const timer = window.setTimeout(() => setModal({ type: 'booking', universe: 'suites' }), 0)
+    const link = readBookingLink(window.location.search)
+    if (!link) return
+    const timer = window.setTimeout(() => setModal({ type: 'booking', universe: 'suites', link }), 0)
     return () => window.clearTimeout(timer)
   }, [])
 
@@ -167,7 +174,12 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
   return (
     <LangContext.Provider value={lang}>
     <MotionConfig reducedMotion="user">
-      <Seo lang={lang} page="home" title={t.seoTitle} description={t.seoDescription}><script type="application/ld+json">{JSON.stringify(jsonLd(lang))}</script></Seo>
+      <Seo lang={lang} page="home" title={t.seoTitle} description={t.seoDescription}>
+        {/* Image d'accueil préchargée sur l'accueil seulement (les fiches suites ne l'affichent pas). */}
+        <link rel="preload" href="/images/domaine.webp" as="image" media="(min-width: 701px)" />
+        <link rel="preload" href="/images/domaine-mobile.webp" as="image" media="(max-width: 700px)" />
+        <script type="application/ld+json">{JSON.stringify(jsonLd(lang))}</script>
+      </Seo>
       <AnimatePresence>
         {loading && <motion.div className="preloader" aria-hidden="true" initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reducedMotion ? 0.1 : 0.6 }}><ChateauSketch /><Brand /><span className="preloader-line" /></motion.div>}
       </AnimatePresence>
@@ -275,7 +287,7 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
       {menuOpen && <Modal title={t.menuTitle} onClose={() => setMenuOpen(false)} className="mobile-menu"><Brand sketch /><p className="eyebrow">{t.menuWelcome}</p><nav aria-label={t.mobileNav}>{([['domaine', t.menuLinks.domaine], ['les-suites', t.menuLinks.suites], ['spa', t.menuLinks.spa], ['evenements', t.menuLinks.evenements], ['echappees', t.menuLinks.echappees], ['galerie', t.menuLinks.galerie]] as const).map(([id, text], index) => <button key={id} onClick={() => navigateFromMenu(id)}><span>0{index + 1}</span>{text}<ArrowUpRight size={18} strokeWidth={1.2} /></button>)}</nav><button className="button button-burgundy" onClick={() => book()}>{t.cta} <ArrowUpRight size={17} /></button><a className="mobile-menu-phone" href={`tel:${contact.phoneLink}`}>{contact.phone}</a><Link className="mobile-menu-lang" to={paths.home[other]} hrefLang={other} lang={other} onClick={() => setMenuOpen(false)}><Globe size={15} strokeWidth={1.25} />{t.switchLang}</Link></Modal>}
 
       {modal && <Modal key={modal.type} title={modal.type === 'booking' ? t.bookingModal : t.discoverModal} onClose={() => setModal(null)} className={`content-modal ${modal.type === 'booking' ? 'booking-modal' : ''}`}>
-        {modal.type === 'booking' && <BookingForm initialUniverse={modal.universe} initialMessage={modal.message} />}
+        {modal.type === 'booking' && <BookingForm initialUniverse={modal.universe} initialMessage={modal.message} initialSuite={modal.link?.suite} initialArrival={modal.link?.arrival} initialDeparture={modal.link?.departure} initialGuests={modal.link?.guests} />}
         {modal.type === 'universe' && (() => { const universe = langUniverses.find((item) => item.id === modal.id)!; return <><div className="detail-image"><Picture name={universe.image} alt={universe.imageAlt} /></div><div className="detail-body"><p className="eyebrow">{universe.art}</p><h2>{universe.title[0]}<br /><em>{universe.title[1]}</em></h2><p>{universe.description}</p><div className="detail-options">{universe.options.map((option, index) => <details key={option.title} open={index === 0}><summary>{option.title}<ChevronDown size={18} strokeWidth={1.25} /></summary><p>{option.text}</p></details>)}</div><p className="detail-note">{t.detailNote}</p><div className="detail-actions"><button className="button button-burgundy" onClick={() => book(universe.id)}>{t.detailCta} <ArrowRight size={17} /></button></div></div></> })()}
         {modal.type === 'escape' && (() => { const escape = escapes[lang].find((item) => item.id === modal.id)!; return <><div className="detail-image"><Picture name={escape.image} alt={escape.alt} /></div><div className="detail-body"><p className="eyebrow">{escape.label}</p><h2>{escape.title}</h2><p>{escape.text}</p><p>{t.escapeText}</p><p className="detail-note">{t.escapeNote}</p><button className="button button-burgundy" onClick={() => book(escape.universe, escape.request)}>{t.composeEscape} <ArrowRight size={17} /></button></div></> })()}
         {modal.type === 'story' && <><div className="detail-image"><Picture name="domaine" alt={t.storyAlt} /></div><div className="detail-body"><p className="eyebrow">{t.storyEyebrow}</p><h2>{t.storyTitle[0]}<br /><em>{t.storyTitle[1]}</em></h2>{t.story.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}<span className="story-signature">{t.storySignature}</span><button className="button button-burgundy" onClick={() => book()}>{t.storyCta} <ArrowRight size={17} /></button></div></>}
