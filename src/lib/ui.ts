@@ -131,7 +131,8 @@ const fr = {
     perNight: 'la nuit',
     minNights: (n: number) => `${n} nuits minimum`,
     spa: 'Le Spa TerreHappy®, à deux pas',
-    seoTitle: (name: string) => `${name} — Château Latour Ségur Suites & Spa`,
+    seoTitle: (name: string) => `${name} · Chambre d’hôtes de charme près de Saint-Émilion | Château Latour Ségur`,
+    seoDescription: (name: string, facts: string, tagline: string, price: string) => `${name} (${facts}) au Château Latour Ségur, à Lussac-Saint-Émilion : ${tagline.charAt(0).toLowerCase()}${tagline.slice(1)} Spa sur place, ${price}, réservation en direct.`,
   },
 }
 
@@ -266,7 +267,8 @@ const en: Ui = {
     perNight: 'per night',
     minNights: (n: number) => `${n}-night minimum`,
     spa: 'Spa TerreHappy®, just steps away',
-    seoTitle: (name: string) => `${name} — Château Latour Ségur Suites & Spa`,
+    seoTitle: (name: string) => `${name} · Boutique B&B near Saint-Émilion | Château Latour Ségur`,
+    seoDescription: (name: string, facts: string, tagline: string, price: string) => `${name} (${facts}) at Château Latour Ségur, Lussac-Saint-Émilion: ${tagline.charAt(0).toLowerCase()}${tagline.slice(1)} Spa on site, ${price}, book direct.`,
   },
 }
 

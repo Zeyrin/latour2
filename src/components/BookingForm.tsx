@@ -11,6 +11,10 @@ interface BookingFormProps {
   initialUniverse?: UniverseId
   initialMessage?: string
   initialSuite?: SuiteId
+  /** Dates et nombre de personnes venus d'un lien (voir lib/deeplink.ts). */
+  initialArrival?: string
+  initialDeparture?: string
+  initialGuests?: string
 }
 
 function dateLabel(value: string, lang: Lang) {
@@ -76,12 +80,14 @@ async function saveRequest(values: FormData, universe?: UniverseId, suite?: Suit
   }
 }
 
-export function BookingForm({ initialUniverse, initialMessage = '', initialSuite }: BookingFormProps) {
+export function BookingForm({ initialUniverse, initialMessage = '', initialSuite, initialArrival = '', initialDeparture = '', initialGuests = '2' }: BookingFormProps) {
   const lang = useLang()
   const t = bookingUi[lang]
   const [universe, setUniverse] = useState<UniverseId | undefined>(initialUniverse)
-  const [arrival, setArrival] = useState('')
-  const [departure, setDeparture] = useState('')
+  // Dates venues d'un lien : ignorées si elles tombent avant la première arrivée possible.
+  const linkDatesOk = Boolean(initialArrival) && initialArrival >= addDays(parisToday(), MIN_DAYS_BEFORE_ARRIVAL)
+  const [arrival, setArrival] = useState(linkDatesOk ? initialArrival : '')
+  const [departure, setDeparture] = useState(linkDatesOk ? initialDeparture : '')
   const [draft, setDraft] = useState('')
   const [copied, setCopied] = useState(false)
   const [copyError, setCopyError] = useState(false)
@@ -94,7 +100,7 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
   const [payOnline, setPayOnline] = useState(false)
   const [paying, setPaying] = useState(false)
   const [payError, setPayError] = useState('')
-  const [guests, setGuests] = useState('2')
+  const [guests, setGuests] = useState(initialGuests)
   const [requestMode, setRequestMode] = useState(false)
   const p = payUi[lang]
   const datesRef = useRef<HTMLFieldSetElement>(null)
@@ -116,9 +122,12 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
       if (!active) return
       setBlocks(result ?? [])
       setAvailability(result ? 'ready' : 'offline')
+      // Dates venues d'un lien : retirées si la suite n'est plus libre.
+      if (linkDatesOk && result && !freeResource(result, resourcesFor(initialUniverse, initialSuite ?? ''), initialArrival, initialDeparture || addDays(initialArrival, 1))) changeDates('', '')
     })
     void loadOnlineBooking().then((enabled) => { if (active) setPayOnline(enabled) })
     return () => { active = false }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- une seule fois, au chargement du formulaire
   }, [])
 
   async function refreshAvailability() {

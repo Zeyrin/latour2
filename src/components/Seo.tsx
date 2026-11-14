@@ -6,7 +6,8 @@ import { paths, type Lang, type PageKey } from '../lib/i18n'
 const OG_IMAGE = `${SITE_URL}/images/og.jpg`
 
 /** `page` : une page connue de `paths`, ou directement ses chemins par langue. */
-export function Seo({ lang, page, title, description, image = OG_IMAGE, children }: { lang: Lang; page: PageKey | Record<Lang, string>; title: string; description: string; image?: string; children?: ReactNode }) {
+/** `noindex` : page utile aux visiteurs mais sans intérêt dans Google (retours de paiement). */
+export function Seo({ lang, page, title, description, image = OG_IMAGE, noindex = false, children }: { lang: Lang; page: PageKey | Record<Lang, string>; title: string; description: string; image?: string; noindex?: boolean; children?: ReactNode }) {
   const pagePaths = typeof page === 'string' ? paths[page] : page
   const url = `${SITE_URL}${pagePaths[lang]}`
   return (
@@ -14,6 +15,7 @@ export function Seo({ lang, page, title, description, image = OG_IMAGE, children
       <html lang={lang} />
       <title>{title}</title>
       <meta name="description" content={description} />
+      {noindex && <meta name="robots" content="noindex, follow" />}
       <link rel="canonical" href={url} />
       <link rel="alternate" hrefLang="fr" href={`${SITE_URL}${pagePaths.fr}`} />
       <link rel="alternate" hrefLang="en" href={`${SITE_URL}${pagePaths.en}`} />
@@ -25,9 +27,9 @@ export function Seo({ lang, page, title, description, image = OG_IMAGE, children
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:url" content={url} />
-      <meta property="og:image" content={OG_IMAGE} />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
+      <meta property="og:image" content={image} />
+      {image === OG_IMAGE && <meta property="og:image:width" content="1200" />}
+      {image === OG_IMAGE && <meta property="og:image:height" content="630" />}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />

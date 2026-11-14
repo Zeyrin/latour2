@@ -11,6 +11,52 @@ import { GIFT_URL, SITE_URL, spaUrl, contact, suiteCommon, suiteDetails, suiteId
 import { LangContext, locales, paths, suitePaths, type Lang } from '../lib/i18n'
 import { MIN_NIGHTS, RATES, formatEuros } from '../lib/pricing'
 import { ui } from '../lib/ui'
+import { readBookingLink, type BookingLink } from '../lib/deeplink'
+
+/** Données structurées de la fiche : la chambre, son prix de départ et le fil d'Ariane (schema.org). */
+function suiteJsonLd(id: SuiteId, lang: Lang) {
+  const t = ui[lang]
+  const detail = suiteDetails[lang][id]
+  const label = suites[lang].find((suite) => suite.id === id)!.label
+  const url = `${SITE_URL}${suitePaths(id)[lang]}`
+  const home = `${SITE_URL}${paths.home[lang]}`
+  const maxGuests = RATES[id].maxGuests
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'HotelRoom',
+        '@id': `${url}#suite`,
+        name: label,
+        description: [detail.tagline, ...detail.story].join(' '),
+        url,
+        image: suitePhotos[id].map((src) => `${SITE_URL}${src}`),
+        floorSize: { '@type': 'QuantitativeValue', value: Number.parseInt(detail.surface, 10) || undefined, unitCode: 'MTK' },
+        occupancy: { '@type': 'QuantitativeValue', minValue: 1, maxValue: maxGuests },
+        bed: detail.beds,
+        amenityFeature: [...detail.features, ...suiteCommon[lang]].map((name) => ({ '@type': 'LocationFeatureSpecification', name, value: true })),
+        containedInPlace: { '@id': `${SITE_URL}/#etablissement` },
+      },
+      {
+        '@type': 'Offer',
+        '@id': `${url}#offre`,
+        name: t.suitePage.book,
+        url,
+        itemOffered: { '@id': `${url}#suite` },
+        priceSpecification: { '@type': 'UnitPriceSpecification', price: RATES[id].night / 100, priceCurrency: 'EUR', unitText: lang === 'fr' ? 'nuit' : 'night', referenceQuantity: { '@type': 'QuantitativeValue', value: 1, unitCode: 'DAY' } },
+        availability: 'https://schema.org/InStock',
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Château Latour Ségur', item: home },
+          { '@type': 'ListItem', position: 2, name: t.suitesListEyebrow, item: `${home}#les-suites` },
+          { '@type': 'ListItem', position: 3, name: label, item: url },
+        ],
+      },
+    ],
+  }
+}
 
 /** La page détaillée d'une suite : caractéristiques, photographies et réservation. */
 export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
@@ -25,11 +71,20 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
   const price = p.fromPerNight(formatEuros(rate.night, locales[lang]))
   const minNights = rate.minNights ?? MIN_NIGHTS
   const [booking, setBooking] = useState(false)
+  const [link, setLink] = useState<BookingLink | null>(null)
   const [photoIndex, setPhotoIndex] = useState<number | null>(null)
   const [slideIndex, setSlideIndex] = useState(0)
   const trackRef = useRef<HTMLDivElement>(null)
   const showPhoto = (step: number) => setPhotoIndex((current) => current === null ? null : (current + step + photos.length) % photos.length)
   const newWindow = (text: string) => ({ target: '_blank', rel: 'noopener', 'aria-label': `${text} ${t.newWindow}` })
+
+  // Lien « /suites/eau?reserver&arrivee=…&depart=…&personnes=2 » : ouvre la réservation pré-remplie.
+  useEffect(() => {
+    const fromUrl = readBookingLink(window.location.search)
+    if (!fromUrl) return
+    const timer = window.setTimeout(() => { setLink(fromUrl); setBooking(true) }, 0)
+    return () => window.clearTimeout(timer)
+  }, [id])
 
   // Une fiche s'ouvre toujours en haut de page (le lien vient souvent du bas de l'accueil ou d'une autre fiche).
   useEffect(() => {
@@ -69,7 +124,7 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
   return (
     <LangContext.Provider value={lang}>
       <div className={`suite-page suite-page-${id}`}>
-        <Seo lang={lang} page={suitePaths(id)} title={p.seoTitle(label)} description={`${label} : ${detail.tagline} ${detail.surface}, ${detail.guests.toLowerCase()}, ${detail.beds}.`} image={photos[0] ? `${SITE_URL}${photos[0]}` : undefined} />
+        <Seo lang={lang} page={suitePaths(id)} title={p.seoTitle(label)} description={p.seoDescription(label, `${detail.surface}, ${detail.guests.toLowerCase()}`, detail.tagline, price)} image={photos[0] ? `${SITE_URL}${photos[0]}` : undefined}><script type="application/ld+json">{JSON.stringify(suiteJsonLd(id, lang))}</script></Seo>
         <header className="suite-header">
           <Link to={paths.home[lang]} className="suite-header-brand" aria-label={t.homeLabel}><Brand /></Link>
           <Link to={`${paths.home[lang]}#les-suites`} className="suite-back"><ArrowLeft size={15} strokeWidth={1.25} />{p.back}</Link>
@@ -140,7 +195,7 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
           </div>
         </footer>
 
-        {booking && <Modal title={t.bookingModal} onClose={() => setBooking(false)} className="content-modal booking-modal"><BookingForm initialUniverse="suites" initialSuite={id} /></Modal>}
+        {booking && <Modal title={t.bookingModal} onClose={() => { setBooking(false); setLink(null) }} className="content-modal booking-modal"><BookingForm initialUniverse="suites" initialSuite={id} initialArrival={link?.arrival} initialDeparture={link?.departure} initialGuests={link?.guests} /></Modal>}
         {photoIndex !== null && <Modal title={`${t.photo} ${label}`} onClose={() => setPhotoIndex(null)} className="lightbox"><div className="lightbox-image" onTouchStart={(event) => { touchStart.current = event.touches[0].clientX }} onTouchEnd={(event) => { if (touchStart.current === null) return; const dx = event.changedTouches[0].clientX - touchStart.current; touchStart.current = null; if (Math.abs(dx) > 40) showPhoto(dx < 0 ? 1 : -1) }}><AnimatePresence mode="wait"><motion.img key={photos[photoIndex]} src={photos[photoIndex]} alt={t.suitePhotoAlt(label, photoIndex + 1)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.22 }} /></AnimatePresence></div><div className="lightbox-bottom"><div><p>{label}</p><span>{String(photoIndex + 1).padStart(2, '0')} / {String(photos.length).padStart(2, '0')}</span></div><div className="lightbox-controls"><button className="icon-button" aria-label={t.prevPhoto} onClick={() => showPhoto(-1)}><ArrowLeft size={22} strokeWidth={1.25} /></button><button className="icon-button" aria-label={t.nextPhoto} onClick={() => showPhoto(1)}><ArrowRight size={22} strokeWidth={1.25} /></button></div></div></Modal>}
       </div>
     </LangContext.Provider>
