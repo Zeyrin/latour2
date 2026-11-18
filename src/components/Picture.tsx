@@ -12,7 +12,6 @@ const imageWidths: Record<string, number> = {
   parc: 800,
   'spa-piscine': 1012,
   vignes: 1600,
-  'domaine-pigeonnier': 1536,
   'noel-salle-a-manger': 1600,
 }
 

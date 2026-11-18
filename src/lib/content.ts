@@ -77,7 +77,7 @@ export const universes: Record<Lang, Universe[]> = {
       title: ['Séminaires', '& Événements'],
       tagline: 'De belles idées, de vrais liens.',
       image: 'cuvier',
-      imageAlt: 'La salle voûtée du cuvier, sa grande cheminée allumée et ses tables dressées',
+      imageAlt: 'La salle Aliénor d’Aquitaine, voûtée, sa grande cheminée allumée et ses tables dressées',
       heading: ['Se retrouver.', 'Faire naître l’inattendu.'],
       description: 'Il est des lieux qui donnent une autre dimension aux rencontres. Entre vieilles pierres et nature, le château accueille vos séminaires, réceptions et célébrations dans un cadre à la fois inspirant, chaleureux et résolument à part.',
       detail: 'Une journée pour penser ensemble, un moment pour célébrer, des souvenirs à créer. Parlons de votre projet : nous lui donnerons une forme singulière.',
@@ -141,7 +141,7 @@ export const universes: Record<Lang, Universe[]> = {
       title: ['Meetings', '& Events'],
       tagline: 'Bright ideas, real connections.',
       image: 'cuvier',
-      imageAlt: 'The vaulted vat room with its great open fire and laid tables',
+      imageAlt: 'The vaulted Salle Aliénor d’Aquitaine with its great open fire and laid tables',
       heading: ['Come together.', 'Make room for the unexpected.'],
       description: 'Some places give gatherings another dimension. Between old stone and nature, the château hosts your seminars, receptions and celebrations in a setting that is inspiring, warm and quite unlike anywhere else.',
       detail: 'A day to think together, a moment to celebrate, memories to make. Tell us about your project and we will give it a shape of its own.',
@@ -318,12 +318,12 @@ export const escapes: Record<Lang, Escape[]> = {
   fr: [
     { id: 'romantique', label: 'Une escapade à deux', title: 'À deux, loin du monde.', image: 'suite-bain', alt: 'Un lit aux coussins verts et un bain à remous éclairé à la bougie, dans la Suite Métal', text: 'Un réveil sans réveil, une balade dans le parc, une pause au spa. Retrouvez le plaisir d’être simplement ensemble.', universe: 'suites', request: 'Je souhaite en savoir plus sur un week-end romantique au château.' },
     { id: 'ressourcement', label: 'Cures & bien-être', title: 'Retrouver son équilibre.', image: 'bain-bougies', alt: 'Une grande baignoire creusée dans la pierre, éclairée par un chandelier', text: 'Accorder au corps et à l’esprit le temps dont ils ont besoin. Une parenthèse de soins à composer selon vos envies.', universe: 'spa', request: 'Je souhaite composer une cure de bien-être et de ressourcement.', href: spaUrl('escape-cures', 'fr') },
-    { id: 'partage', label: 'Des moments à partager', title: 'Le bonheur d’être réunis.', image: 'salle-a-manger', alt: 'La salle à manger du château aux lustres allumés, la table dressée aux chandelles', text: 'Une grande tablée, des conversations qui s’étirent et des liens qui se renforcent. Les plus beaux souvenirs se vivent à plusieurs.', universe: 'evenements', request: 'Je souhaite organiser une escapade de groupe ou une réception au château.' },
+    { id: 'partage', label: 'Des moments à partager', title: 'Le bonheur d’être réunis.', image: 'salle-a-manger', alt: 'Le salon Montesquieu aux lustres allumés, la table dressée aux chandelles', text: 'Une grande tablée, des conversations qui s’étirent et des liens qui se renforcent. Les plus beaux souvenirs se vivent à plusieurs.', universe: 'evenements', request: 'Je souhaite organiser une escapade de groupe ou une réception au château.' },
   ],
   en: [
     { id: 'romantique', label: 'A getaway for two', title: 'Just the two of you.', image: 'suite-bain', alt: 'A bed with green cushions and a candlelit whirlpool bath in the Metal Suite', text: 'Waking up without an alarm, a stroll through the park, a moment at the spa. Rediscover the joy of simply being together.', universe: 'suites', request: 'I would like to know more about a romantic weekend at the château.' },
     { id: 'ressourcement', label: 'Wellness retreats', title: 'Find your balance again.', image: 'bain-bougies', alt: 'A large bathtub set into the stone, lit by a candelabra', text: 'Give body and mind the time they need. A treatment break put together around your wishes.', universe: 'spa', request: 'I would like to put together a wellness and relaxation retreat.', href: spaUrl('escape-cures', 'en') },
-    { id: 'partage', label: 'Moments to share', title: 'The joy of being together.', image: 'salle-a-manger', alt: 'The château dining room with its chandeliers lit and a candlelit table', text: 'A long table, conversations that linger and bonds that grow stronger. The best memories are made together.', universe: 'evenements', request: 'I would like to organise a group getaway or a reception at the château.' },
+    { id: 'partage', label: 'Moments to share', title: 'The joy of being together.', image: 'salle-a-manger', alt: 'The Salon Montesquieu with its chandeliers lit and a candlelit table', text: 'A long table, conversations that linger and bonds that grow stronger. The best memories are made together.', universe: 'evenements', request: 'I would like to organise a group getaway or a reception at the château.' },
   ],
 }
 
@@ -335,10 +335,9 @@ export const galleryPhotos: Record<Lang, GalleryPhoto[]> = {
   fr: [
     { id: 'domaine-allee', category: 'domaine', image: 'domaine-allee', title: 'L’arrivée au château', alt: 'L’allée de gravier qui mène à la façade du château, entre pelouses et grands arbres' },
     { id: 'domaine-facade', category: 'domaine', image: 'domaine-facade', title: 'La demeure', alt: 'La façade du château au printemps, derrière les arbres en fleurs du jardin' },
-    { id: 'cuvier', category: 'evenements', image: 'cuvier', title: 'Le cuvier', alt: 'La salle voûtée du cuvier, sa grande cheminée allumée et ses tables dressées' },
+    { id: 'cuvier', category: 'evenements', image: 'cuvier', title: 'La salle Aliénor d’Aquitaine', alt: 'La salle Aliénor d’Aquitaine, voûtée, sa grande cheminée allumée et ses tables dressées' },
     { id: 'domaine-etang', category: 'domaine', image: 'domaine-etang', title: 'Au bord de l’étang', alt: 'L’étang du domaine bordé d’arbres, sous un ciel d’été' },
-    { id: 'domaine-pigeonnier', category: 'domaine', image: 'domaine-pigeonnier', title: 'Le pigeonnier', alt: 'Le pigeonnier en pierre au milieu des vignes dorées' },
-    { id: 'salle-a-manger', category: 'evenements', image: 'salle-a-manger', title: 'La salle à manger', alt: 'La salle à manger du château aux lustres allumés, la table dressée aux chandelles' },
+    { id: 'salle-a-manger', category: 'evenements', image: 'salle-a-manger', title: 'Le salon Montesquieu', alt: 'Le salon Montesquieu aux lustres allumés, la table dressée aux chandelles' },
     { id: 'domaine-allee-arbres', category: 'domaine', image: 'domaine-allee-arbres', title: 'L’allée centrale', alt: 'L’allée centrale du parc, ombragée par une double rangée d’arbres' },
     { id: 'domaine-dependances', category: 'domaine', image: 'domaine-dependances', title: 'Les dépendances', alt: 'Les dépendances en pierre qui abritent les suites, devant la pelouse fleurie' },
     { id: 'domaine-pont', category: 'domaine', image: 'domaine-pont', title: 'Le vieux pont', alt: 'Un petit pont de pierre ancien au bord des vignes' },
@@ -349,10 +348,9 @@ export const galleryPhotos: Record<Lang, GalleryPhoto[]> = {
   en: [
     { id: 'domaine-allee', category: 'domaine', image: 'domaine-allee', title: 'Arriving at the château', alt: 'The gravel drive leading to the château façade, between lawns and tall trees' },
     { id: 'domaine-facade', category: 'domaine', image: 'domaine-facade', title: 'The house', alt: 'The château façade in spring, behind the blossoming trees of the garden' },
-    { id: 'cuvier', category: 'evenements', image: 'cuvier', title: 'The vat room', alt: 'The vaulted vat room with its great open fire and laid tables' },
+    { id: 'cuvier', category: 'evenements', image: 'cuvier', title: 'The Salle Aliénor d’Aquitaine', alt: 'The vaulted Salle Aliénor d’Aquitaine with its great open fire and laid tables' },
     { id: 'domaine-etang', category: 'domaine', image: 'domaine-etang', title: 'By the pond', alt: 'The estate pond lined with trees under a summer sky' },
-    { id: 'domaine-pigeonnier', category: 'domaine', image: 'domaine-pigeonnier', title: 'The dovecote', alt: 'The stone dovecote among golden vines' },
-    { id: 'salle-a-manger', category: 'evenements', image: 'salle-a-manger', title: 'The dining room', alt: 'The château dining room with its chandeliers lit and a candlelit table' },
+    { id: 'salle-a-manger', category: 'evenements', image: 'salle-a-manger', title: 'The Salon Montesquieu', alt: 'The Salon Montesquieu with its chandeliers lit and a candlelit table' },
     { id: 'domaine-allee-arbres', category: 'domaine', image: 'domaine-allee-arbres', title: 'The central avenue', alt: 'The park’s central avenue, shaded by a double row of trees' },
     { id: 'domaine-dependances', category: 'domaine', image: 'domaine-dependances', title: 'The outbuildings', alt: 'The stone outbuildings that house the suites, beyond a flowering lawn' },
     { id: 'domaine-pont', category: 'domaine', image: 'domaine-pont', title: 'The old bridge', alt: 'A small old stone bridge at the edge of the vines' },
