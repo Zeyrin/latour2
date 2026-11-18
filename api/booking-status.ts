@@ -25,7 +25,9 @@ export async function GET(request: Request) {
     const paid = session.payment_status === 'paid' ? await recordPaidSession(session) : null
     const booking = paid?.booking ?? await rpc<BookingRow | null>('get_booking', { p_id: bookingId })
     if (!booking || (booking.stripe_session_id && booking.stripe_session_id !== session.id)) return Response.json({ error: 'not_found' }, { status: 404, headers: noStore })
-    return Response.json(publicView(booking), { headers: noStore })
+    // Lien « Gérer ma réservation » : seule la personne qui a payé connaît l'identifiant de session Stripe.
+    const manage = booking.status === 'paid' && booking.manage_token ? booking.manage_token : undefined
+    return Response.json({ ...publicView(booking), manage }, { headers: noStore })
   } catch (error) {
     const missing = (error as { statusCode?: number }).statusCode === 404
     if (!missing) console.error('booking-status', error)

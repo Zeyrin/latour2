@@ -3,6 +3,7 @@ import App from './App'
 import { Confidentialite, LegalNotice, MentionsLegales, Privacy } from './pages/Legal'
 import { SuitePage } from './pages/Suite'
 import { BookingCancelledEn, BookingCancelledFr, BookingConfirmedEn, BookingConfirmedFr } from './pages/BookingReturn'
+import { ManageBookingEn, ManageBookingFr } from './pages/ManageBooking'
 import { suiteIds } from './lib/content'
 import { paths, suitePaths } from './lib/i18n'
 
@@ -21,4 +22,6 @@ export const routes: RouteRecord[] = [
   { path: paths.bookingConfirmed.en, Component: BookingConfirmedEn },
   { path: paths.bookingCancelled.fr, Component: BookingCancelledFr },
   { path: paths.bookingCancelled.en, Component: BookingCancelledEn },
+  { path: paths.manageBooking.fr, Component: ManageBookingFr },
+  { path: paths.manageBooking.en, Component: ManageBookingEn },
 ]

@@ -27,7 +27,7 @@ export function bookingIdOf(session: Stripe.Checkout.Session) {
 
 export const isBookingId = (value: string) => UUID.test(value)
 
-function paymentIntentId(session: Stripe.Checkout.Session) {
+export function paymentIntentId(session: Stripe.Checkout.Session) {
   const pi = session.payment_intent
   return typeof pi === 'string' ? pi : pi?.id ?? null
 }
@@ -144,6 +144,31 @@ export async function cancelInBeds24(booking: BookingRow) {
     const error = cause instanceof Error ? cause.message.slice(0, 500) : 'Erreur inconnue'
     console.error('beds24 cancel', booking.id, error)
     await rpc('set_beds24_result', { p_id: booking.id, p_beds24_id: null, p_error: `annulation : ${error}` }).catch(() => undefined)
+  }
+}
+
+/**
+ * Reporte dans Beds24 une modification faite par le client (suite, dates, personnes, prix).
+ * Sans réservation Beds24 (envoi initial en échec), api/sync-beds24 l'enverra plus tard avec les nouvelles valeurs.
+ * Renvoie false si Beds24 a refusé : le château est prévenu par l'alerte de modification.
+ */
+export async function updateInBeds24(booking: BookingRow) {
+  if (!beds24WriteConfigured() || !booking.beds24_booking_id) return true
+  try {
+    await beds24Request({
+      id: Number(booking.beds24_booking_id),
+      roomId: ROOM_OF_SUITE[booking.suite],
+      arrival: booking.arrival,
+      departure: booking.departure,
+      numAdult: booking.guests,
+      price: booking.amount_total / 100,
+    })
+    return true
+  } catch (cause) {
+    const error = cause instanceof Error ? cause.message.slice(0, 500) : 'Erreur inconnue'
+    console.error('beds24 update', booking.id, error)
+    await rpc('set_beds24_result', { p_id: booking.id, p_beds24_id: null, p_error: `modification : ${error}` }).catch(() => undefined)
+    return false
   }
 }
 
