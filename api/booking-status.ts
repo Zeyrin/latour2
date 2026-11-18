@@ -10,8 +10,8 @@ import { rpc, supabaseConfig, type BookingRow } from './_lib/supabase.js'
 const noStore = { 'Cache-Control': 'no-store' }
 
 function publicView(booking: BookingRow) {
-  const { status, suite, arrival, departure, nights, guests, amount_total, currency } = booking
-  return { status, suite, arrival, departure, nights, guests, amount_total, currency }
+  const { status, suite, arrival, departure, nights, guests, amount_total, currency, breakfast = false } = booking
+  return { status, suite, arrival, departure, nights, guests, amount_total, currency, breakfast }
 }
 
 export async function GET(request: Request) {

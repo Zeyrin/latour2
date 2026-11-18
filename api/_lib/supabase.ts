@@ -39,6 +39,10 @@ export interface BookingRow {
   stripe_payment_intent: string | null
   paid_at: string | null
   beds24_booking_id: string | null
+  /** Petit-déjeuner choisi (compris dans amount_total). Absent avant la mise à jour de supabase/schema.sql. */
+  breakfast?: boolean
+  /** Le client souhaite des soins ou des renseignements sur le spa : le château le rappelle. */
+  spa_callback?: boolean
 }
 
 export interface PaidResult {

@@ -46,7 +46,7 @@ const handlers: Record<string, Record<string, (request: Request) => Response | P
   'booking-status': await import('../api/booking-status.ts'),
   availability: await import('../api/availability.ts'),
 }
-const { parisToday, quote, RATES, TOURIST_TAX_PER_GUEST_NIGHT } = await import('../src/lib/pricing.ts')
+const { parisToday, quote, RATES, TOURIST_TAX_PER_GUEST_NIGHT, BREAKFAST_PER_GUEST_NIGHT } = await import('../src/lib/pricing.ts')
 const { retryBeds24Pushes } = await import('../api/_lib/bookings.ts')
 
 // ─── Faux Beds24 : GET /authentication/token, POST /bookings ────────────────
@@ -356,6 +356,10 @@ try {
   assert((await txt(page.locator('.price-summary'))).includes('Taxe de séjour') && (await txt(page.locator('.price-summary'))).includes('4 €') && (await txt(page.locator('.price-summary'))).includes('394'), 'Récapitulatif du prix affiché (2 nuits × 195 € + taxe de séjour 2 pers. × 2 nuits × 1 €)')
   assert((await txt(page.locator('.form-submit'))).includes('Réserver et payer 394'), 'Bouton « Réserver et payer » avec le total')
   assert((await txt(page.locator('form .booking-cancellation'))).includes('Annulation gratuite pendant 24 h'), 'Conditions d’annulation affichées avant le paiement')
+  await page.locator('label.booking-option', { hasText: 'Petit-déjeuner' }).click()
+  assert((await txt(page.locator('.price-summary'))).includes('Petit-déjeuner · 2 pers. × 2 nuits') && (await txt(page.locator('.form-submit'))).includes('466'), 'Petit-déjeuner coché : ajouté au récapitulatif et au total (394 + 72 €)')
+  await page.locator('label.booking-option', { hasText: 'Petit-déjeuner' }).click()
+  assert((await txt(page.locator('.form-submit'))).includes('394'), 'Petit-déjeuner décoché : total d’origine')
   await page.screenshot({ path: 'artifacts/booking-pay-form.png' })
   await accessible(page, 'Formulaire de réservation payante')
   await page.locator('input[name="guests"]').fill('3')
@@ -691,6 +695,30 @@ try {
     assert(row.beds24_booking_id && !row.beds24_error, 'Réservation finalement créée dans Beds24')
     assert(await retryBeds24Pushes() === 0, 'Rien à retenter ensuite')
     assert(beds24.tokenRequests === 1, 'Jeton d’écriture tiré du refresh token une seule fois, puis réutilisé')
+  }
+  console.log('\n22. Options : petit-déjeuner et rappel pour le spa')
+  await reset()
+  process.env.BEDS24_REFRESH_TOKEN = 'beds24-refresh'
+  {
+    const created = await (await checkout({ ...stay('terre', 150, 3, 2), breakfast: true, spaCallback: true })).json() as { url: string }
+    const session = sessionOf(created.url)
+    const lodging = 3 * RATES.terre.night
+    const breakfast = BREAKFAST_PER_GUEST_NIGHT * 2 * 3
+    const tax = TOURIST_TAX_PER_GUEST_NIGHT * 2 * 3
+    assert(session.amount_total === lodging + breakfast + tax, 'Petit-déjeuner ajouté au montant Stripe (18 € × 2 pers. × 3 nuits)')
+    assert(session.line_items.some((item) => item.name === 'Petit-déjeuner' && item.amount === breakfast), 'Ligne « Petit-déjeuner » sur la page de paiement Stripe')
+    assert(session.metadata.breakfast === 'oui' && session.metadata.spa_callback === 'oui', 'Options notées dans Stripe')
+    let [row] = await bookings()
+    assert(row.breakfast === true && row.spa_callback === true && row.amount_total === lodging + breakfast + tax, 'Options enregistrées avec la réservation')
+    await paySession(session)
+    row = await booking(row.id)
+    assert(row.status === 'paid', 'Réservation avec options payée (montant vérifié)')
+    const comments = String(beds24.calls.at(-1)!.comments)
+    assert(comments.includes('Petit-déjeuner') && comments.includes('Spa : à rappeler'), 'Options transmises à Beds24 dans les commentaires')
+    const status = await (await fetch(`${APP}/api/booking-status?session_id=${session.id}`)).json()
+    assert(status.breakfast === true, 'Page de confirmation : petit-déjeuner indiqué')
+    const forged = await (await checkout({ ...stay('feu', 150, 2, 2), email: 'sans@example.fr', breakfast: 'yes' })).json() as { url: string }
+    assert(sessionOf(forged.url).amount_total === 2 * RATES.feu.night + TOURIST_TAX_PER_GUEST_NIGHT * 2 * 2, 'Sans option cochée : prix inchangé')
   }
   delete process.env.BEDS24_REFRESH_TOKEN
 

@@ -61,6 +61,9 @@ export async function POST(request: Request) {
     departure: arrival && departure && departure > arrival ? departure : null,
     guests,
     message: text(body.message, 2000),
+    // Ajoutés seulement s'ils sont cochés : la demande s'enregistre même si supabase/schema.sql n'est pas encore à jour.
+    ...(universe === 'suites' && body.breakfast === true ? { breakfast: true } : {}),
+    ...(body.spaCallback === true ? { spa_callback: true } : {}),
   }
 
   const headers = { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` }

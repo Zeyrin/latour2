@@ -98,9 +98,14 @@ function stayRows(booking: BookingRow, locale: string, fr: boolean): [string, st
     [fr ? 'Départ' : 'Departure', formatDate(booking.departure, locale)],
     [fr ? 'Nuits' : 'Nights', String(booking.nights)],
     [fr ? 'Personnes' : 'Guests', String(booking.guests)],
+    ...(booking.breakfast ? [[fr ? 'Petit-déjeuner' : 'Breakfast', fr ? `Inclus, ${booking.guests} pers. × ${booking.nights} nuit${booking.nights > 1 ? 's' : ''}` : `Included, ${booking.guests} × ${booking.nights} night${booking.nights > 1 ? 's' : ''}`] as [string, string]] : []),
+    ...(booking.spa_callback ? [['Spa', fr ? 'Nous vous appelons pour vos soins' : 'We will call you about treatments'] as [string, string]] : []),
     [fr ? 'Montant payé' : 'Amount paid', formatEuros(booking.amount_total, locale)],
   ]
 }
+
+/** Ligne de l'alerte au château pour la case « soins ou renseignements sur le spa ». */
+const SPA_CALLBACK = 'À RAPPELER : souhaite des soins ou des renseignements'
 
 /** Confirmation envoyée au client après son paiement (nécessite EMAIL_FROM sur un domaine vérifié). */
 export function sendGuestConfirmation(booking: BookingRow) {
@@ -138,7 +143,7 @@ export function sendOwnerBookingAlert(booking: BookingRow, conflict = false) {
   const to = ownerTo()
   if (!to) return
   const rows: [string, string][] = [
-    ...stayRows(booking, 'fr-FR', true),
+    ...stayRows(booking, 'fr-FR', true).map(([label, value]): [string, string] => [label, label === 'Spa' ? SPA_CALLBACK : value]),
     ['Client', booking.name],
     ['E-mail', booking.email],
     ['Téléphone', booking.phone ?? '—'],
@@ -148,14 +153,14 @@ export function sendOwnerBookingAlert(booking: BookingRow, conflict = false) {
   const title = conflict ? 'Paiement reçu pour des dates déjà prises' : `Nouvelle réservation · ${suiteName(booking.suite)}`
   const intro = conflict
     ? 'Le client a payé, mais la suite n’était plus libre. La réservation n’est pas confirmée : <strong>remboursez-le dans Stripe</strong> et prévenez-le.'
-    : 'Une réservation vient d’être payée sur le site.'
+    : `Une réservation vient d’être payée sur le site.${booking.spa_callback ? ' <strong>Le client souhaite des soins ou des renseignements sur le spa : rappelez-le.</strong>' : ''}`
   const outro = `Réservation ${escape(booking.id)}. Le paiement est dans Stripe.`
   return send('owner-booking', {
     to,
     replyTo: booking.email,
-    subject: conflict ? `⚠️ À rembourser : ${booking.name}, ${suiteName(booking.suite)}` : `Nouvelle réservation : ${booking.name}, ${suiteName(booking.suite)}`,
+    subject: conflict ? `⚠️ À rembourser : ${booking.name}, ${suiteName(booking.suite)}` : `Nouvelle réservation : ${booking.name}, ${suiteName(booking.suite)}${booking.spa_callback ? ' · spa à rappeler' : ''}`,
     html: layout(title, intro, rows, outro),
-    text: plain(title, rows, conflict ? 'Le client a payé mais la suite n’était plus libre : à rembourser dans Stripe.' : '', `Réservation ${booking.id}.`),
+    text: plain(title, rows, conflict ? 'Le client a payé mais la suite n’était plus libre : à rembourser dans Stripe.' : booking.spa_callback ? 'Le client souhaite des soins ou des renseignements sur le spa : rappelez-le.' : '', `Réservation ${booking.id}.`),
     idempotencyKey: `owner-booking/${booking.id}`,
   })
 }
@@ -170,6 +175,8 @@ export interface RequestFields {
   departure: string | null
   guests: number | null
   message: string | null
+  breakfast?: boolean
+  spa_callback?: boolean
 }
 
 const UNIVERSE_NAMES: Record<string, string> = { suites: 'Suites', spa: 'Spa', evenements: 'Événements' }
@@ -187,13 +194,15 @@ export function sendOwnerRequestAlert(request: RequestFields, requestKey: string
     ['Arrivée', request.arrival ? formatDate(request.arrival, 'fr-FR') : '—'],
     ['Départ', request.departure ? formatDate(request.departure, 'fr-FR') : '—'],
     ['Personnes', request.guests ? String(request.guests) : '—'],
+    ...(request.breakfast ? [['Petit-déjeuner', 'Souhaité'] as [string, string]] : []),
+    ...(request.spa_callback ? [['Spa', SPA_CALLBACK] as [string, string]] : []),
     ['Message', request.message ?? '—'],
   ]
   const title = `Nouvelle demande de ${request.name}`
   return send('owner-request', {
     to,
     replyTo: request.email,
-    subject: `Demande du site : ${request.name}${request.universe ? ` (${UNIVERSE_NAMES[request.universe] ?? request.universe})` : ''}`,
+    subject: `Demande du site : ${request.name}${request.universe ? ` (${UNIVERSE_NAMES[request.universe] ?? request.universe})` : ''}${request.spa_callback ? ' · spa à rappeler' : ''}`,
     html: layout(title, 'Une demande vient d’arriver par le formulaire du site. Répondez directement à cet e-mail pour écrire au client.', rows, ''),
     text: plain(title, rows, 'Répondez directement à cet e-mail pour écrire au client.'),
     idempotencyKey: `owner-request/${requestKey}`,

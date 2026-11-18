@@ -16,6 +16,7 @@ interface BookingView {
   nights: number
   guests: number
   amount_total: number
+  breakfast?: boolean
 }
 
 type State = { phase: 'loading' } | { phase: 'done'; booking: BookingView } | { phase: 'error' }
@@ -45,6 +46,7 @@ function Summary({ booking, lang }: { booking: BookingView; lang: Lang }) {
   return <dl className="price-summary" aria-label={p.summary}>
     <div><dt>{suite}</dt><dd>{t.guestsLine}{lang === 'fr' ? ' : ' : ': '}{booking.guests}</dd></div>
     <div><dt>{longDate(booking.arrival, lang)} → {longDate(booking.departure, lang)}</dt><dd>{t.nightsCount(booking.nights)}</dd></div>
+    {booking.breakfast && <div><dt>{p.breakfast}</dt><dd>{p.breakfastIncluded}</dd></div>}
     <div className="price-total"><dt>{booking.status === 'paid' || booking.status === 'conflict' ? p.paid : p.total}</dt><dd>{formatEuros(booking.amount_total, locales[lang])}</dd></div>
   </dl>
 }
