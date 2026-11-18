@@ -458,7 +458,7 @@ export const payUi = {
   fr: {
     intro: 'Choisissez votre suite et vos dates : la réservation est confirmée dès le paiement en ligne sécurisé.',
     fromPerNight: (price: string) => `dès ${price} la nuit`,
-    pickSuite: 'Choisissez votre suite pour réserver en ligne.',
+    pickSuite: 'Choisissez votre suite.',
     suiteTaken: 'indisponible à ces dates',
     maxGuests: (n: number) => `Cette suite accueille ${n} personne${n > 1 ? 's' : ''} au maximum.`,
     lodging: (nights: number) => `Hébergement · ${nights} nuit${nights > 1 ? 's' : ''}`,
@@ -511,7 +511,7 @@ export const payUi = {
   en: {
     intro: 'Choose your suite and dates: your booking is confirmed as soon as you pay securely online.',
     fromPerNight: (price: string) => `from ${price} per night`,
-    pickSuite: 'Choose your suite to book online.',
+    pickSuite: 'Please choose your suite.',
     suiteTaken: 'unavailable for these dates',
     maxGuests: (n: number) => `This suite sleeps ${n} guest${n > 1 ? 's' : ''} at most.`,
     lodging: (nights: number) => `Accommodation · ${nights} night${nights > 1 ? 's' : ''}`,

@@ -346,6 +346,7 @@ try {
   await page.locator('input[name="universe"][value="suites"]').check()
   await page.locator('label.suite-choice', { hasText: 'La Suite Eau' }).click()
   assert(await txt(page.locator('#suite-hint-eau')) === 'dès 195 € la nuit', 'Prix « dès … la nuit » affiché sur chaque suite')
+  assert(await page.locator('label.suite-choice', { hasText: 'Sans préférence' }).count() === 0, 'Pas de choix « Sans préférence » : une suite est obligatoire')
   await page.waitForFunction(() => document.querySelectorAll('.calendar-day:not([aria-disabled])').length > 10)
   const free = page.locator('.calendar-day:not([aria-disabled])')
   const arrivalDate = await free.nth(3).getAttribute('data-date') as string

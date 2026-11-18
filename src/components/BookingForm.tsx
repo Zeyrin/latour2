@@ -112,6 +112,7 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
   const [spaCallback, setSpaCallback] = useState(false)
   const p = payUi[lang]
   const datesRef = useRef<HTMLFieldSetElement>(null)
+  const suitesRef = useRef<HTMLFieldSetElement>(null)
   const now = new Date()
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   const resources = resourcesFor(universe, suite)
@@ -202,8 +203,9 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (online && !suite) {
+    if (universe === 'suites' && !suite) {
       setPayError(p.pickSuite)
+      suitesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       return
     }
     if (universe === 'suites' && (!arrival || !departure)) {
@@ -296,14 +298,14 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
             </label>)}
           </div>
         </fieldset>
-        {universe === 'suites' && <fieldset className="universe-fieldset">
-          <legend>{t.mySuite}</legend>
+        {universe === 'suites' && <fieldset className="universe-fieldset" ref={suitesRef}>
+          <legend>{t.mySuite} <span aria-hidden="true">*</span></legend>
           <div className="suite-choices">
-            {[{ id: '' as const, label: t.noPreference }, ...suites[lang]].map((item) => {
+            {suites[lang].map((item) => {
               const taken = online && Boolean(item.id) && Boolean(arrival && departure) && !freeResource(blocks, [item.id], arrival, departure)
               const fromPrice = online && isPricedSuite(item.id) ? p.fromPerNight(money(RATES[item.id].night)) : ''
-              return <label key={item.id || 'any'} className={`suite-choice ${suite === item.id ? 'is-selected' : ''} ${taken ? 'is-taken' : ''}`}>
-                <input type="radio" name="suite" value={item.id} checked={suite === item.id} onChange={() => changeSuite(item.id)} disabled={taken} aria-describedby={fromPrice || taken ? `suite-hint-${item.id}` : undefined} />
+              return <label key={item.id} className={`suite-choice ${suite === item.id ? 'is-selected' : ''} ${taken ? 'is-taken' : ''}`}>
+                <input type="radio" name="suite" value={item.id} checked={suite === item.id} onChange={() => { changeSuite(item.id); setPayError('') }} disabled={taken} required aria-describedby={fromPrice || taken ? `suite-hint-${item.id}` : undefined} />
                 {item.label}
                 {(fromPrice || taken) && <small id={`suite-hint-${item.id}`} className="suite-choice-hint">{taken ? p.suiteTaken : fromPrice}</small>}
               </label>
