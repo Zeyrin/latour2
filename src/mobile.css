@@ -75,3 +75,11 @@
   .heritage-mark>span{font-size:9px}
   .chapter-features li{font-size:10px;letter-spacing:.4px}
 }
+
+/* Options du séjour (petit-déjeuner, spa) sur téléphone. */
+@media (max-width: 640px) {
+  .booking-option{grid-template-columns:72px minmax(0,1fr) 20px;gap:13px;padding:11px 0}
+  .booking-option>img{width:72px;height:72px}
+  .booking-option-text strong{font-size:16px}
+  .booking-option-text small{font-size:13px}
+}

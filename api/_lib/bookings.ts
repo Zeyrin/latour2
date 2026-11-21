@@ -124,7 +124,11 @@ export async function pushToBeds24(booking: BookingRow) {
       price: booking.amount_total / 100,
       referer: 'Site du château (Stripe)',
       apiReference: booking.id,
-      comments: booking.message ?? '',
+      comments: [
+        booking.breakfast ? `Petit-déjeuner compris : ${booking.guests} pers. × ${booking.nights} nuit(s)` : '',
+        booking.spa_callback ? 'Spa : à rappeler (soins ou renseignements)' : '',
+        booking.message ?? '',
+      ].filter(Boolean).join('\n'),
     })
     beds24Id = created.new?.id ? String(created.new.id) : null
     if (!beds24Id) throw new Error('Beds24 n’a pas renvoyé d’identifiant')

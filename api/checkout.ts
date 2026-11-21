@@ -6,7 +6,7 @@
 // Variables d'environnement : STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
 // ONLINE_BOOKING=off désactive le paiement en ligne sans retirer les clés.
 
-import { CANCELLATION_TERMS, CURRENCY, quote, parisToday } from '../src/lib/pricing.js'
+import { BREAKFAST_PER_GUEST_NIGHT, CANCELLATION_TERMS, CURRENCY, quote, parisToday } from '../src/lib/pricing.js'
 import { getStripe, stripeConfigured } from './_lib/stripe.js'
 import { rpc, supabaseConfig } from './_lib/supabase.js'
 
@@ -72,7 +72,9 @@ export async function POST(request: Request) {
   const name = text(body.name, 100)
   const email = text(body.email, 200)
   if (!name || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return Response.json({ error: 'contact' }, { status: 400 })
-  const priced = quote(body.suite, String(body.arrival ?? ''), String(body.departure ?? ''), Number(body.guests), parisToday())
+  const breakfast = body.breakfast === true && BREAKFAST_PER_GUEST_NIGHT > 0
+  const spaCallback = body.spaCallback === true
+  const priced = quote(body.suite, String(body.arrival ?? ''), String(body.departure ?? ''), Number(body.guests), parisToday(), { breakfast })
   if ('error' in priced) return Response.json({ error: priced.error }, { status: 400 })
 
   let bookingId: string
@@ -91,6 +93,9 @@ export async function POST(request: Request) {
       p_amount_total: priced.total,
       p_hold_minutes: HOLD_MINUTES,
       p_client_ip: clientIp(request),
+      // Envoyés seulement s'ils sont cochés : une réservation sans option passe même si supabase/schema.sql n'est pas encore à jour.
+      ...(breakfast ? { p_breakfast: true } : {}),
+      ...(spaCallback ? { p_spa_callback: true } : {}),
     })
     if (!created.ok || !created.id) {
       const status = created.error === 'rate_limited' ? 429 : 409
@@ -107,7 +112,13 @@ export async function POST(request: Request) {
   const stay = lang === 'fr'
     ? `Du ${longDate(priced.arrival, lang)} au ${longDate(priced.departure, lang)} · ${priced.nights} nuit${priced.nights > 1 ? 's' : ''} · ${priced.guests} pers.`
     : `${longDate(priced.arrival, lang)} to ${longDate(priced.departure, lang)} · ${priced.nights} night${priced.nights > 1 ? 's' : ''} · ${priced.guests} guest${priced.guests > 1 ? 's' : ''}`
-  const metadata = { booking_id: bookingId, suite: priced.suite, arrival: priced.arrival, departure: priced.departure, guests: String(priced.guests) }
+  const metadata = {
+    booking_id: bookingId, suite: priced.suite, arrival: priced.arrival, departure: priced.departure, guests: String(priced.guests),
+    breakfast: breakfast ? 'oui' : 'non', spa_callback: spaCallback ? 'oui' : 'non',
+  }
+  const breakfastLine = lang === 'fr'
+    ? `${priced.guests} pers. × ${priced.nights} nuit${priced.nights > 1 ? 's' : ''}`
+    : `${priced.guests} guest${priced.guests > 1 ? 's' : ''} × ${priced.nights} night${priced.nights > 1 ? 's' : ''}`
 
   try {
     const session = await getStripe().checkout.sessions.create({
@@ -124,6 +135,7 @@ export async function POST(request: Request) {
       expires_at: Math.floor(Date.now() / 1000) + SESSION_MINUTES * 60,
       line_items: [
         { quantity: 1, price_data: { currency: CURRENCY, unit_amount: priced.lodging, product_data: { name: `${suiteName} — Château Latour Ségur`, description: stay } } },
+        ...(priced.breakfast > 0 ? [{ quantity: priced.guests * priced.nights, price_data: { currency: CURRENCY, unit_amount: BREAKFAST_PER_GUEST_NIGHT, product_data: { name: lang === 'fr' ? 'Petit-déjeuner' : 'Breakfast', description: breakfastLine } } }] : []),
         ...(priced.touristTax > 0 ? [{ quantity: 1, price_data: { currency: CURRENCY, unit_amount: priced.touristTax, product_data: { name: lang === 'fr' ? 'Taxe de séjour' : 'Tourist tax' } } }] : []),
       ],
       success_url: `${origin}${RETURN_PATHS[lang].confirmed}?session_id={CHECKOUT_SESSION_ID}`,

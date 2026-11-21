@@ -26,6 +26,8 @@ alter table public.booking_requests add column if not exists suite text;
 alter table public.booking_requests drop constraint if exists booking_requests_suite_check;
 alter table public.booking_requests add constraint booking_requests_suite_check
   check (suite in ('terre','eau','metal','feu','bois'));
+alter table public.booking_requests add column if not exists breakfast boolean not null default false;
+alter table public.booking_requests add column if not exists spa_callback boolean not null default false;
 
 -- Périodes indisponibles.
 -- resource : 'terre', 'eau', 'metal', 'feu', 'bois' (suites), 'spa' ou 'evenements'.
@@ -126,6 +128,10 @@ create table if not exists public.bookings (
   check (departure > arrival)
 );
 alter table public.bookings add column if not exists client_ip text;
+-- Options choisies dans le formulaire : petit-déjeuner (compris dans amount_total)
+-- et « je désire des soins ou des renseignements sur le spa » (le château rappelle le client).
+alter table public.bookings add column if not exists breakfast boolean not null default false;
+alter table public.bookings add column if not exists spa_callback boolean not null default false;
 
 alter table public.bookings enable row level security;
 -- Aucune politique : table privée (coordonnées des clients).
@@ -158,12 +164,14 @@ revoke all on public.availability from anon, authenticated;
 grant select on public.availability to service_role;
 
 drop function if exists public.create_pending_booking(text, date, date, int, int, text, text, text, text, text, int, int);
+drop function if exists public.create_pending_booking(text, date, date, int, int, text, text, text, text, text, int, int, text);
 -- Crée une réservation en attente de paiement si la suite est libre.
 -- Renvoie {"ok":true,"id":…} ou {"ok":false,"error":"unavailable"|"rate_limited"}.
 create or replace function public.create_pending_booking(
   p_suite text, p_arrival date, p_departure date, p_nights int, p_guests int,
   p_name text, p_email text, p_phone text, p_message text, p_lang text,
-  p_amount_total int, p_hold_minutes int, p_client_ip text default null
+  p_amount_total int, p_hold_minutes int, p_client_ip text default null,
+  p_breakfast boolean default false, p_spa_callback boolean default false
 )
 returns jsonb
 language plpgsql
@@ -197,9 +205,10 @@ begin
     return jsonb_build_object('ok', false, 'error', 'unavailable');
   end if;
 
-  insert into bookings (suite, arrival, departure, nights, guests, name, email, phone, message, lang, amount_total, hold_until, client_ip)
+  insert into bookings (suite, arrival, departure, nights, guests, name, email, phone, message, lang, amount_total, hold_until, client_ip, breakfast, spa_callback)
     values (p_suite, p_arrival, p_departure, p_nights, p_guests, p_name, p_email, p_phone, p_message, p_lang,
-            p_amount_total, now() + make_interval(mins => p_hold_minutes), p_client_ip)
+            p_amount_total, now() + make_interval(mins => p_hold_minutes), p_client_ip,
+            coalesce(p_breakfast, false), coalesce(p_spa_callback, false))
     returning id into new_id;
   return jsonb_build_object('ok', true, 'id', new_id);
 exception when exclusion_violation then
@@ -331,11 +340,11 @@ grant execute on function public.bookings_missing_in_beds24() to service_role;
 grant execute on function public.attach_stripe_session(uuid, text) to service_role;
 grant execute on function public.set_beds24_result(uuid, text, text) to service_role;
 grant execute on function public.get_booking(uuid) to service_role;
-revoke all on function public.create_pending_booking(text, date, date, int, int, text, text, text, text, text, int, int, text) from public, anon, authenticated;
+revoke all on function public.create_pending_booking(text, date, date, int, int, text, text, text, text, text, int, int, text, boolean, boolean) from public, anon, authenticated;
 revoke all on function public.mark_booking_paid(uuid, text, text, int) from public, anon, authenticated;
 revoke all on function public.release_booking(uuid, text) from public, anon, authenticated;
 revoke all on function public.mark_booking_refunded(text) from public, anon, authenticated;
-grant execute on function public.create_pending_booking(text, date, date, int, int, text, text, text, text, text, int, int, text) to service_role;
+grant execute on function public.create_pending_booking(text, date, date, int, int, text, text, text, text, text, int, int, text, boolean, boolean) to service_role;
 grant execute on function public.mark_booking_paid(uuid, text, text, int) to service_role;
 grant execute on function public.release_booking(uuid, text) to service_role;
 grant execute on function public.mark_booking_refunded(text) to service_role;
