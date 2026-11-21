@@ -5,6 +5,7 @@
 
 import type Stripe from 'stripe'
 import { bookingIdOf, cancelInBeds24, recordPaidSession } from './_lib/bookings.js'
+import { applyPaidChange, isChangeSession } from './_lib/manage.js'
 import { getStripe } from './_lib/stripe.js'
 import { rpc, type BookingRow } from './_lib/supabase.js'
 
@@ -28,7 +29,11 @@ export async function POST(request: Request) {
       case 'checkout.session.completed':
       case 'checkout.session.async_payment_succeeded': {
         const session = event.data.object
-        if (session.payment_status === 'paid') {
+        // Supplément payé pour une modification faite depuis « Gérer ma réservation ».
+        if (isChangeSession(session)) {
+          const result = await applyPaidChange(session)
+          console.log('stripe-webhook', event.type, session.id, 'change', result.status)
+        } else if (session.payment_status === 'paid') {
           const result = await recordPaidSession(session)
           console.log('stripe-webhook', event.type, session.id, result.status)
         }
@@ -37,14 +42,15 @@ export async function POST(request: Request) {
       case 'checkout.session.expired':
       case 'checkout.session.async_payment_failed': {
         const session = event.data.object
-        const bookingId = bookingIdOf(session)
+        const bookingId = isChangeSession(session) ? null : bookingIdOf(session)
         if (bookingId) await rpc('release_booking', { p_id: bookingId, p_status: 'expired' })
         break
       }
       case 'charge.refunded': {
         const charge = event.data.object
         const pi = typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id
-        // Remboursement partiel : la réservation reste valable.
+        // Remboursement partiel : la réservation reste valable. Seul le paiement initial compte :
+        // un supplément de modification remboursé (modification impossible) ne touche pas à la réservation.
         if (pi && charge.refunded) {
           const refunded = await rpc<BookingRow | null>('mark_booking_refunded', { p_payment_intent: pi })
           if (refunded) await cancelInBeds24(refunded)
