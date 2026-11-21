@@ -19,6 +19,15 @@ export async function rpc<T>(name: string, args: Record<string, unknown>): Promi
   return (text ? JSON.parse(text) : null) as T
 }
 
+/** Lecture d'une vue (GET /rest/v1/<chemin>), par exemple `availability?select=…`. */
+export async function select<T>(path: string): Promise<T> {
+  const config = supabaseConfig()
+  if (!config) throw new Error('Variables Supabase manquantes')
+  const response = await fetch(`${config.url}/rest/v1/${path}`, { headers: { apikey: config.key, Authorization: `Bearer ${config.key}` } })
+  if (!response.ok) throw new Error(`Supabase ${path} ${response.status} : ${await response.text()}`)
+  return await response.json() as T
+}
+
 export interface BookingRow {
   id: string
   status: 'pending' | 'paid' | 'expired' | 'cancelled' | 'refunded' | 'conflict'
@@ -39,6 +48,33 @@ export interface BookingRow {
   stripe_payment_intent: string | null
   paid_at: string | null
   beds24_booking_id: string | null
+  /** Petit-déjeuner choisi (compris dans amount_total). Absent avant la mise à jour de supabase/schema.sql. */
+  breakfast?: boolean
+  /** Le client souhaite des soins ou des renseignements sur le spa : le château le rappelle. */
+  spa_callback?: boolean
+  /** Secret du lien « Gérer ma réservation » (voir api/manage-booking.ts). */
+  manage_token?: string
+  /** Paiements Stripe (renvoyés complétés par get_booking_by_token). */
+  payments?: Payment[]
+  amount_refunded?: number
+  change_count?: number
+  changed_at?: string | null
+  cancelled_at?: string | null
+}
+
+/** Un paiement Stripe d'une réservation, en centimes : le paiement initial ou un supplément après modification. */
+export interface Payment {
+  pi: string
+  amount: number
+  refunded: number
+  session?: string
+}
+
+/** Remboursement à faire dans Stripe (calculé par apply_booking_change). */
+export interface RefundOrder {
+  pi: string
+  amount: number
+  key: string
 }
 
 export interface PaidResult {

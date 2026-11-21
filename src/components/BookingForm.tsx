@@ -3,7 +3,7 @@ import { ArrowRight, Check, Copy, Mail, Phone } from 'lucide-react'
 import { contact, suites, universes, type SuiteId, type UniverseId } from '../lib/content'
 import { locales, useLang, type Lang } from '../lib/i18n'
 import { bookingUi, payUi } from '../lib/ui'
-import { MIN_DAYS_BEFORE_ARRIVAL, RATES, formatEuros, isPricedSuite, parisToday, quote, type Quote } from '../lib/pricing'
+import { BREAKFAST_PER_GUEST_NIGHT, MIN_DAYS_BEFORE_ARRIVAL, RATES, formatEuros, isPricedSuite, parisToday, quote, type Quote } from '../lib/pricing'
 import { AvailabilityCalendar } from './AvailabilityCalendar'
 import { addDays, freeResource, isBooked, nightsBetween, type AvailabilityBlock } from '../lib/availability'
 
@@ -16,6 +16,10 @@ interface BookingFormProps {
   initialDeparture?: string
   initialGuests?: string
 }
+
+/** Photo de l'option petit-déjeuner. Provisoire (salle à manger) : à remplacer par la photo du petit-déjeuner. */
+const BREAKFAST_PHOTO = '/images/salle-a-manger-small.webp'
+const SPA_PHOTO = '/images/spa-bain-small.webp'
 
 function dateLabel(value: string, lang: Lang) {
   if (!value) return bookingUi[lang].toAgree
@@ -72,6 +76,8 @@ async function saveRequest(values: FormData, universe?: UniverseId, suite?: Suit
         departure: String(values.get('departure') || '') || null,
         guests: Number(values.get('guests')) || null,
         message: String(values.get('message') || '').trim() || null,
+        breakfast: universe === 'suites' && values.get('breakfast') === 'on',
+        spaCallback: values.get('spa') === 'on',
       }),
       keepalive: true,
     })
@@ -102,8 +108,11 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
   const [payError, setPayError] = useState('')
   const [guests, setGuests] = useState(initialGuests)
   const [requestMode, setRequestMode] = useState(false)
+  const [breakfast, setBreakfast] = useState(false)
+  const [spaCallback, setSpaCallback] = useState(false)
   const p = payUi[lang]
   const datesRef = useRef<HTMLFieldSetElement>(null)
+  const suitesRef = useRef<HTMLFieldSetElement>(null)
   const now = new Date()
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   const resources = resourcesFor(universe, suite)
@@ -112,7 +121,7 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
   // Même date du jour que le serveur (heure de Paris), quel que soit le fuseau du visiteur.
   const firstBookable = addDays(parisToday(), MIN_DAYS_BEFORE_ARRIVAL)
   const maxGuests = online && isPricedSuite(suite) ? RATES[suite].maxGuests : 500
-  const priced = online && suite && arrival && departure ? quote(suite, arrival, departure, Number(guests), parisToday()) : null
+  const priced = online && suite && arrival && departure ? quote(suite, arrival, departure, Number(guests), parisToday(), { breakfast }) : null
   const currentQuote: Quote | null = priced && !('error' in priced) ? priced : null
   const money = (cents: number) => formatEuros(cents, locales[lang])
 
@@ -171,6 +180,8 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
           email: String(values.get('email') || '').trim(),
           phone: String(values.get('phone') || '').trim() || null,
           message: String(values.get('message') || '').trim() || null,
+          breakfast,
+          spaCallback,
           website: String(values.get('website') || ''),
         }),
       })
@@ -192,8 +203,9 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (online && !suite) {
+    if (universe === 'suites' && !suite) {
       setPayError(p.pickSuite)
+      suitesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       return
     }
     if (universe === 'suites' && (!arrival || !departure)) {
@@ -226,6 +238,8 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
         ? [`${t.suite}${sep}${suiteLabel}`, `${t.arrival}${sep}${dateLabel(arrival, lang)}`, `${t.departure}${sep}${dateLabel(departure, lang)} (${t.nightsCount(nights)})`]
         : [`${t.wishedDate}${sep}${dateLabel(arrival, lang)}`]),
       `${t.guestsLine}${sep}${values.get('guests')}`,
+      ...(universe === 'suites' && breakfast ? [t.breakfastLine(money(BREAKFAST_PER_GUEST_NIGHT))] : []),
+      ...(universe === 'suites' && spaCallback ? [t.spaLine] : []),
       '',
       String(values.get('message') || t.defaultMessage),
       '',
@@ -284,14 +298,14 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
             </label>)}
           </div>
         </fieldset>
-        {universe === 'suites' && <fieldset className="universe-fieldset">
-          <legend>{t.mySuite}</legend>
+        {universe === 'suites' && <fieldset className="universe-fieldset" ref={suitesRef}>
+          <legend>{t.mySuite} <span aria-hidden="true">*</span></legend>
           <div className="suite-choices">
-            {[{ id: '' as const, label: t.noPreference }, ...suites[lang]].map((item) => {
+            {suites[lang].map((item) => {
               const taken = online && Boolean(item.id) && Boolean(arrival && departure) && !freeResource(blocks, [item.id], arrival, departure)
               const fromPrice = online && isPricedSuite(item.id) ? p.fromPerNight(money(RATES[item.id].night)) : ''
-              return <label key={item.id || 'any'} className={`suite-choice ${suite === item.id ? 'is-selected' : ''} ${taken ? 'is-taken' : ''}`}>
-                <input type="radio" name="suite" value={item.id} checked={suite === item.id} onChange={() => changeSuite(item.id)} disabled={taken} aria-describedby={fromPrice || taken ? `suite-hint-${item.id}` : undefined} />
+              return <label key={item.id} className={`suite-choice ${suite === item.id ? 'is-selected' : ''} ${taken ? 'is-taken' : ''}`}>
+                <input type="radio" name="suite" value={item.id} checked={suite === item.id} onChange={() => { changeSuite(item.id); setPayError('') }} disabled={taken} required aria-describedby={fromPrice || taken ? `suite-hint-${item.id}` : undefined} />
                 {item.label}
                 {(fromPrice || taken) && <small id={`suite-hint-${item.id}`} className="suite-choice-hint">{taken ? p.suiteTaken : fromPrice}</small>}
               </label>
@@ -323,10 +337,32 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
           <label className="form-field"><span>{t.guests} <span aria-hidden="true">*</span></span><input id="booking-guests" name="guests" type="number" autoComplete="off" data-1p-ignore data-lpignore="true" data-form-type="other" min="1" max={maxGuests} step="1" value={guests} onChange={(event) => { setGuests(event.target.value); setPayError('') }} required aria-describedby={online && Number(guests) > maxGuests ? 'guests-error' : undefined} />{online && Number(guests) > maxGuests && <small id="guests-error" className="dates-error">{p.maxGuests(maxGuests)}</small>}</label>
           <label className="form-field form-field-wide"><span>{t.message}</span><textarea id="booking-message" name="message" autoComplete="off" rows={3} maxLength={2000} defaultValue={savedValues.message ?? initialMessage} placeholder={t.messagePlaceholder} /></label>
         </div>
+        {universe === 'suites' && <fieldset className="universe-fieldset booking-options">
+          <legend>{t.options}</legend>
+          {BREAKFAST_PER_GUEST_NIGHT > 0 && <label className={`booking-option ${breakfast ? 'is-selected' : ''}`}>
+            <img src={BREAKFAST_PHOTO} alt="" width={96} height={72} loading="lazy" decoding="async" />
+            <span className="booking-option-text">
+              <strong>{t.breakfast}</strong>
+              <small>{t.breakfastPrice(money(BREAKFAST_PER_GUEST_NIGHT))}{breakfast && currentQuote ? ` · ${t.breakfastStay(money(currentQuote.breakfast))}` : ''}</small>
+            </span>
+            <input type="checkbox" name="breakfast" checked={breakfast} onChange={(event) => setBreakfast(event.target.checked)} />
+            <span className="booking-option-check" aria-hidden="true"><Check size={13} strokeWidth={2} /></span>
+          </label>}
+          <label className={`booking-option ${spaCallback ? 'is-selected' : ''}`}>
+            <img src={SPA_PHOTO} alt="" width={96} height={72} loading="lazy" decoding="async" />
+            <span className="booking-option-text">
+              <strong>{t.spa}</strong>
+              <small>{t.spaHint}</small>
+            </span>
+            <input type="checkbox" name="spa" checked={spaCallback} onChange={(event) => setSpaCallback(event.target.checked)} />
+            <span className="booking-option-check" aria-hidden="true"><Check size={13} strokeWidth={2} /></span>
+          </label>
+        </fieldset>}
         <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: 'absolute', left: '-9999px' }} />
         <label className="consent"><input type="checkbox" name="consent" required defaultChecked={savedValues.consent === 'on'} /><span>{t.consent} <span aria-hidden="true">*</span></span></label>
         {online && currentQuote && <dl className="price-summary" aria-label={p.summary}>
           <div><dt>{p.lodging(currentQuote.nights)}</dt><dd>{money(currentQuote.lodging)}</dd></div>
+          {currentQuote.breakfast > 0 && <div><dt>{p.breakfastSummary(currentQuote.guests, currentQuote.nights)}</dt><dd>{money(currentQuote.breakfast)}</dd></div>}
           {currentQuote.touristTax > 0 && <div><dt>{p.touristTax}</dt><dd>{money(currentQuote.touristTax)}</dd></div>}
           <div className="price-total"><dt>{p.total}</dt><dd>{money(currentQuote.total)}</dd></div>
         </dl>}

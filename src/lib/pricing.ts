@@ -37,12 +37,23 @@ export const TOURIST_TAX_PER_GUEST_NIGHT = 114
 /** Délai minimum entre la réservation et l'arrivée, en jours (0 : arrivée possible le jour même). */
 export const MIN_DAYS_BEFORE_ARRIVAL = 1
 
+/** Petit-déjeuner en option, en centimes, par personne et par nuit (0 pour ne plus le proposer). */
+export const BREAKFAST_PER_GUEST_NIGHT = 1800
+
 export const CURRENCY = 'eur'
+
+/** Délai pendant lequel le client peut annuler (remboursement intégral) ou modifier lui-même sa réservation, en heures après le paiement. */
+export const FREE_CHANGE_HOURS = 24
+
+/** Fin du délai d'annulation et de modification gratuites (paid_at : date du paiement). */
+export function manageDeadline(paidAt: string | Date) {
+  return new Date(new Date(paidAt).getTime() + FREE_CHANGE_HOURS * 3600_000)
+}
 
 /** Conditions d'annulation, affichées sur le formulaire, la page de paiement Stripe et la confirmation. */
 export const CANCELLATION_TERMS = {
-  fr: 'Annulation gratuite pendant 24 h après la réservation (appelez-nous ou écrivez-nous) : vous êtes remboursé intégralement. Passé ce délai, le séjour n’est plus remboursable.',
-  en: 'Free cancellation within 24 hours of booking (call or email us) for a full refund. After that, the stay is non-refundable.',
+  fr: 'Annulation ou modification gratuite pendant 24 h après la réservation, en un clic depuis le lien « Gérer ma réservation » de votre e-mail de confirmation : vous êtes remboursé intégralement. Passé ce délai, le séjour n’est plus remboursable.',
+  en: 'Free cancellation or changes within 24 hours of booking, in one click from the “Manage my booking” link in your confirmation email, with a full refund. After that, the stay is non-refundable.',
 } as const
 
 export interface Quote {
@@ -53,6 +64,8 @@ export interface Quote {
   guests: number
   /** Hébergement, en centimes. */
   lodging: number
+  /** Petit-déjeuner (option), en centimes. 0 s'il n'est pas choisi. */
+  breakfast: number
   /** Taxe de séjour, en centimes. */
   touristTax: number
   /** Total à payer, en centimes. */
@@ -89,7 +102,7 @@ export function isPricedSuite(value: unknown): value is PricedSuite {
  * Calcule le prix d'un séjour. `today` est la date du jour (aaaa-mm-jj, heure de Paris).
  * Renvoie une erreur plutôt qu'un prix si le séjour n'est pas réservable en ligne.
  */
-export function quote(suite: unknown, arrival: string, departure: string, guests: number, today: string): Quote | { error: QuoteError } {
+export function quote(suite: unknown, arrival: string, departure: string, guests: number, today: string, options: { breakfast?: boolean } = {}): Quote | { error: QuoteError } {
   if (!isPricedSuite(suite)) return { error: 'suite' }
   if (!isIsoDate(arrival) || !isIsoDate(departure) || departure <= arrival) return { error: 'dates' }
   const rate = RATES[suite]
@@ -105,8 +118,9 @@ export function quote(suite: unknown, arrival: string, departure: string, guests
     lodging += isWeekendNight(day) && rate.weekend ? rate.weekend : rate.night
   }
   if (nights < (rate.minNights ?? MIN_NIGHTS)) return { error: 'too-short' }
+  const breakfast = options.breakfast ? BREAKFAST_PER_GUEST_NIGHT * guests * nights : 0
   const touristTax = TOURIST_TAX_PER_GUEST_NIGHT * guests * nights
-  return { suite, arrival, departure, nights, guests, lodging, touristTax, total: lodging + touristTax }
+  return { suite, arrival, departure, nights, guests, lodging, breakfast, touristTax, total: lodging + breakfast + touristTax }
 }
 
 /** Date du jour à Paris (aaaa-mm-jj). */
