@@ -377,8 +377,9 @@ export const contact = {
   phone: '+33 (0)6 24 53 75 50',
   phoneLink: '+33624537550',
   email: 'contact@chateaulatoursegur.com',
-  address: '1, lieu-dit Latour',
-  locality: '33570 Lussac — Saint-Émilion',
+  // Nom, adresse et téléphone identiques à la fiche Google Business Profile (ne pas reformuler).
+  address: '1 lieu-dit Latour',
+  locality: '33570 Lussac',
   map: 'https://www.google.com/maps/search/?api=1&query=Ch%C3%A2teau+Latour+S%C3%A9gur+1+Latour+33570+Lussac',
 }
 

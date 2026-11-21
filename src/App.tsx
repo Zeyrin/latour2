@@ -73,8 +73,8 @@ function establishment(lang: Lang) {
   return {
     '@type': 'BedAndBreakfast',
     '@id': `${SITE_URL}/#etablissement`,
-    name: 'Château Latour Ségur',
-    alternateName: 'Château Latour Ségur Suites & Spa',
+    name: 'Château Latour Ségur Suites & Spa',
+    alternateName: 'Château Latour Ségur',
     description: ui[lang].jsonLdDescription,
     url: `${SITE_URL}${paths.home[lang]}`,
     inLanguage: lang,
@@ -86,7 +86,7 @@ function establishment(lang: Lang) {
     areaServed: ['Saint-Émilion', 'Lussac', 'Libourne', 'Bordeaux'],
     priceRange: '€€€',
     numberOfRooms: 5,
-    sameAs: ['https://www.instagram.com/chateaulatoursegur/', SPA_URL],
+    sameAs: ['https://www.instagram.com/chateaulatoursegur/', 'https://www.facebook.com/chateaulatoursegur', SPA_URL],
     amenityFeature: [{ '@type': 'LocationFeatureSpecification', name: 'Spa', value: true }, { '@type': 'LocationFeatureSpecification', name: ui[lang].jsonLdMeeting, value: true }, ...suiteCommon[lang].map((name) => ({ '@type': 'LocationFeatureSpecification', name, value: true }))],
     // Les fiches suites décrivent chaque chambre en détail (pages/Suite.tsx).
     containsPlace: suites[lang].map((suite) => ({ '@type': 'HotelRoom', '@id': `${SITE_URL}${suitePaths(suite.id)[lang]}#suite`, name: suite.label, url: `${SITE_URL}${suitePaths(suite.id)[lang]}` })),
