@@ -634,6 +634,16 @@ em{font-weight:300}
 .booking-return .booking-confirmation{max-width:640px;width:100%;background:#f7f4ee}
 .booking-return .price-summary{text-align:left;max-width:420px;margin:26px auto 30px}
 .booking-return .button+.text-link{display:inline-flex;margin-top:18px}
+.manage-deadline{font-size:16px!important;line-height:1.6;color:#71685c;margin:0 auto 22px!important}
+.manage-cancel{border-top:1px solid var(--hairline);padding-top:26px;margin-top:4px}
+.manage-cancel h2{font-size:30px;line-height:1.1;letter-spacing:-.6px;font-weight:300;color:var(--wine);margin:0 0 12px}
+.manage-cancel>p{font-size:17px;line-height:1.6;font-weight:300;margin:0 auto 18px;max-width:480px}
+.manage-change{text-align:left}
+.manage-change h1{text-align:center}
+.manage-intro{font-size:17px;line-height:1.6;font-weight:300;margin:0 0 26px;text-align:center}
+.manage-change .form-grid{grid-template-columns:minmax(0,160px);margin-top:4px}
+.manage-change .price-summary{max-width:none;margin:22px 0 14px}
+.manage-change>.text-link{display:flex;width:fit-content;margin:16px auto 0}
 .request-toggle{margin-top:14px;text-align:left}
 
 /* Bloc suites de l'accueil (SuitesShowcase) */

@@ -42,10 +42,18 @@ export const BREAKFAST_PER_GUEST_NIGHT = 1800
 
 export const CURRENCY = 'eur'
 
+/** Délai pendant lequel le client peut annuler (remboursement intégral) ou modifier lui-même sa réservation, en heures après le paiement. */
+export const FREE_CHANGE_HOURS = 24
+
+/** Fin du délai d'annulation et de modification gratuites (paid_at : date du paiement). */
+export function manageDeadline(paidAt: string | Date) {
+  return new Date(new Date(paidAt).getTime() + FREE_CHANGE_HOURS * 3600_000)
+}
+
 /** Conditions d'annulation, affichées sur le formulaire, la page de paiement Stripe et la confirmation. */
 export const CANCELLATION_TERMS = {
-  fr: 'Annulation gratuite pendant 24 h après la réservation (appelez-nous ou écrivez-nous) : vous êtes remboursé intégralement. Passé ce délai, le séjour n’est plus remboursable.',
-  en: 'Free cancellation within 24 hours of booking (call or email us) for a full refund. After that, the stay is non-refundable.',
+  fr: 'Annulation ou modification gratuite pendant 24 h après la réservation, en un clic depuis le lien « Gérer ma réservation » de votre e-mail de confirmation : vous êtes remboursé intégralement. Passé ce délai, le séjour n’est plus remboursable.',
+  en: 'Free cancellation or changes within 24 hours of booking, in one click from the “Manage my booking” link in your confirmation email, with a full refund. After that, the stay is non-refundable.',
 } as const
 
 export interface Quote {

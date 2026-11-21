@@ -45,6 +45,7 @@ const handlers: Record<string, Record<string, (request: Request) => Response | P
   'stripe-webhook': await import('../api/stripe-webhook.ts'),
   'booking-status': await import('../api/booking-status.ts'),
   availability: await import('../api/availability.ts'),
+  'manage-booking': await import('../api/manage-booking.ts'),
 }
 const { parisToday, quote, RATES, TOURIST_TAX_PER_GUEST_NIGHT, BREAKFAST_PER_GUEST_NIGHT } = await import('../src/lib/pricing.ts')
 const { retryBeds24Pushes } = await import('../api/_lib/bookings.ts')
@@ -184,7 +185,10 @@ interface FakeSession {
 
 const sessions = new Map<string, FakeSession>()
 const idempotency = new Map<string, string>()
-const stripeControl = { failNextCreate: false, webhookOnPay: true, created: 0 }
+const stripeControl = { failNextCreate: false, webhookOnPay: true, created: 0, failRefunds: false }
+/** Paiements et remboursements du faux Stripe, par PaymentIntent. */
+const charges = new Map<string, { amount: number; refunded: number }>()
+const refunds: { pi: string; amount: number; key?: string }[] = []
 const sentEvents: string[] = []
 const signer = new Stripe('sk_test_local')
 
@@ -200,6 +204,7 @@ async function paySession(session: FakeSession) {
   session.status = 'complete'
   session.payment_status = 'paid'
   session.payment_intent = `pi_${randomBytes(8).toString('hex')}`
+  charges.set(session.payment_intent, { amount: session.amount_total, refunded: 0 })
   if (stripeControl.webhookOnPay) await sendEvent('checkout.session.completed', session)
 }
 
@@ -255,6 +260,21 @@ const stripeServer = createServer(async (request, response) => {
     if (key) idempotency.set(key, id)
     stripeControl.created++
     return json(response, 200, session)
+  }
+  if (request.method === 'POST' && url.pathname === '/v1/refunds') {
+    const key = request.headers['idempotency-key'] as string | undefined
+    const params = decodeForm(body) as Record<string, string>
+    const previous = key ? refunds.find((item) => item.key === key) : undefined
+    if (previous) return json(response, 200, { id: `re_${key}`, object: 'refund', amount: previous.amount, payment_intent: previous.pi, status: 'succeeded' })
+    if (stripeControl.failRefunds) return json(response, 403, { error: { type: 'invalid_request_error', message: 'The provided key does not have the required permissions (rak_refund_write)' } })
+    const charge = charges.get(params.payment_intent)
+    const amount = Number(params.amount ?? (charge ? charge.amount - charge.refunded : 0))
+    if (!charge || !(amount > 0) || charge.refunded + amount > charge.amount) return json(response, 400, { error: { type: 'invalid_request_error', message: 'Remboursement impossible' } })
+    charge.refunded += amount
+    refunds.push({ pi: params.payment_intent, amount, key })
+    // Le vrai Stripe envoie charge.refunded (refunded: true seulement quand tout est remboursé) ; ici avant même la réponse.
+    await sendEvent('charge.refunded', { id: `ch_${params.payment_intent}`, object: 'charge', payment_intent: params.payment_intent, refunded: charge.refunded === charge.amount, amount_refunded: charge.refunded })
+    return json(response, 200, { id: `re_${randomBytes(6).toString('hex')}`, object: 'refund', amount, payment_intent: params.payment_intent, status: 'succeeded' })
   }
   const retrieve = /^\/v1\/checkout\/sessions\/(cs_[A-Za-z0-9_]+)(\/expire)?$/.exec(url.pathname)
   if (retrieve) {
@@ -329,6 +349,17 @@ async function blockedFor(suite: string) {
   return blocks.filter((block) => block.resource === suite)
 }
 
+/** Clique un jour du calendrier, en changeant de mois si besoin. */
+async function pickDay(page: Page, day: string) {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const cell = page.locator(`.calendar-day[data-date="${day}"]`).first()
+    if (await cell.isVisible()) return cell.click()
+    const first = await page.locator('.calendar-day').first().getAttribute('data-date') as string
+    await page.locator('.calendar-toolbar .icon-button').nth(day < first ? 0 : 1).click()
+  }
+  throw new Error(`Jour ${day} introuvable dans le calendrier`)
+}
+
 const browser = await chromium.launch()
 const pageErrors: string[] = []
 let failed = false
@@ -356,7 +387,7 @@ try {
   assert(!('error' in expected), 'Séjour de test valide')
   assert((await txt(page.locator('.price-summary'))).includes('Taxe de séjour') && (await txt(page.locator('.price-summary'))).includes('4,56 €') && (await txt(page.locator('.price-summary'))).includes('394,56'), 'Récapitulatif du prix affiché (2 nuits × 195 € + taxe de séjour 2 pers. × 2 nuits × 1,14 €)')
   assert((await txt(page.locator('.form-submit'))).includes('Réserver et payer 394'), 'Bouton « Réserver et payer » avec le total')
-  assert((await txt(page.locator('form .booking-cancellation'))).includes('Annulation gratuite pendant 24 h'), 'Conditions d’annulation affichées avant le paiement')
+  assert((await txt(page.locator('form .booking-cancellation'))).includes('gratuite pendant 24 h'), 'Conditions d’annulation affichées avant le paiement')
   const submitBefore = await txt(page.locator('.form-submit'))
   const withBreakfast = quote('eau', arrivalDate, addDays(arrivalDate, 2), 2, today, { breakfast: true })
   assert(!('error' in withBreakfast) && !('error' in expected) && withBreakfast.total - expected.total === 7200, 'Petit-déjeuner : 18 € × 2 pers. × 2 nuits = 72 €')
@@ -723,6 +754,160 @@ try {
     assert(status.breakfast === true, 'Page de confirmation : petit-déjeuner indiqué')
     const forged = await (await checkout({ ...stay('feu', 150, 2, 2), email: 'sans@example.fr', breakfast: 'yes' })).json() as { url: string }
     assert(sessionOf(forged.url).amount_total === 2 * RATES.feu.night + TOURIST_TAX_PER_GUEST_NIGHT * 2 * 2, 'Sans option cochée : prix inchangé')
+  }
+  delete process.env.BEDS24_REFRESH_TOKEN
+
+  console.log('\n23. Gérer ma réservation : modifier ou annuler pendant 24 h')
+  await reset()
+  process.env.BEDS24_REFRESH_TOKEN = 'beds24-refresh'
+  {
+    const manage = (token: string, body: Record<string, unknown>) => fetch(`${APP}/api/manage-booking`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ t: token, ...body }) })
+    const created = await (await checkout(stay('bois', 30, 2))).json() as { url: string }
+    const first = sessionOf(created.url)
+    await paySession(first)
+    let [row] = await bookings()
+    assert(row.status === 'paid' && /^[0-9a-f]{64}$/.test(row.manage_token), 'Chaque réservation a un lien secret « Gérer ma réservation »')
+    const status = await (await fetch(`${APP}/api/booking-status?session_id=${first.id}`)).json()
+    assert(status.manage === row.manage_token, 'La page de confirmation reçoit le lien de gestion')
+    const token = row.manage_token as string
+    const view = await (await fetch(`${APP}/api/manage-booking?t=${token}`)).json()
+    assert(view.booking.can_manage === true && !('email' in view.booking) && !('name' in view.booking) && !('manage_token' in view.booking), 'Lien valide : modification possible, sans coordonnées exposées')
+    assert(!view.blocks.some((block: { resource: string; start_date: string; end_date: string }) => block.resource === 'bois' && block.start_date < addDays(today, 32) && block.end_date > addDays(today, 30)), 'Ses propres nuits ne sont pas affichées comme prises')
+    assert((await fetch(`${APP}/api/manage-booking?t=${'0'.repeat(64)}`)).status === 404, 'Lien inconnu refusé (404)')
+    assert((await manage('abc', { action: 'cancel' })).status === 404, 'Lien mal formé refusé')
+
+    // Copie de la réservation revenue de Beds24 + une autre réservation Beds24 juste après.
+    const arrival = addDays(today, 30)
+    await db.query(`insert into public.availability_blocks (resource, start_date, end_date, source) values ('bois', $1, $2, 'beds24')`, [arrival, addDays(today, 34)])
+
+    // Modification dans le navigateur : arrivée un jour plus tôt (3 nuits), supplément payé sur Stripe.
+    const context2 = await browser.newContext({ viewport: { width: 1280, height: 900 } })
+    const page2 = await context2.newPage()
+    page2.on('pageerror', (error) => pageErrors.push(error.message))
+    await page2.goto(`${APP}/reservation/gerer?t=${token}`, { waitUntil: 'networkidle' })
+    await page2.getByRole('heading', { name: /Votre/ }).waitFor()
+    assert((await txt(page2.locator('.manage-deadline'))).includes('gratuitement jusqu’au'), 'Page de gestion : date limite affichée')
+    await page2.screenshot({ path: 'artifacts/manage-ordinateur.png', fullPage: true })
+    await accessible(page2, 'Page « Gérer ma réservation »')
+    await page2.getByRole('button', { name: 'Modifier mon séjour' }).click()
+    await page2.waitForFunction(() => document.querySelectorAll('.calendar-day:not([aria-disabled])').length > 10)
+    assert(await page2.locator(`.calendar-day[data-date="${addDays(today, 33)}"]`).first().getAttribute('aria-disabled') === 'true', 'Nuits prises par une autre réservation Beds24 indisponibles')
+    await pickDay(page2, addDays(today, 29))
+    await pickDay(page2, addDays(today, 32))
+    const extra = RATES.bois.night + 2 * TOURIST_TAX_PER_GUEST_NIGHT
+    assert((await txt(page2.locator('.manage-change .price-summary'))).includes('Reste à régler'), 'Différence de prix affichée avant de payer')
+    await page2.screenshot({ path: 'artifacts/manage-modifier-ordinateur.png', fullPage: true })
+    await accessible(page2, 'Formulaire de modification')
+    await page2.locator('.manage-change .form-submit').click()
+    await page2.waitForURL(/127\.0\.0\.1:4183\/pay\//)
+    assert(Math.round(Number((await txt(page2.locator('#amount'))).split(' ')[0]) * 100) === extra, 'Stripe : seul le supplément est demandé')
+    await page2.getByRole('button', { name: 'Payer' }).click()
+    await page2.waitForURL(/\/reservation\/gerer\?t=/)
+    await page2.getByText('Réservation modifiée').first().waitFor()
+    row = await booking(row.id)
+    assert(row.nights === 3 && row.amount_total === quote('bois', addDays(today, 29), addDays(today, 32), 2, today).total, 'Réservation modifiée : 3 nuits au nouveau prix')
+    assert(row.payments.length === 2 && row.payments[1].amount === extra, 'Supplément enregistré dans les paiements')
+    assert(!page2.url().includes('change='), 'Le retour de Stripe retire l’identifiant de session de l’adresse')
+    const update = beds24.calls.at(-1)!
+    assert(update.id === Number(row.beds24_booking_id) && update.arrival === addDays(today, 29) && update.departure === addDays(today, 32), 'Beds24 mis à jour avec les nouvelles dates')
+    await page2.screenshot({ path: 'artifacts/manage-modifiee-ordinateur.png', fullPage: true })
+    const changeSession = [...sessions.values()].find((session) => session.metadata.kind === 'change')!
+    assert((await sendEvent('checkout.session.completed', changeSession)).status === 200 && (await booking(row.id)).payments.length === 2, 'Webhook du supplément rejoué : sans effet')
+
+    // Baisse de prix : 2 nuits, la différence est remboursée tout de suite (d'abord sur le supplément).
+    const lower = await manage(token, { action: 'change', suite: 'bois', arrival: addDays(today, 30), departure: addDays(today, 32), guests: 2 })
+    const lowerBody = await lower.json()
+    assert(lower.status === 200 && lowerBody.booking.nights === 2, 'Baisse de prix : modification appliquée sans paiement')
+    assert(refunds.at(-1)!.pi === changeSession.payment_intent && refunds.at(-1)!.amount === extra, 'Différence remboursée sur le supplément')
+    row = await booking(row.id)
+    assert(row.status === 'paid' && row.amount_total === quote('bois', addDays(today, 30), addDays(today, 32), 2, today).total, 'Réservation toujours valable au prix initial')
+
+    // Autre suite pour des dates prises : refusé.
+    await db.query(`insert into public.availability_blocks (resource, start_date, end_date, source) values ('feu', $1, $2, 'manuel')`, [addDays(today, 30), addDays(today, 31)])
+    const taken = await manage(token, { action: 'change', suite: 'feu', arrival: addDays(today, 30), departure: addDays(today, 32), guests: 2 })
+    assert(taken.status === 409 && (await taken.json()).error === 'unavailable', 'Modification vers des dates prises refusée')
+    assert((await manage(token, { action: 'change', suite: 'bois', arrival: addDays(today, 30), departure: addDays(today, 32), guests: 2 })).status === 400, 'Même séjour : rien à modifier')
+    assert((await manage(token, { action: 'change', suite: 'bois', arrival: addDays(today, 30), departure: addDays(today, 32), guests: 5 })).status === 400, 'Capacité de la suite vérifiée par le serveur')
+
+    // Supplément payé mais dates prises entre-temps : supplément remboursé, réservation inchangée.
+    const up = await (await manage(token, { action: 'change', suite: 'metal', arrival: addDays(today, 30), departure: addDays(today, 32), guests: 2 })).json() as { url: string }
+    const upSession = sessionOf(up.url)
+    await db.query(`insert into public.availability_blocks (resource, start_date, end_date, source) values ('metal', $1, $2, 'manuel')`, [addDays(today, 31), addDays(today, 32)])
+    await paySession(upSession)
+    row = await booking(row.id)
+    assert(row.suite === 'bois' && row.payments.length === 2, 'Dates prises pendant le paiement : réservation d’origine gardée')
+    assert(refunds.some((item) => item.pi === upSession.payment_intent && item.amount === upSession.amount_total), 'Supplément remboursé automatiquement')
+
+    // Annulation : refus de Stripe (clé sans le droit Refunds) → rien ne change.
+    stripeControl.failRefunds = true
+    const refused = await manage(token, { action: 'cancel' })
+    assert(refused.status === 502 && (await refused.json()).error === 'refund' && (await booking(row.id)).status === 'paid', 'Remboursement refusé par Stripe : la réservation n’est pas annulée')
+    stripeControl.failRefunds = false
+
+    // Annulation dans le navigateur.
+    await page2.goto(`${APP}/reservation/gerer?t=${token}`, { waitUntil: 'networkidle' })
+    await page2.getByRole('button', { name: 'Annuler ma réservation' }).click()
+    await page2.screenshot({ path: 'artifacts/manage-annuler-ordinateur.png', fullPage: true })
+    const before = refunds.length
+    await page2.getByRole('button', { name: /Oui, annuler/ }).click()
+    await page2.getByText('Réservation annulée').first().waitFor()
+    await page2.screenshot({ path: 'artifacts/manage-annulee-ordinateur.png', fullPage: true })
+    row = await booking(row.id)
+    const net = row.payments.reduce((sum: number, payment: { amount: number }) => sum + payment.amount, 0)
+    assert(row.status === 'refunded' && row.cancelled_at && row.amount_refunded === net, 'Annulation : réservation « refunded », tout est remboursé')
+    assert(refunds.slice(before).reduce((sum, item) => sum + item.amount, 0) === quote('bois', addDays(today, 30), addDays(today, 32), 2, today).total, 'Montant remboursé = montant réglé')
+    assert(beds24.calls.some((call) => call.id === Number(row.beds24_booking_id) && call.status === 'cancelled'), 'Annulée dans Beds24')
+    assert((await db.query(`select 1 from public.bookings where suite = 'bois' and status in ('paid','pending')`)).rowCount === 0, 'Dates libérées sur le site (la copie Beds24 part à la synchronisation suivante)')
+    const afterCancel = refunds.length
+    assert((await manage(token, { action: 'cancel' })).status === 200 && refunds.length === afterCancel, 'Deuxième clic : aucun remboursement en plus')
+    assert((await manage(token, { action: 'change', suite: 'bois', arrival: addDays(today, 40), departure: addDays(today, 42), guests: 2 })).status === 409, 'Réservation annulée : plus modifiable')
+
+    // Mobile.
+    const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 })
+    const mobilePage = await mobile.newPage()
+    mobilePage.on('pageerror', (error) => pageErrors.push(error.message))
+    const second = await (await checkout(stay('terre', 50, 2, 2))).json() as { url: string }
+    await paySession(sessionOf(second.url))
+    const secondRow = (await bookings()).find((b) => b.suite === 'terre')
+    await mobilePage.goto(`${APP}/reservation/gerer?t=${secondRow.manage_token}`, { waitUntil: 'networkidle' })
+    await mobilePage.getByRole('heading', { name: /Votre/ }).waitFor()
+    await mobilePage.screenshot({ path: 'artifacts/manage-mobile.png', fullPage: true })
+    await mobilePage.getByRole('button', { name: 'Modifier mon séjour' }).click()
+    await mobilePage.waitForFunction(() => document.querySelectorAll('.calendar-day:not([aria-disabled])').length > 10)
+    await pickDay(mobilePage, addDays(today, 50))
+    await pickDay(mobilePage, addDays(today, 53))
+    await mobilePage.screenshot({ path: 'artifacts/manage-modifier-mobile.png', fullPage: true })
+    assert(await mobilePage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'Mobile : pas de défilement horizontal')
+    await mobilePage.goto(`${APP}/en/booking/manage?t=${secondRow.manage_token}`, { waitUntil: 'networkidle' })
+    await mobilePage.getByRole('button', { name: 'Cancel my booking' }).click()
+    await mobilePage.screenshot({ path: 'artifacts/manage-annuler-mobile-en.png', fullPage: true })
+
+    // Délai de 24 h passé.
+    await db.query(`update public.bookings set paid_at = now() - interval '25 hours' where id = $1`, [secondRow.id])
+    const late = await manage(secondRow.manage_token, { action: 'cancel' })
+    assert(late.status === 409 && (await late.json()).error === 'deadline', 'Après 24 h : annulation refusée')
+    assert((await manage(secondRow.manage_token, { action: 'change', suite: 'terre', arrival: addDays(today, 50), departure: addDays(today, 53), guests: 2 })).status === 409, 'Après 24 h : modification refusée')
+    await mobilePage.goto(`${APP}/reservation/gerer?t=${secondRow.manage_token}`, { waitUntil: 'networkidle' })
+    await mobilePage.getByText('n’est plus remboursable').waitFor()
+    assert(await mobilePage.getByRole('button', { name: 'Annuler ma réservation' }).count() === 0, 'Après 24 h : plus de bouton d’annulation')
+    await mobilePage.screenshot({ path: 'artifacts/manage-delai-passe-mobile.png', fullPage: true })
+    await mobile.close()
+    await context2.close()
+  }
+  delete process.env.BEDS24_REFRESH_TOKEN
+
+  console.log('\n24. Modification d’une réservation avec petit-déjeuner')
+  await reset()
+  process.env.BEDS24_REFRESH_TOKEN = 'beds24-refresh'
+  {
+    const created = await (await checkout({ ...stay('terre', 60, 3, 2), breakfast: true })).json() as { url: string }
+    await paySession(sessionOf(created.url))
+    let [row] = await bookings()
+    const shorter = await fetch(`${APP}/api/manage-booking`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ t: row.manage_token, action: 'change', suite: 'terre', arrival: addDays(today, 60), departure: addDays(today, 62), guests: 2 }) })
+    assert(shorter.status === 200, 'Réservation avec petit-déjeuner : modification acceptée')
+    row = await booking(row.id)
+    const expected = quote('terre', addDays(today, 60), addDays(today, 62), 2, today, { breakfast: true })
+    assert(!('error' in expected) && row.breakfast === true && row.amount_total === expected.total, 'Petit-déjeuner conservé et recompté après la modification')
   }
   delete process.env.BEDS24_REFRESH_TOKEN
 

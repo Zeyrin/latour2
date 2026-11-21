@@ -13,6 +13,8 @@ export const paths = {
   // Pages de retour du paiement Stripe (mêmes chemins que RETURN_PATHS dans api/checkout.ts).
   bookingConfirmed: { fr: '/reservation/confirmation', en: '/en/booking/confirmation' },
   bookingCancelled: { fr: '/reservation/annulation', en: '/en/booking/cancelled' },
+  // Page « Gérer ma réservation » (mêmes chemins que MANAGE_PATHS dans api/_lib/manage.ts).
+  manageBooking: { fr: '/reservation/gerer', en: '/en/booking/manage' },
 } satisfies Record<string, Record<Lang, string>>
 
 export type PageKey = keyof typeof paths

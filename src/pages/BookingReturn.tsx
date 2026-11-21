@@ -8,7 +8,7 @@ import { LangContext, locales, paths, type Lang, type PageKey } from '../lib/i18
 import { formatEuros } from '../lib/pricing'
 import { bookingUi, payUi } from '../lib/ui'
 
-interface BookingView {
+export interface BookingView {
   status: 'pending' | 'paid' | 'expired' | 'cancelled' | 'refunded' | 'conflict'
   suite: string
   arrival: string
@@ -17,6 +17,8 @@ interface BookingView {
   guests: number
   amount_total: number
   breakfast?: boolean
+  /** Secret du lien « Gérer ma réservation » (réservation payée uniquement). */
+  manage?: string
 }
 
 type State = { phase: 'loading' } | { phase: 'done'; booking: BookingView } | { phase: 'error' }
@@ -27,11 +29,11 @@ function longDate(iso: string, lang: Lang) {
   return new Intl.DateTimeFormat(locales[lang], { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(`${iso}T12:00:00Z`))
 }
 
-function Layout({ lang, page, title, children }: { lang: Lang; page: PageKey; title: string; children: ReactNode }) {
+export function Layout({ lang, page, title, children, head }: { lang: Lang; page: PageKey; title: string; children: ReactNode; head?: ReactNode }) {
   return (
     <LangContext.Provider value={lang}>
       <div className="booking-return legal-page">
-        <Seo lang={lang} page={page} title={`${title} — Latour Ségur`} description={title} noindex />
+        <Seo lang={lang} page={page} title={`${title} — Latour Ségur`} description={title} noindex>{head}</Seo>
         <header><Link to={paths.home[lang]} aria-label="Château Latour Ségur Suites & Spa"><Brand /></Link></header>
         <main><div className="booking-confirmation" role="status">{children}</div></main>
       </div>
@@ -39,7 +41,7 @@ function Layout({ lang, page, title, children }: { lang: Lang; page: PageKey; ti
   )
 }
 
-function Summary({ booking, lang }: { booking: BookingView; lang: Lang }) {
+export function Summary({ booking, lang }: { booking: BookingView; lang: Lang }) {
   const p = payUi[lang]
   const t = bookingUi[lang]
   const suite = suites[lang].find((item) => item.id === booking.suite)?.label ?? booking.suite
@@ -51,7 +53,7 @@ function Summary({ booking, lang }: { booking: BookingView; lang: Lang }) {
   </dl>
 }
 
-function CallUs({ lang }: { lang: Lang }) {
+export function CallUs({ lang }: { lang: Lang }) {
   return <a className="booking-phone" href={`tel:${contact.phoneLink}`}><Phone size={15} strokeWidth={1.25} /> {payUi[lang].call} <span>{contact.phone}</span></a>
 }
 
@@ -99,7 +101,12 @@ function Confirmed({ lang }: { lang: Lang }) {
       <p>{text}</p>
       {booking && <Summary booking={booking} lang={lang} />}
       {paid && <p className="form-note booking-cancellation">{p.cancellation}</p>}
-      <Link className="button button-burgundy" to={paths.home[lang]}>{p.back} <ArrowRight size={17} /></Link>
+      {paid && booking.manage
+        ? <>
+          <Link className="button button-burgundy" to={`${paths.manageBooking[lang]}?t=${booking.manage}`}>{p.manage} <ArrowRight size={17} /></Link>
+          <Link className="text-link" to={paths.home[lang]}>{p.back} <ArrowRight size={16} /></Link>
+        </>
+        : <Link className="button button-burgundy" to={paths.home[lang]}>{p.back} <ArrowRight size={17} /></Link>}
       <CallUs lang={lang} />
     </Layout>
   )
