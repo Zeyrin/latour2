@@ -15,11 +15,12 @@ export function Seo({ lang, page, title, description, image = OG_IMAGE, noindex 
       <html lang={lang} />
       <title>{title}</title>
       <meta name="description" content={description} />
+      {/* Une page noindex ne déclare ni canonique ni variantes de langue : les deux signaux se contrediraient. */}
       {noindex && <meta name="robots" content="noindex, follow" />}
-      <link rel="canonical" href={url} />
-      <link rel="alternate" hrefLang="fr" href={`${SITE_URL}${pagePaths.fr}`} />
-      <link rel="alternate" hrefLang="en" href={`${SITE_URL}${pagePaths.en}`} />
-      <link rel="alternate" hrefLang="x-default" href={`${SITE_URL}${pagePaths.fr}`} />
+      {!noindex && <link rel="canonical" href={url} />}
+      {!noindex && <link rel="alternate" hrefLang="fr" href={`${SITE_URL}${pagePaths.fr}`} />}
+      {!noindex && <link rel="alternate" hrefLang="en" href={`${SITE_URL}${pagePaths.en}`} />}
+      {!noindex && <link rel="alternate" hrefLang="x-default" href={`${SITE_URL}${pagePaths.fr}`} />}
       <meta property="og:site_name" content="Château Latour Ségur Suites & Spa" />
       <meta property="og:type" content="website" />
       <meta property="og:locale" content={lang === 'fr' ? 'fr_FR' : 'en_GB'} />
