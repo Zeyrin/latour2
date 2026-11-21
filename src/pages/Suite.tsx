@@ -47,11 +47,21 @@ function suiteJsonLd(id: SuiteId, lang: Lang) {
         availability: 'https://schema.org/InStock',
       },
       {
+        '@type': 'WebPage',
+        '@id': `${url}#page`,
+        url,
+        name: t.suitePage.seoTitle(detail.seo.title),
+        inLanguage: lang,
+        isPartOf: { '@id': `${SITE_URL}/#website` },
+        about: { '@id': `${url}#suite` },
+        breadcrumb: { '@id': `${url}#ariane` },
+      },
+      {
         '@type': 'BreadcrumbList',
+        '@id': `${url}#ariane`,
         itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Château Latour Ségur', item: home },
-          { '@type': 'ListItem', position: 2, name: t.suitesListEyebrow, item: `${home}#les-suites` },
-          { '@type': 'ListItem', position: 3, name: label, item: url },
+          { '@type': 'ListItem', position: 1, name: t.homeKeywordLink, item: home },
+          { '@type': 'ListItem', position: 2, name: label, item: url },
         ],
       },
     ],
@@ -124,7 +134,7 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
   return (
     <LangContext.Provider value={lang}>
       <div className={`suite-page suite-page-${id}`}>
-        <Seo lang={lang} page={suitePaths(id)} title={p.seoTitle(label)} description={p.seoDescription(label, `${detail.surface}, ${detail.guests.toLowerCase()}`, detail.tagline, price)} image={photos[0] ? `${SITE_URL}${photos[0]}` : undefined}><script type="application/ld+json">{JSON.stringify(suiteJsonLd(id, lang))}</script></Seo>
+        <Seo lang={lang} page={suitePaths(id)} title={p.seoTitle(detail.seo.title)} description={p.seoDescription(detail.seo.description, formatEuros(rate.night, locales[lang]))} image={photos[0] ? `${SITE_URL}${photos[0]}` : undefined}><script type="application/ld+json">{JSON.stringify(suiteJsonLd(id, lang))}</script></Seo>
         <header className="suite-header">
           <Link to={paths.home[lang]} className="suite-header-brand" aria-label={t.homeLabel}><Brand /></Link>
           <Link to={`${paths.home[lang]}#les-suites`} className="suite-back"><ArrowLeft size={15} strokeWidth={1.25} />{p.back}</Link>
@@ -138,6 +148,7 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
           <section className="suite-hero page-width" aria-labelledby="suite-heading">
             <div className="suite-hero-head">
               <div>
+                <nav className="suite-breadcrumb" aria-label={t.breadcrumbLabel}><ol><li><Link to={paths.home[lang]}>{t.homeKeywordLink}</Link></li><li aria-current="page">{label}</li></ol></nav>
                 <p className="eyebrow">{String(number).padStart(2, '0')} / 05 · {t.suitesListEyebrow}</p>
                 <h1 id="suite-heading">{label}</h1>
               </div>
@@ -185,13 +196,13 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
           </nav>
         </main>
 
-        <div className="suite-mobile-bar"><span><strong>{label}</strong>{price}</span><button className="button button-burgundy" onClick={() => setBooking(true)}>{p.bookShort}</button></div>
+        <aside className="suite-mobile-bar" aria-label={p.bookShort}><span><strong>{label}</strong>{price}</span><button className="button button-burgundy" onClick={() => setBooking(true)}>{p.bookShort}</button></aside>
 
         <footer className="suite-footer">
           <div className="page-width">
             <Link to={paths.home[lang]} aria-label={t.backToTop}><Brand /></Link>
             <address>{contact.address}, {contact.locality}<br /><a href={`tel:${contact.phoneLink}`}>{contact.phone}</a> · <a href={`mailto:${contact.email}`}>{contact.email}</a></address>
-            <div className="suite-footer-links"><a href={GIFT_URL} {...newWindow(t.footerGift)}>{t.footerGift}</a><Link to={paths.legal[lang]}>{t.legal}</Link><Link to={paths.privacy[lang]}>{t.privacy}</Link></div>
+            <div className="suite-footer-links"><Link to={paths.home[lang]}>{t.homeKeywordLink}</Link><a href={GIFT_URL} {...newWindow(t.footerGift)}>{t.footerGift}</a><Link to={paths.legal[lang]}>{t.legal}</Link><Link to={paths.privacy[lang]}>{t.privacy}</Link></div>
           </div>
         </footer>
 

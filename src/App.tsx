@@ -11,6 +11,8 @@ import { BookingForm } from './components/BookingForm'
 import { Seo } from './components/Seo'
 import { MomentNotice } from './components/MomentNotice'
 import { SuitesShowcase } from './components/SuitesShowcase'
+import { PracticalInfo } from './components/PracticalInfo'
+import { faqItems } from './lib/faq'
 import { GIFT_URL, SITE_URL, SPA_URL, spaUrl, contact, escapes, galleryPhotos, suiteCommon, suitePhotos, suites, universes, type SuiteId, type GalleryFilter, type GalleryPhoto, type Universe, type UniverseId } from './lib/content'
 import { LangContext, paths, suitePaths, type Lang } from './lib/i18n'
 import { RATES } from './lib/pricing'
@@ -53,9 +55,22 @@ function Chapter({ universe, caption, onDiscover, href, external, newWindow }: {
   )
 }
 
+/** Données structurées de l'accueil : un seul @graph (site, établissement, page, questions fréquentes) relié par @id. */
 function jsonLd(lang: Lang) {
+  const url = `${SITE_URL}${paths.home[lang]}`
   return {
     '@context': 'https://schema.org',
+    '@graph': [
+      { '@type': 'WebSite', '@id': `${SITE_URL}/#website`, url: `${SITE_URL}/`, name: 'Château Latour Ségur Suites & Spa', inLanguage: ['fr', 'en'], publisher: { '@id': `${SITE_URL}/#etablissement` } },
+      establishment(lang),
+      { '@type': 'WebPage', '@id': `${url}#page`, url, name: ui[lang].seoTitle, description: ui[lang].seoDescription, inLanguage: lang, isPartOf: { '@id': `${SITE_URL}/#website` }, about: { '@id': `${SITE_URL}/#etablissement` }, primaryImageOfPage: `${SITE_URL}/images/domaine.webp` },
+      { '@type': 'FAQPage', '@id': `${url}#faq`, isPartOf: { '@id': `${url}#page` }, inLanguage: lang, mainEntity: faqItems(lang).map((item) => ({ '@type': 'Question', name: item.q, acceptedAnswer: { '@type': 'Answer', text: item.a } })) },
+    ],
+  }
+}
+
+function establishment(lang: Lang) {
+  return {
     '@type': 'BedAndBreakfast',
     '@id': `${SITE_URL}/#etablissement`,
     name: 'Château Latour Ségur',
@@ -66,7 +81,7 @@ function jsonLd(lang: Lang) {
     image: [`${SITE_URL}/images/domaine.webp`, `${SITE_URL}/images/chateau-panorama.webp`, `${SITE_URL}/images/cuvier.webp`],
     telephone: contact.phoneLink,
     email: contact.email,
-    address: { '@type': 'PostalAddress', streetAddress: '1 Lieu dit Latour', postalCode: '33570', addressLocality: 'Lussac', addressRegion: 'Gironde', addressCountry: 'FR' },
+    address: { '@type': 'PostalAddress', streetAddress: '1 lieu-dit Latour', postalCode: '33570', addressLocality: 'Lussac', addressRegion: 'Gironde', addressCountry: 'FR' },
     hasMap: contact.map,
     areaServed: ['Saint-Émilion', 'Lussac', 'Libourne', 'Bordeaux'],
     priceRange: '€€€',
@@ -203,11 +218,11 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
 
       <main>
         <section className="hero" id="accueil" aria-labelledby="hero-heading">
-          <div className="hero-image"><picture><source media="(max-width: 700px)" srcSet="/images/domaine-mobile.webp" /><img src="/images/domaine.webp" alt={t.heroAlt} fetchPriority="high" loading="eager" decoding="sync" /></picture></div>
+          <div className="hero-image"><picture><source media="(max-width: 700px)" srcSet="/images/domaine-mobile.webp" width={750} height={884} /><img src="/images/domaine.webp" width={1600} height={1067} alt={t.heroAlt} fetchPriority="high" loading="eager" decoding="sync" /></picture></div>
           <div className="hero-shade" />
           <motion.div className="hero-content" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.15, delay: 0.65 }}>
-            <p className="eyebrow hero-eyebrow"><span />{t.heroEyebrow}<span /></p>
-            <h1 id="hero-heading">{t.heroTitle[0]}<br /><em>{t.heroTitle[1]}</em></h1>
+            <h1 className="eyebrow hero-eyebrow" id="hero-heading"><span /><span className="hero-h1-text">{t.heroH1.split(/(Saint-Émilion)/).map((part, i) => i % 2 ? <span key={i} className="nowrap">{part}</span> : part)}</span><span /></h1>
+            <p className="hero-title">{t.heroTitle[0]}<br /><em>{t.heroTitle[1]}</em></p>
             <p className="hero-subtitle">{t.heroSubtitle[0]}{' '}<br />{t.heroSubtitle[1]}</p>
             <a href="#univers" className="hero-discover">{t.heroDiscover} <ArrowDown size={15} strokeWidth={1.5} /></a>
           </motion.div>
@@ -274,17 +289,19 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
           <p className="gallery-note">{t.galleryNote}</p>
         </div></section>
 
+        <PracticalInfo lang={lang} />
+
         <section className="closing-section" id="contact" aria-labelledby="closing-heading"><ChateauSketch className="closing-sketch" /><Reveal className="closing-content"><p className="eyebrow">{t.closingEyebrow}</p><h2 id="closing-heading">{t.closingTitle[0]}<br /><em>{t.closingTitle[1]}</em></h2><p>{t.closingText[0]}<br />{t.closingText[1]}</p><div className="closing-choices">{langUniverses.map((universe) => universe.id === 'spa' ? <a key={universe.id} href={spaUrl('contact', lang)} {...externalProps(t.closingChoices[universe.id])}>{t.closingChoices[universe.id]}<ArrowUpRight size={17} strokeWidth={1.25} /></a> : <button key={universe.id} onClick={() => book(universe.id)}>{t.closingChoices[universe.id]}<ArrowUpRight size={17} strokeWidth={1.25} /></button>)}</div><span className="closing-signature">Corinne & André</span></Reveal></section>
       </main>
 
       <footer className="site-footer"><div className="footer-main page-width">
-        <div className="footer-brand"><a href="#accueil" aria-label={t.backToTop}><Brand sketch /></a><p>{t.footerTagline[0]}<br />{t.footerTagline[1]}</p><p className="ancv"><img src="/images/ancv.svg" alt="ANCV" width="45" height="25" loading="lazy" />{t.ancv}</p></div>
+        <div className="footer-brand"><a href="#accueil" aria-label={t.backToTop}><Brand sketch /></a><p className="footer-keyword"><Link to={paths.home[lang]}>{t.homeKeywordLink}</Link></p><p>{t.footerTagline[0]}<br />{t.footerTagline[1]}</p><p className="ancv"><img src="/images/ancv.svg" alt="ANCV" width="45" height="25" loading="lazy" />{t.ancv}</p></div>
         <div className="footer-column"><h3>{t.footerHouse}</h3><a href="#domaine">{t.menuLinks.domaine}</a><a href="#les-suites">{t.menuLinks.suites}</a>{spaLink('footer-external', t.menuLinks.spa, 'footer')}<a href="#evenements">{t.menuLinks.evenements}</a></div>
-        <div className="footer-column"><h3>{t.footerMoments}</h3><a href="#echappees">{t.menuLinks.echappees}</a>{giftLink('footer-external', t.footerGift, 16)}<a href="#galerie">{t.menuLinks.galerie}</a><button onClick={() => book()}>{t.footerPlan}</button></div>
+        <div className="footer-column"><h3>{t.footerMoments}</h3><a href="#echappees">{t.menuLinks.echappees}</a>{giftLink('footer-external', t.footerGift, 16)}<a href="#galerie">{t.menuLinks.galerie}</a><a href="#infos">{t.menuLinks.infos}</a><button onClick={() => book()}>{t.footerPlan}</button></div>
         <div className="footer-column footer-contact"><h3>{t.footerContact}</h3><address>{contact.address}<br />{contact.locality}</address><a href={`tel:${contact.phoneLink}`}>{contact.phone}</a><a className="footer-email" href={`mailto:${contact.email}`}>{contact.email}</a><a href={contact.map} target="_blank" rel="noopener noreferrer" className="footer-map">{t.directions} <ArrowUpRight size={14} /></a></div>
       </div><div className="footer-bottom page-width"><p>© {new Date().getFullYear()} Château Latour Ségur Suites & Spa</p><div><Link to={paths.legal[lang]}>{t.legal}</Link><Link to={paths.privacy[lang]}>{t.privacy}</Link><Link to={paths.home[other]} hrefLang={other} lang={other}>{t.switchLang}</Link></div><a className="instagram-link" href="https://www.instagram.com/chateaulatoursegur/" target="_blank" rel="noopener noreferrer" aria-label={t.instagramLabel}><Instagram size={17} strokeWidth={1.2} /><span>{t.instagramText}</span><ArrowUpRight size={13} /></a></div></footer>
 
-      {menuOpen && <Modal title={t.menuTitle} onClose={() => setMenuOpen(false)} className="mobile-menu"><Brand sketch /><p className="eyebrow">{t.menuWelcome}</p><nav aria-label={t.mobileNav}>{([['domaine', t.menuLinks.domaine], ['les-suites', t.menuLinks.suites], ['spa', t.menuLinks.spa], ['evenements', t.menuLinks.evenements], ['echappees', t.menuLinks.echappees], ['galerie', t.menuLinks.galerie]] as const).map(([id, text], index) => <button key={id} onClick={() => navigateFromMenu(id)}><span>0{index + 1}</span>{text}<ArrowUpRight size={18} strokeWidth={1.2} /></button>)}</nav><button className="button button-burgundy" onClick={() => book()}>{t.cta} <ArrowUpRight size={17} /></button><a className="mobile-menu-phone" href={`tel:${contact.phoneLink}`}>{contact.phone}</a><Link className="mobile-menu-lang" to={paths.home[other]} hrefLang={other} lang={other} onClick={() => setMenuOpen(false)}><Globe size={15} strokeWidth={1.25} />{t.switchLang}</Link></Modal>}
+      {menuOpen && <Modal title={t.menuTitle} onClose={() => setMenuOpen(false)} className="mobile-menu"><Brand sketch /><p className="eyebrow">{t.menuWelcome}</p><nav aria-label={t.mobileNav}>{([['domaine', t.menuLinks.domaine], ['les-suites', t.menuLinks.suites], ['spa', t.menuLinks.spa], ['evenements', t.menuLinks.evenements], ['echappees', t.menuLinks.echappees], ['galerie', t.menuLinks.galerie], ['infos', t.menuLinks.infos]] as const).map(([id, text], index) => <button key={id} onClick={() => navigateFromMenu(id)}><span>0{index + 1}</span>{text}<ArrowUpRight size={18} strokeWidth={1.2} /></button>)}</nav><button className="button button-burgundy" onClick={() => book()}>{t.cta} <ArrowUpRight size={17} /></button><a className="mobile-menu-phone" href={`tel:${contact.phoneLink}`}>{contact.phone}</a><Link className="mobile-menu-lang" to={paths.home[other]} hrefLang={other} lang={other} onClick={() => setMenuOpen(false)}><Globe size={15} strokeWidth={1.25} />{t.switchLang}</Link></Modal>}
 
       {modal && <Modal key={modal.type} title={modal.type === 'booking' ? t.bookingModal : t.discoverModal} onClose={() => setModal(null)} className={`content-modal ${modal.type === 'booking' ? 'booking-modal' : ''}`}>
         {modal.type === 'booking' && <BookingForm initialUniverse={modal.universe} initialMessage={modal.message} initialSuite={modal.link?.suite} initialArrival={modal.link?.arrival} initialDeparture={modal.link?.departure} initialGuests={modal.link?.guests} />}

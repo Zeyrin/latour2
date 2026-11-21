@@ -3,8 +3,11 @@ import type { UniverseId } from './content'
 import { CANCELLATION_TERMS } from './pricing'
 
 const fr = {
-  seoTitle: 'Château Latour Ségur Suites & Spa — Chambres d’hôtes de charme près de Saint-Émilion',
-  seoDescription: 'Chambres d’hôtes de charme dans un château historique à Lussac-Saint-Émilion, près de Bordeaux : cinq suites, Spa TerreHappy®, séminaires et réceptions. Réservez votre séjour.',
+  seoTitle: 'Chambres d’hôtes & spa près de Saint-Émilion | Latour Ségur',
+  seoDescription: 'Cinq suites avec cheminée dans un château à Lussac, aux portes de Saint-Émilion, et le Spa TerreHappy® sur place. Dès 195 € la nuit, réservation en direct.',
+  heroH1: 'Chambres d’hôtes & spa près de Saint-Émilion',
+  homeKeywordLink: 'Chambres d’hôtes & spa près de Saint-Émilion',
+  breadcrumbLabel: 'Fil d’Ariane',
   jsonLdDescription: 'Chambres d’hôtes de charme dans un château historique près de Saint-Émilion : cinq suites, Spa TerreHappy® et espaces de réception.',
   jsonLdMeeting: 'Salle de séminaire et de réception',
   skip: 'Aller au contenu',
@@ -83,7 +86,7 @@ const fr = {
   menuTitle: 'Menu de navigation',
   menuWelcome: 'Bienvenue à la maison',
   mobileNav: 'Navigation mobile',
-  menuLinks: { domaine: 'Le domaine', suites: 'Les suites', spa: 'Le Spa TerreHappy®', evenements: 'Séminaires & événements', echappees: 'Week-ends & cures', galerie: 'La galerie' },
+  menuLinks: { domaine: 'Le domaine', suites: 'Les suites', spa: 'Le Spa TerreHappy®', evenements: 'Séminaires & événements', echappees: 'Week-ends & cures', galerie: 'La galerie', infos: 'Tarifs & infos pratiques' },
   bookingModal: 'Préparer votre venue au château',
   discoverModal: 'Découvrir le Château Latour Ségur Suites & Spa',
   detailNote: 'Chaque parenthèse se prépare ensemble. Disponibilités, prestations et tarifs sur demande.',
@@ -131,16 +134,19 @@ const fr = {
     perNight: 'la nuit',
     minNights: (n: number) => `${n} nuits minimum`,
     spa: 'Le Spa TerreHappy®, à deux pas',
-    seoTitle: (name: string) => `${name} · Chambre d’hôtes de charme près de Saint-Émilion | Château Latour Ségur`,
-    seoDescription: (name: string, facts: string, tagline: string, price: string) => `${name} (${facts}) au Château Latour Ségur, à Lussac-Saint-Émilion : ${tagline.charAt(0).toLowerCase()}${tagline.slice(1)} Spa sur place, ${price}, réservation en direct.`,
+    seoTitle: (title: string) => `${title} | Latour Ségur`,
+    seoDescription: (description: string, price: string) => `${description} Dès ${price} la nuit.`,
   },
 }
 
 export type Ui = typeof fr
 
 const en: Ui = {
-  seoTitle: 'Château Latour Ségur Suites & Spa — Boutique B&B near Saint-Émilion',
-  seoDescription: 'Boutique bed & breakfast in a historic château in Lussac-Saint-Émilion, Bordeaux wine country: five suites, Spa TerreHappy®, seminars and receptions. Book your stay.',
+  seoTitle: 'B&B with spa near Saint-Émilion | Château Latour Ségur',
+  seoDescription: 'Five suites with fireplaces in a château in Lussac, on the doorstep of Saint-Émilion, with Spa TerreHappy® on site. From €195 a night, book direct.',
+  heroH1: 'Bed & breakfast with spa near Saint-Émilion',
+  homeKeywordLink: 'B&B with spa near Saint-Émilion',
+  breadcrumbLabel: 'Breadcrumb',
   jsonLdDescription: 'Boutique bed & breakfast in a historic château near Saint-Émilion: five suites, Spa TerreHappy® and event spaces.',
   jsonLdMeeting: 'Meeting and reception room',
   skip: 'Skip to content',
@@ -219,7 +225,7 @@ const en: Ui = {
   menuTitle: 'Navigation menu',
   menuWelcome: 'Welcome home',
   mobileNav: 'Mobile navigation',
-  menuLinks: { domaine: 'The estate', suites: 'The suites', spa: 'Spa TerreHappy®', evenements: 'Meetings & events', echappees: 'Getaways & retreats', galerie: 'The gallery' },
+  menuLinks: { domaine: 'The estate', suites: 'The suites', spa: 'Spa TerreHappy®', evenements: 'Meetings & events', echappees: 'Getaways & retreats', galerie: 'The gallery', infos: 'Rates & practical info' },
   bookingModal: 'Plan your visit to the château',
   discoverModal: 'Discover Château Latour Ségur Suites & Spa',
   detailNote: 'Every escape is planned together. Availability, services and prices on request.',
@@ -267,8 +273,8 @@ const en: Ui = {
     perNight: 'per night',
     minNights: (n: number) => `${n}-night minimum`,
     spa: 'Spa TerreHappy®, just steps away',
-    seoTitle: (name: string) => `${name} · Boutique B&B near Saint-Émilion | Château Latour Ségur`,
-    seoDescription: (name: string, facts: string, tagline: string, price: string) => `${name} (${facts}) at Château Latour Ségur, Lussac-Saint-Émilion: ${tagline.charAt(0).toLowerCase()}${tagline.slice(1)} Spa on site, ${price}, book direct.`,
+    seoTitle: (title: string) => `${title} | Latour Ségur`,
+    seoDescription: (description: string, price: string) => `${description} From ${price} a night.`,
   },
 }
 

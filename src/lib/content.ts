@@ -184,6 +184,8 @@ export interface SuiteDetail {
   beds: string
   /** Équipements propres à la suite. */
   features: string[]
+  /** Mot-clé propre à la fiche : titre (sans la marque) et description pour Google. */
+  seo: { title: string; description: string }
 }
 
 /**
@@ -202,6 +204,7 @@ export const suiteDetails: Record<Lang, Record<SuiteId, SuiteDetail>> = {
       guests: 'Jusqu’à 3 personnes',
       beds: '1 grand lit et 1 lit simple',
       features: ['Cheminée', 'Bain à remous privé', 'Coin salon', 'Coin cuisine', 'Vue sur le jardin'],
+      seo: { title: 'Suite Terre, chambre avec jacuzzi privatif', description: 'Suite de 55 m² pour 3 personnes avec bain à remous privé et cheminée, au Château Latour Ségur près de Saint-Émilion.' },
     },
     eau: {
       tagline: 'Un univers de douceur, pensé pour ralentir à deux.',
@@ -213,6 +216,7 @@ export const suiteDetails: Record<Lang, Record<SuiteId, SuiteDetail>> = {
       guests: '2 personnes',
       beds: '1 lit king-size Tempur®',
       features: ['Balnéo pour deux', 'Douche à l’italienne', 'Cheminée à bois', 'Kitchenette', 'Accès au jardin'],
+      seo: { title: 'Suite Eau, nuit en amoureux avec balnéo', description: 'Suite de 30 m² pour deux avec balnéo, cheminée et lit Tempur®, pour un week-end en amoureux près de Saint-Émilion.' },
     },
     metal: {
       tagline: 'La plus spacieuse, pour se retrouver en famille ou entre amis.',
@@ -224,6 +228,7 @@ export const suiteDetails: Record<Lang, Record<SuiteId, SuiteDetail>> = {
       guests: 'Jusqu’à 4 personnes',
       beds: '2 chambres : 1 lit king-size et 1 grand lit',
       features: ['Deux chambres', 'Cheminée', 'Grande baignoire', 'Cuisine équipée', 'Salon'],
+      seo: { title: 'Suite Métal, suite familiale 4 personnes', description: 'Suite familiale de 65 m² avec deux chambres, cuisine équipée et cheminée, pour 4 personnes près de Saint-Émilion.' },
     },
     feu: {
       tagline: 'Une atmosphère enveloppante, au coin du feu.',
@@ -235,6 +240,7 @@ export const suiteDetails: Record<Lang, Record<SuiteId, SuiteDetail>> = {
       guests: '2 personnes',
       beds: '1 lit king-size',
       features: ['Cheminée', 'Baignoire', 'Climatisation', 'Réfrigérateur', 'Télévision'],
+      seo: { title: 'Suite Feu, suite romantique avec cheminée', description: 'Suite romantique de 36 m² pour deux, avec cheminée et baignoire, au Château Latour Ségur près de Saint-Émilion.' },
     },
     bois: {
       tagline: 'Un cottage indépendant, ouvert sur le jardin.',
@@ -246,6 +252,7 @@ export const suiteDetails: Record<Lang, Record<SuiteId, SuiteDetail>> = {
       guests: '2 personnes',
       beds: '1 lit king-size',
       features: ['Cottage indépendant', 'Cheminée', 'Terrasse sur le jardin', 'Douche', 'Climatisation'],
+      seo: { title: 'Cottage Bois, cottage indépendant au jardin', description: 'Cottage indépendant de 28 m² pour deux, avec cheminée et terrasse sur le jardin, au Château Latour Ségur.' },
     },
   },
   en: {
@@ -259,6 +266,7 @@ export const suiteDetails: Record<Lang, Record<SuiteId, SuiteDetail>> = {
       guests: 'Up to 3 guests',
       beds: '1 double bed and 1 single bed',
       features: ['Fireplace', 'Private whirlpool bath', 'Sitting area', 'Kitchenette', 'Garden view'],
+      seo: { title: 'Earth Suite, room with private hot tub', description: 'A 55 m² suite for up to 3 guests with a private whirlpool bath and fireplace, at Château Latour Ségur near Saint-Émilion.' },
     },
     eau: {
       tagline: 'A soft, flowing world, designed for slowing down as a couple.',
@@ -270,6 +278,7 @@ export const suiteDetails: Record<Lang, Record<SuiteId, SuiteDetail>> = {
       guests: '2 guests',
       beds: '1 king-size Tempur® bed',
       features: ['Whirlpool bath for two', 'Walk-in shower', 'Wood fireplace', 'Kitchenette', 'Garden access'],
+      seo: { title: 'Water Suite, romantic room with whirlpool', description: 'A 30 m² suite for two with a whirlpool bath, fireplace and Tempur® bed, for a romantic break near Saint-Émilion.' },
     },
     metal: {
       tagline: 'Our most spacious, for families or friends.',
@@ -281,6 +290,7 @@ export const suiteDetails: Record<Lang, Record<SuiteId, SuiteDetail>> = {
       guests: 'Up to 4 guests',
       beds: '2 bedrooms: 1 king-size and 1 double bed',
       features: ['Two bedrooms', 'Fireplace', 'Large bathtub', 'Fitted kitchen', 'Living room'],
+      seo: { title: 'Metal Suite, family suite for 4', description: 'A 65 m² family suite with two bedrooms, a fitted kitchen and a fireplace, sleeping 4, near Saint-Émilion.' },
     },
     feu: {
       tagline: 'A cocooning atmosphere, by the fire.',
@@ -292,6 +302,7 @@ export const suiteDetails: Record<Lang, Record<SuiteId, SuiteDetail>> = {
       guests: '2 guests',
       beds: '1 king-size bed',
       features: ['Fireplace', 'Bathtub', 'Air conditioning', 'Fridge', 'Television'],
+      seo: { title: 'Fire Suite, romantic suite with fireplace', description: 'A romantic 36 m² suite for two with a fireplace and bathtub, at Château Latour Ségur near Saint-Émilion.' },
     },
     bois: {
       tagline: 'A self-contained cottage opening onto the garden.',
@@ -303,6 +314,7 @@ export const suiteDetails: Record<Lang, Record<SuiteId, SuiteDetail>> = {
       guests: '2 guests',
       beds: '1 king-size bed',
       features: ['Self-contained cottage', 'Fireplace', 'Garden terrace', 'Shower', 'Air conditioning'],
+      seo: { title: 'Wood Cottage, private garden cottage', description: 'A self-contained 28 m² cottage for two with a fireplace and garden terrace, at Château Latour Ségur.' },
     },
   },
 }
