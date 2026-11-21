@@ -653,7 +653,7 @@ em{font-weight:300}
 .showcase-title{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .showcase-card h3{color:#fbf7f1;font-size:34px;line-height:1.05;letter-spacing:-1px}
 .showcase-go{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:50%;background:#f8f3ec;color:var(--wine);transition:transform .35s}
-.showcase-panel:hover .showcase-go{transform:rotate(45deg)}
+.showcase-panel:hover .showcase-go{transform:translateX(4px)}
 .showcase-tagline{font-size:16px;line-height:1.45;font-weight:300;color:#efe5d9}
 .showcase-progress{display:none}
 @media(max-width:1200px){.showcase-head{column-gap:48px}.showcase-track{height:520px;gap:10px}.showcase-vertical{font-size:20px}.showcase-card h3{font-size:28px}}
