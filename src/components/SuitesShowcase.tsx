@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { suiteDetails, suitePhotos, suites, type Universe } from '../lib/content'
 import { suitePaths, type Lang } from '../lib/i18n'
@@ -50,7 +50,7 @@ export function SuitesShowcase({ universe, lang }: { universe: Universe; lang: L
                 <span className="showcase-vertical" aria-hidden="true">{suite.label}</span>
                 <span className="showcase-card">
                   <span className="showcase-tags"><span>{detail.surface}</span><span>{detail.guests}</span><span>{price}</span></span>
-                  <span className="showcase-title"><h3>{suite.label}</h3><span className="showcase-go" aria-hidden="true"><ArrowUpRight size={20} strokeWidth={1.4} /></span></span>
+                  <span className="showcase-title"><h3>{suite.label}</h3><span className="showcase-go" aria-hidden="true"><ArrowRight size={20} strokeWidth={1.4} /></span></span>
                   <span className="showcase-tagline">{detail.tagline}</span>
                   <span className="sr-only">{t.seeSuite}</span>
                 </span>
