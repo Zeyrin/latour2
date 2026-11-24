@@ -18,6 +18,7 @@ import { LangContext, paths, suitePaths, type Lang } from './lib/i18n'
 import { RATES } from './lib/pricing'
 import { ui } from './lib/ui'
 import { readBookingLink, type BookingLink } from './lib/deeplink'
+import { guidesIndexPaths } from './lib/guides'
 
 type ModalState =
   | { type: 'booking'; universe?: UniverseId; message?: string; link?: BookingLink }
@@ -297,7 +298,7 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
       <footer className="site-footer"><div className="footer-main page-width">
         <div className="footer-brand"><a href="#accueil" aria-label={t.backToTop}><Brand sketch /></a><p className="footer-keyword"><Link to={paths.home[lang]}>{t.homeKeywordLink}</Link></p><p>{t.footerTagline[0]}<br />{t.footerTagline[1]}</p><p className="ancv"><img src="/images/ancv.svg" alt="ANCV" width="45" height="25" loading="lazy" />{t.ancv}</p></div>
         <div className="footer-column"><h3>{t.footerHouse}</h3><a href="#domaine">{t.menuLinks.domaine}</a><a href="#les-suites">{t.menuLinks.suites}</a>{spaLink('footer-external', t.menuLinks.spa, 'footer')}<a href="#evenements">{t.menuLinks.evenements}</a></div>
-        <div className="footer-column"><h3>{t.footerMoments}</h3><a href="#echappees">{t.menuLinks.echappees}</a>{giftLink('footer-external', t.footerGift, 16)}<a href="#galerie">{t.menuLinks.galerie}</a><a href="#infos">{t.menuLinks.infos}</a><button onClick={() => book()}>{t.footerPlan}</button></div>
+        <div className="footer-column"><h3>{t.footerMoments}</h3><a href="#echappees">{t.menuLinks.echappees}</a>{giftLink('footer-external', t.footerGift, 16)}<a href="#galerie">{t.menuLinks.galerie}</a><a href="#infos">{t.menuLinks.infos}</a><Link to={guidesIndexPaths[lang]}>{t.guidesLink}</Link><button onClick={() => book()}>{t.footerPlan}</button></div>
         <div className="footer-column footer-contact"><h3>{t.footerContact}</h3><address>{contact.address}<br />{contact.locality}</address><a href={`tel:${contact.phoneLink}`}>{contact.phone}</a><a className="footer-email" href={`mailto:${contact.email}`}>{contact.email}</a><a href={contact.map} target="_blank" rel="noopener noreferrer" className="footer-map">{t.directions} <ArrowUpRight size={14} /></a></div>
       </div><div className="footer-bottom page-width"><p>© {new Date().getFullYear()} Château Latour Ségur Suites & Spa</p><div><Link to={paths.legal[lang]}>{t.legal}</Link><Link to={paths.privacy[lang]}>{t.privacy}</Link><Link to={paths.home[other]} hrefLang={other} lang={other}>{t.switchLang}</Link></div><a className="instagram-link" href="https://www.instagram.com/chateaulatoursegur/" target="_blank" rel="noopener noreferrer" aria-label={t.instagramLabel}><Instagram size={17} strokeWidth={1.2} /><span>{t.instagramText}</span><ArrowUpRight size={13} /></a></div></footer>
 

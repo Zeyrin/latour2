@@ -11,6 +11,7 @@ import { GIFT_URL, SITE_URL, spaUrl, contact, suiteCommon, suiteDetails, suiteId
 import { LangContext, locales, paths, suitePaths, type Lang } from '../lib/i18n'
 import { MIN_NIGHTS, RATES, formatEuros } from '../lib/pricing'
 import { ui } from '../lib/ui'
+import { guidesIndexPaths } from '../lib/guides'
 import { readBookingLink, type BookingLink } from '../lib/deeplink'
 
 /** Données structurées de la fiche : la chambre, son prix de départ et le fil d'Ariane (schema.org). */
@@ -202,7 +203,7 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
           <div className="page-width">
             <Link to={paths.home[lang]} aria-label={t.backToTop}><Brand /></Link>
             <address>{contact.address}, {contact.locality}<br /><a href={`tel:${contact.phoneLink}`}>{contact.phone}</a> · <a href={`mailto:${contact.email}`}>{contact.email}</a></address>
-            <div className="suite-footer-links"><Link to={paths.home[lang]}>{t.homeKeywordLink}</Link><a href={GIFT_URL} {...newWindow(t.footerGift)}>{t.footerGift}</a><Link to={paths.legal[lang]}>{t.legal}</Link><Link to={paths.privacy[lang]}>{t.privacy}</Link></div>
+            <div className="suite-footer-links"><Link to={paths.home[lang]}>{t.homeKeywordLink}</Link><Link to={guidesIndexPaths[lang]}>{t.guidesLink}</Link><a href={GIFT_URL} {...newWindow(t.footerGift)}>{t.footerGift}</a><Link to={paths.legal[lang]}>{t.legal}</Link><Link to={paths.privacy[lang]}>{t.privacy}</Link></div>
           </div>
         </footer>
 

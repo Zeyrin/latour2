@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Brand } from '../components/Brand'
 import { Seo } from '../components/Seo'
 import { suites } from '../lib/content'
+import { guidesIndexPaths } from '../lib/guides'
 import { LangContext, paths, suitePaths } from '../lib/i18n'
 
 /**
@@ -25,6 +26,7 @@ export function NotFound() {
           <ul>
             <li><Link to={paths.home.fr}>Chambres d’hôtes & spa près de Saint-Émilion — accueil</Link></li>
             {suites.fr.map((suite) => <li key={suite.id}><Link to={suitePaths(suite.id).fr}>{suite.label}</Link></li>)}
+            <li><Link to={guidesIndexPaths.fr}>Guides de Saint-Émilion</Link></li>
             <li lang="en"><Link to={paths.home.en}>English version — B&B with spa near Saint-Émilion</Link></li>
           </ul>
         </main>
