@@ -6,6 +6,8 @@ import { BookingCancelledEn, BookingCancelledFr, BookingConfirmedEn, BookingConf
 import { ManageBookingEn, ManageBookingFr } from './pages/ManageBooking'
 import { NotFound } from './pages/NotFound'
 import { GuidePage, GuidesIndex } from './pages/Guide'
+import { EventsPage } from './pages/Events'
+import { eventsPaths } from './lib/events'
 import { GiftsEn, GiftsFr } from './pages/Gifts'
 import { giftPaths } from './lib/gifts'
 import { guidePaths, guides, guidesIndexPaths } from './lib/guides'
@@ -19,6 +21,8 @@ export const routes: RouteRecord[] = [
     { path: suitePaths(id).fr, element: <SuitePage id={id} /> },
     { path: suitePaths(id).en, element: <SuitePage id={id} lang="en" /> },
   ]),
+  { path: eventsPaths.fr, element: <EventsPage /> },
+  { path: eventsPaths.en, element: <EventsPage lang="en" /> },
   { path: guidesIndexPaths.fr, element: <GuidesIndex /> },
   { path: guidesIndexPaths.en, element: <GuidesIndex lang="en" /> },
   ...guides.flatMap((guide) => [
