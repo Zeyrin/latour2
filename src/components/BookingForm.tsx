@@ -3,7 +3,7 @@ import { ArrowRight, Check, Copy, Mail, Phone } from 'lucide-react'
 import { contact, suites, universes, type SuiteId, type UniverseId } from '../lib/content'
 import { locales, useLang, type Lang } from '../lib/i18n'
 import { bookingUi, payUi } from '../lib/ui'
-import { BREAKFAST_PER_GUEST_NIGHT, MIN_DAYS_BEFORE_ARRIVAL, RATES, formatEuros, isPricedSuite, parisToday, quote, type Quote } from '../lib/pricing'
+import { BREAKFAST_PER_GUEST_NIGHT, MIN_DAYS_BEFORE_ARRIVAL, breakfastIncluded, RATES, formatEuros, isPricedSuite, parisToday, quote, type Quote } from '../lib/pricing'
 import { AvailabilityCalendar } from './AvailabilityCalendar'
 import { addDays, freeResource, isBooked, nightsBetween, type AvailabilityBlock } from '../lib/availability'
 
@@ -76,7 +76,7 @@ async function saveRequest(values: FormData, universe?: UniverseId, suite?: Suit
         departure: String(values.get('departure') || '') || null,
         guests: Number(values.get('guests')) || null,
         message: String(values.get('message') || '').trim() || null,
-        breakfast: universe === 'suites' && values.get('breakfast') === 'on',
+        breakfast: universe === 'suites' && (values.get('breakfast') === 'on' || breakfastIncluded(suite)),
         spaCallback: values.get('spa') === 'on',
       }),
       keepalive: true,
@@ -121,6 +121,8 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
   // Même date du jour que le serveur (heure de Paris), quel que soit le fuseau du visiteur.
   const firstBookable = addDays(parisToday(), MIN_DAYS_BEFORE_ARRIVAL)
   const maxGuests = online && isPricedSuite(suite) ? RATES[suite].maxGuests : 500
+  // Eau et Bois : petit-déjeuner offert, coché d'office et sans supplément.
+  const breakfastFree = universe === 'suites' && breakfastIncluded(suite)
   const priced = online && suite && arrival && departure ? quote(suite, arrival, departure, Number(guests), parisToday(), { breakfast }) : null
   const currentQuote: Quote | null = priced && !('error' in priced) ? priced : null
   const money = (cents: number) => formatEuros(cents, locales[lang])
@@ -238,7 +240,7 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
         ? [`${t.suite}${sep}${suiteLabel}`, `${t.arrival}${sep}${dateLabel(arrival, lang)}`, `${t.departure}${sep}${dateLabel(departure, lang)} (${t.nightsCount(nights)})`]
         : [`${t.wishedDate}${sep}${dateLabel(arrival, lang)}`]),
       `${t.guestsLine}${sep}${values.get('guests')}`,
-      ...(universe === 'suites' && breakfast ? [t.breakfastLine(money(BREAKFAST_PER_GUEST_NIGHT))] : []),
+      ...(breakfastFree ? [t.breakfastOfferedLine] : universe === 'suites' && breakfast ? [t.breakfastLine(money(BREAKFAST_PER_GUEST_NIGHT))] : []),
       ...(universe === 'suites' && spaCallback ? [t.spaLine] : []),
       '',
       String(values.get('message') || t.defaultMessage),
@@ -303,7 +305,7 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
           <div className="suite-choices">
             {suites[lang].map((item) => {
               const taken = online && Boolean(item.id) && Boolean(arrival && departure) && !freeResource(blocks, [item.id], arrival, departure)
-              const fromPrice = online && isPricedSuite(item.id) ? p.fromPerNight(money(RATES[item.id].night)) : ''
+              const fromPrice = online && isPricedSuite(item.id) ? `${p.fromPerNight(money(RATES[item.id].night))}${breakfastIncluded(item.id) ? ` · ${p.withBreakfast}` : ''}` : ''
               return <label key={item.id} className={`suite-choice ${suite === item.id ? 'is-selected' : ''} ${taken ? 'is-taken' : ''}`}>
                 <input type="radio" name="suite" value={item.id} checked={suite === item.id} onChange={() => { changeSuite(item.id); setPayError('') }} disabled={taken} required aria-describedby={fromPrice || taken ? `suite-hint-${item.id}` : undefined} />
                 {item.label}
@@ -339,13 +341,13 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
         </div>
         {universe === 'suites' && <fieldset className="universe-fieldset booking-options">
           <legend>{t.options}</legend>
-          {BREAKFAST_PER_GUEST_NIGHT > 0 && <label className={`booking-option ${breakfast ? 'is-selected' : ''}`}>
+          {(BREAKFAST_PER_GUEST_NIGHT > 0 || breakfastFree) && <label className={`booking-option ${breakfast || breakfastFree ? 'is-selected' : ''} ${breakfastFree ? 'is-included' : ''}`}>
             <img src={BREAKFAST_PHOTO} alt="" width={96} height={72} loading="lazy" decoding="async" />
             <span className="booking-option-text">
               <strong>{t.breakfast}</strong>
-              <small>{t.breakfastPrice(money(BREAKFAST_PER_GUEST_NIGHT))}{breakfast && currentQuote ? ` · ${t.breakfastStay(money(currentQuote.breakfast))}` : ''}</small>
+              <small>{breakfastFree ? t.breakfastOffered : <>{t.breakfastPrice(money(BREAKFAST_PER_GUEST_NIGHT))}{breakfast && currentQuote ? ` · ${t.breakfastStay(money(currentQuote.breakfast))}` : ''}</>}</small>
             </span>
-            <input type="checkbox" name="breakfast" checked={breakfast} onChange={(event) => setBreakfast(event.target.checked)} />
+            <input type="checkbox" name="breakfast" checked={breakfast || breakfastFree} disabled={breakfastFree} onChange={(event) => setBreakfast(event.target.checked)} />
             <span className="booking-option-check" aria-hidden="true"><Check size={13} strokeWidth={2} /></span>
           </label>}
           <label className={`booking-option ${spaCallback ? 'is-selected' : ''}`}>
@@ -362,7 +364,9 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
         <label className="consent"><input type="checkbox" name="consent" required defaultChecked={savedValues.consent === 'on'} /><span>{t.consent} <span aria-hidden="true">*</span></span></label>
         {online && currentQuote && <dl className="price-summary" aria-label={p.summary}>
           <div><dt>{p.lodging(currentQuote.nights)}</dt><dd>{money(currentQuote.lodging)}</dd></div>
-          {currentQuote.breakfast > 0 && <div><dt>{p.breakfastSummary(currentQuote.guests, currentQuote.nights)}</dt><dd>{money(currentQuote.breakfast)}</dd></div>}
+          {currentQuote.breakfastIncluded
+            ? <div><dt>{p.breakfastSummary(currentQuote.guests, currentQuote.nights)}</dt><dd>{p.breakfastOffered}</dd></div>
+            : currentQuote.breakfast > 0 && <div><dt>{p.breakfastSummary(currentQuote.guests, currentQuote.nights)}</dt><dd>{money(currentQuote.breakfast)}</dd></div>}
           {currentQuote.touristTax > 0 && <div><dt>{p.touristTax}</dt><dd>{money(currentQuote.touristTax)}</dd></div>}
           <div className="price-total"><dt>{p.total}</dt><dd>{money(currentQuote.total)}</dd></div>
         </dl>}

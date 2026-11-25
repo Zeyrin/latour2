@@ -72,10 +72,11 @@ export async function POST(request: Request) {
   const name = text(body.name, 100)
   const email = text(body.email, 200)
   if (!name || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return Response.json({ error: 'contact' }, { status: 400 })
-  const breakfast = body.breakfast === true && BREAKFAST_PER_GUEST_NIGHT > 0
   const spaCallback = body.spaCallback === true
-  const priced = quote(body.suite, String(body.arrival ?? ''), String(body.departure ?? ''), Number(body.guests), parisToday(), { breakfast })
+  const priced = quote(body.suite, String(body.arrival ?? ''), String(body.departure ?? ''), Number(body.guests), parisToday(), { breakfast: body.breakfast === true && BREAKFAST_PER_GUEST_NIGHT > 0 })
   if ('error' in priced) return Response.json({ error: priced.error }, { status: 400 })
+  // Petit-déjeuner payé en option, ou offert avec la suite (Eau, Bois) : noté sur la réservation dans les deux cas.
+  const breakfast = priced.breakfast > 0 || priced.breakfastIncluded
 
   let bookingId: string
   try {
@@ -109,9 +110,10 @@ export async function POST(request: Request) {
 
   const origin = new URL(request.url).origin
   const suiteName = SUITE_NAMES[priced.suite][lang]
-  const stay = lang === 'fr'
+  const stay = (lang === 'fr'
     ? `Du ${longDate(priced.arrival, lang)} au ${longDate(priced.departure, lang)} · ${priced.nights} nuit${priced.nights > 1 ? 's' : ''} · ${priced.guests} pers.`
-    : `${longDate(priced.arrival, lang)} to ${longDate(priced.departure, lang)} · ${priced.nights} night${priced.nights > 1 ? 's' : ''} · ${priced.guests} guest${priced.guests > 1 ? 's' : ''}`
+    : `${longDate(priced.arrival, lang)} to ${longDate(priced.departure, lang)} · ${priced.nights} night${priced.nights > 1 ? 's' : ''} · ${priced.guests} guest${priced.guests > 1 ? 's' : ''}`)
+    + (priced.breakfastIncluded ? (lang === 'fr' ? ' · petit-déjeuner offert' : ' · breakfast included') : '')
   const metadata = {
     booking_id: bookingId, suite: priced.suite, arrival: priced.arrival, departure: priced.departure, guests: String(priced.guests),
     breakfast: breakfast ? 'oui' : 'non', spa_callback: spaCallback ? 'oui' : 'non',

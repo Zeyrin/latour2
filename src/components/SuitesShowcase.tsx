@@ -49,7 +49,7 @@ export function SuitesShowcase({ universe, lang }: { universe: Universe; lang: L
                 <span className="showcase-index">0{index + 1}</span>
                 <span className="showcase-vertical" aria-hidden="true">{suite.label}</span>
                 <span className="showcase-card">
-                  <span className="showcase-tags"><span>{detail.surface}</span><span>{detail.guests}</span><span>{price}</span></span>
+                  <span className="showcase-tags"><span>{detail.surface}</span><span>{detail.guests}</span><span>{price}</span>{RATES[suite.id].breakfastIncluded && <span>{ui[lang].suitePage.breakfastOffered}</span>}</span>
                   <span className="showcase-title"><h3>{suite.label}</h3><span className="showcase-go" aria-hidden="true"><ArrowRight size={20} strokeWidth={1.4} /></span></span>
                   <span className="showcase-tagline">{detail.tagline}</span>
                   <span className="sr-only">{t.seeSuite}</span>
