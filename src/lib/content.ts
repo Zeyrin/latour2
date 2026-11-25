@@ -387,7 +387,7 @@ export const contact = {
  * Note Google affichée sur le site (accueil et fiches suites). Recopier la fiche Google Business Profile
  * à la main quand elle change ; pas de données structurées « AggregateRating » (avis non collectés par le site).
  */
-export const GOOGLE_RATING = { score: 4.6, count: 90 }
+export const GOOGLE_RATING = { score: 4.6, count: 91 }
 export const ratingLabel = (lang: 'fr' | 'en') => lang === 'fr'
   ? `${GOOGLE_RATING.score.toLocaleString('fr-FR')}/5 · ${GOOGLE_RATING.count} avis Google`
   : `${GOOGLE_RATING.score.toLocaleString('en-GB')}/5 · ${GOOGLE_RATING.count} Google reviews`
