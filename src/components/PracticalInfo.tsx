@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import { spaUrl, suiteDetails, suites } from '../lib/content'
 import { faqItems } from '../lib/faq'
+import { guidesIndexPaths } from '../lib/guides'
 import { locales, suitePaths, type Lang } from '../lib/i18n'
 import { MIN_NIGHTS, RATES, formatEuros } from '../lib/pricing'
 
@@ -25,6 +26,7 @@ const text = {
     steps: ['Choisissez votre suite et vos dates : le calendrier n’affiche que les nuits encore libres.', 'Réglez en ligne par paiement sécurisé, ou envoyez-nous une demande si vous avez une question.', 'Corinne et André vous confirment votre séjour et vous accueillent personnellement au château.'],
     faqTitle: 'Questions fréquentes',
     spaLink: 'Réserver le spa sur spaterrehappy.fr',
+    guidesLink: 'Que faire autour de Saint-Émilion : nos guides',
   },
   en: {
     eyebrow: 'Good to know',
@@ -37,6 +39,7 @@ const text = {
     steps: ['Choose your suite and dates: the calendar only shows nights that are still free.', 'Pay securely online, or send us a request if you have a question.', 'Corinne and André confirm your stay and welcome you personally at the château.'],
     faqTitle: 'Frequently asked questions',
     spaLink: 'Book the spa on spaterrehappy.fr',
+    guidesLink: 'What to do around Saint-Émilion: our guides',
   },
 }
 
@@ -77,6 +80,7 @@ export function PracticalInfo({ lang }: { lang: Lang }) {
             <h3>{t.stepsTitle}</h3>
             <ol className="practical-steps">{t.steps.map((step) => <li key={step}>{step}</li>)}</ol>
             <a className="text-link" href={spaUrl('infos', lang)} target="_blank" rel="noopener">{t.spaLink}<ArrowUpRight size={16} strokeWidth={1.25} /></a>
+            <Link className="text-link" to={guidesIndexPaths[lang]}>{t.guidesLink}<ArrowUpRight size={16} strokeWidth={1.25} /></Link>
           </div>
         </div>
 

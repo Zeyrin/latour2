@@ -5,6 +5,8 @@ import { SuitePage } from './pages/Suite'
 import { BookingCancelledEn, BookingCancelledFr, BookingConfirmedEn, BookingConfirmedFr } from './pages/BookingReturn'
 import { ManageBookingEn, ManageBookingFr } from './pages/ManageBooking'
 import { NotFound } from './pages/NotFound'
+import { GuidePage, GuidesIndex } from './pages/Guide'
+import { guidePaths, guides, guidesIndexPaths } from './lib/guides'
 import { suiteIds } from './lib/content'
 import { paths, suitePaths } from './lib/i18n'
 
@@ -14,6 +16,12 @@ export const routes: RouteRecord[] = [
   ...suiteIds.flatMap((id) => [
     { path: suitePaths(id).fr, element: <SuitePage id={id} /> },
     { path: suitePaths(id).en, element: <SuitePage id={id} lang="en" /> },
+  ]),
+  { path: guidesIndexPaths.fr, element: <GuidesIndex /> },
+  { path: guidesIndexPaths.en, element: <GuidesIndex lang="en" /> },
+  ...guides.flatMap((guide) => [
+    { path: guidePaths(guide).fr, element: <GuidePage id={guide.id} /> },
+    { path: guidePaths(guide).en, element: <GuidePage id={guide.id} lang="en" /> },
   ]),
   { path: '/mentions-legales', Component: MentionsLegales },
   { path: '/confidentialite', Component: Confidentialite },
