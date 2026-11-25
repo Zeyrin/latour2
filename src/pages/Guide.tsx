@@ -6,11 +6,12 @@ import { BookingForm } from '../components/BookingForm'
 import { Modal } from '../components/Modal'
 import { Picture } from '../components/Picture'
 import { Seo } from '../components/Seo'
-import { GIFT_URL, SITE_URL, contact, spaUrl, suiteDetails, suitePhotos, suites, type SuiteId } from '../lib/content'
+import { SITE_URL, contact, spaUrl, suiteDetails, suitePhotos, suites, type SuiteId } from '../lib/content'
 import { guideById, guidePaths, guides, guidesIndexPaths, readingMinutes, type Guide, type GuideBlock, type GuideId } from '../lib/guides'
 import { LangContext, locales, paths, suitePaths, type Lang } from '../lib/i18n'
 import { MIN_NIGHTS, RATES, formatEuros } from '../lib/pricing'
 import { ui } from '../lib/ui'
+import { giftPaths } from '../lib/gifts'
 import '../guides.css'
 
 const text = {
@@ -72,11 +73,11 @@ function richText(source: string, lang: Lang): ReactNode[] {
     const [whole, label, target] = match
     parts.push(source.slice(last, match.index))
     const key = `${match.index}-${target}`
-    if (target === 'spa' || target === 'cadeau' || target.startsWith('http')) {
-      const href = target === 'spa' ? spaUrl('guide', lang) : target === 'cadeau' ? GIFT_URL : target
+    if (target === 'spa' || target.startsWith('http')) {
+      const href = target === 'spa' ? spaUrl('guide', lang) : target
       parts.push(<a key={key} href={href} target="_blank" rel="noopener" aria-label={`${label} ${ui[lang].newWindow}`}>{label}</a>)
     } else {
-      const to = target.startsWith('guide:') ? guidePaths(guideById(target.slice(6) as GuideId))[lang] : target
+      const to = target === 'cadeau' ? giftPaths[lang] : target.startsWith('guide:') ? guidePaths(guideById(target.slice(6) as GuideId))[lang] : target
       parts.push(<Link key={key} to={to}>{label}</Link>)
     }
     last = match.index + whole.length
@@ -124,7 +125,7 @@ function GuideCard({ guide, lang, headingLevel = 'h2' }: { guide: Guide; lang: L
 }
 
 /** En-tête et pied de page communs aux guides (mêmes que les fiches des suites). */
-function GuideFrame({ lang, other, back, onBook, children }: { lang: Lang; other: string; back: { to: string; label: string }; onBook: () => void; children: ReactNode }) {
+export function GuideFrame({ lang, other, back, onBook, children }: { lang: Lang; other: string; back: { to: string; label: string }; onBook: () => void; children: ReactNode }) {
   const t = ui[lang]
   const otherLang: Lang = lang === 'fr' ? 'en' : 'fr'
   return (
@@ -143,7 +144,7 @@ function GuideFrame({ lang, other, back, onBook, children }: { lang: Lang; other
         <div className="page-width">
           <Link to={paths.home[lang]} aria-label={t.homeLabel}><Brand /></Link>
           <address>{contact.address}, {contact.locality}<br /><a href={`tel:${contact.phoneLink}`}>{contact.phone}</a> · <a href={`mailto:${contact.email}`}>{contact.email}</a></address>
-          <div className="suite-footer-links"><Link to={paths.home[lang]}>{t.homeKeywordLink}</Link><Link to={guidesIndexPaths[lang]}>{text[lang].allGuides}</Link><a href={GIFT_URL} target="_blank" rel="noopener" aria-label={`${t.footerGift} ${t.newWindow}`}>{t.footerGift}</a><Link to={paths.legal[lang]}>{t.legal}</Link></div>
+          <div className="suite-footer-links"><Link to={paths.home[lang]}>{t.homeKeywordLink}</Link><Link to={guidesIndexPaths[lang]}>{text[lang].allGuides}</Link><Link to={giftPaths[lang]}>{t.footerGift}</Link><Link to={paths.legal[lang]}>{t.legal}</Link></div>
         </div>
       </footer>
     </>
@@ -155,7 +156,7 @@ function useBooking() {
   return { suite, open: (id: SuiteId) => setSuite(id), close: () => setSuite(null) }
 }
 
-function BookingModal({ suite, lang, onClose }: { suite: SuiteId | null; lang: Lang; onClose: () => void }) {
+export function BookingModal({ suite, lang, onClose }: { suite: SuiteId | null; lang: Lang; onClose: () => void }) {
   if (!suite) return null
   return <Modal title={ui[lang].bookingModal} onClose={onClose} className="content-modal booking-modal"><BookingForm initialUniverse="suites" initialSuite={suite} /></Modal>
 }

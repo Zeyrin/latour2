@@ -7,9 +7,10 @@ import { BookingForm } from '../components/BookingForm'
 import { Modal } from '../components/Modal'
 import { Picture } from '../components/Picture'
 import { Seo } from '../components/Seo'
-import { GIFT_URL, SITE_URL, spaUrl, contact, suiteCommon, suiteDetails, suiteIds, suitePhotos, suites, type SuiteId } from '../lib/content'
+import { SITE_URL, spaUrl, contact, suiteCommon, suiteDetails, suiteIds, suitePhotos, suites, type SuiteId } from '../lib/content'
 import { LangContext, locales, paths, suitePaths, type Lang } from '../lib/i18n'
 import { MIN_NIGHTS, RATES, formatEuros } from '../lib/pricing'
+import { giftPaths } from '../lib/gifts'
 import { ui } from '../lib/ui'
 import { guidesIndexPaths } from '../lib/guides'
 import { readBookingLink, type BookingLink } from '../lib/deeplink'
@@ -203,7 +204,7 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
           <div className="page-width">
             <Link to={paths.home[lang]} aria-label={t.backToTop}><Brand /></Link>
             <address>{contact.address}, {contact.locality}<br /><a href={`tel:${contact.phoneLink}`}>{contact.phone}</a> · <a href={`mailto:${contact.email}`}>{contact.email}</a></address>
-            <div className="suite-footer-links"><Link to={paths.home[lang]}>{t.homeKeywordLink}</Link><Link to={guidesIndexPaths[lang]}>{t.guidesLink}</Link><a href={GIFT_URL} {...newWindow(t.footerGift)}>{t.footerGift}</a><Link to={paths.legal[lang]}>{t.legal}</Link><Link to={paths.privacy[lang]}>{t.privacy}</Link></div>
+            <div className="suite-footer-links"><Link to={paths.home[lang]}>{t.homeKeywordLink}</Link><Link to={guidesIndexPaths[lang]}>{t.guidesLink}</Link><Link to={giftPaths[lang]}>{t.footerGift}</Link><Link to={paths.legal[lang]}>{t.legal}</Link><Link to={paths.privacy[lang]}>{t.privacy}</Link></div>
           </div>
         </footer>
 

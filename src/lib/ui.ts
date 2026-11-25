@@ -75,7 +75,7 @@ const fr = {
   ancv: 'Chèques-Vacances ANCV acceptés',
   footerHouse: 'La maison',
   footerMoments: 'Vos instants',
-  footerGift: 'Bons cadeaux',
+  footerGift: 'Cartes cadeaux',
   footerPlan: 'Préparer votre venue',
   footerContact: 'Retrouvons-nous',
   directions: 'Itinéraire',
