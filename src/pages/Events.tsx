@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom'
 import { Brand } from '../components/Brand'
 import { Picture } from '../components/Picture'
 import { Seo } from '../components/Seo'
-import { GIFT_URL, SITE_URL, contact } from '../lib/content'
+import { SITE_URL, contact } from '../lib/content'
+import { giftPaths } from '../lib/gifts'
 import { EVENT_OPTIONS, EVENT_TYPES, eventsPaths, eventsText, type EventType } from '../lib/events'
 import { guidesIndexPaths } from '../lib/guides'
 import { LangContext, paths, type Lang } from '../lib/i18n'
@@ -223,7 +224,7 @@ export function EventsPage({ lang = 'fr' }: { lang?: Lang }) {
           <div className="page-width">
             <Link to={paths.home[lang]} aria-label={u.homeLabel}><Brand /></Link>
             <address>{contact.address}, {contact.locality}<br /><a href={`tel:${contact.phoneLink}`}>{contact.phone}</a> · <a href={`mailto:${contact.email}`}>{contact.email}</a></address>
-            <div className="suite-footer-links"><Link to={paths.home[lang]}>{u.homeKeywordLink}</Link><Link to={guidesIndexPaths[lang]}>{u.guidesLink}</Link><a href={GIFT_URL} target="_blank" rel="noopener" aria-label={`${u.footerGift} ${u.newWindow}`}>{u.footerGift}</a><Link to={paths.legal[lang]}>{u.legal}</Link></div>
+            <div className="suite-footer-links"><Link to={paths.home[lang]}>{u.homeKeywordLink}</Link><Link to={guidesIndexPaths[lang]}>{u.guidesLink}</Link><Link to={giftPaths[lang]}>{u.footerGift}</Link><Link to={paths.legal[lang]}>{u.legal}</Link><Link to={paths.privacy[lang]}>{u.privacy}</Link></div>
           </div>
         </footer>
       </div>

@@ -8,6 +8,8 @@ import { NotFound } from './pages/NotFound'
 import { GuidePage, GuidesIndex } from './pages/Guide'
 import { EventsPage } from './pages/Events'
 import { eventsPaths } from './lib/events'
+import { GiftsEn, GiftsFr } from './pages/Gifts'
+import { giftPaths } from './lib/gifts'
 import { guidePaths, guides, guidesIndexPaths } from './lib/guides'
 import { suiteIds } from './lib/content'
 import { paths, suitePaths } from './lib/i18n'
@@ -27,6 +29,8 @@ export const routes: RouteRecord[] = [
     { path: guidePaths(guide).fr, element: <GuidePage id={guide.id} /> },
     { path: guidePaths(guide).en, element: <GuidePage id={guide.id} lang="en" /> },
   ]),
+  { path: giftPaths.fr, Component: GiftsFr },
+  { path: giftPaths.en, Component: GiftsEn },
   { path: '/mentions-legales', Component: MentionsLegales },
   { path: '/confidentialite', Component: Confidentialite },
   { path: '/en/legal-notice', Component: LegalNotice },

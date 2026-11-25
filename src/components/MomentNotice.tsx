@@ -1,12 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowRight, ArrowUpRight, CalendarDays, X } from 'lucide-react'
 import { Picture } from './Picture'
 import { isMomentVisible, moment, momentContent } from '../lib/moment'
 import type { Lang } from '../lib/i18n'
 import type { UniverseId } from '../lib/content'
+import { giftPaths } from '../lib/gifts'
 import './MomentNotice.css'
+
+/** Lien discret vers les cartes cadeaux, sous l'encart « rester pour la nuit ». */
+const GIFT_LINE: Record<Lang, [string, string]> = { fr: ['Ou l’offrir à Noël :', 'les cartes cadeaux'], en: ['Or give it for Christmas:', 'gift vouchers'] }
 
 const storageKey = `moment-dismissed:${moment.id}`
 
@@ -129,6 +134,7 @@ function MomentDialog({ lang, onClose, onBook }: { lang: Lang; onClose: () => vo
           <span>{t.stayNote[0]} <em>{t.stayNote[1]}</em></span>
           <button className="moment-stay-button" onClick={() => onBook('suites')}>{t.stayCta}<ArrowRight size={16} strokeWidth={1.5} /></button>
         </div>
+        <p className="moment-gift">{GIFT_LINE[lang][0]} <Link to={giftPaths[lang]}>{GIFT_LINE[lang][1]}<ArrowRight size={14} strokeWidth={1.5} /></Link></p>
       </div>
     </dialog>,
     document.body,

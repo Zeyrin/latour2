@@ -13,13 +13,14 @@ import { MomentNotice } from './components/MomentNotice'
 import { SuitesShowcase } from './components/SuitesShowcase'
 import { PracticalInfo } from './components/PracticalInfo'
 import { faqItems } from './lib/faq'
-import { GIFT_URL, SITE_URL, SPA_URL, spaUrl, contact, escapes, galleryPhotos, suiteCommon, suitePhotos, suites, universes, type SuiteId, type GalleryFilter, type GalleryPhoto, type Universe, type UniverseId } from './lib/content'
+import { SITE_URL, SPA_URL, spaUrl, contact, escapes, galleryPhotos, suiteCommon, suitePhotos, suites, universes, type SuiteId, type GalleryFilter, type GalleryPhoto, type Universe, type UniverseId } from './lib/content'
 import { LangContext, paths, suitePaths, type Lang } from './lib/i18n'
 import { RATES } from './lib/pricing'
 import { ui } from './lib/ui'
 import { readBookingLink, type BookingLink } from './lib/deeplink'
 import { guidesIndexPaths } from './lib/guides'
 import { eventsPaths } from './lib/events'
+import { giftPaths } from './lib/gifts'
 
 type ModalState =
   | { type: 'booking'; universe?: UniverseId; message?: string; link?: BookingLink }
@@ -183,10 +184,10 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
     }, 80)
   }
 
-  /** Liens externes : le Spa TerreHappy® (spaterrehappy.fr) et les bons cadeaux (Secretbox). */
+  /** Liens externes vers le Spa TerreHappy® (spaterrehappy.fr) ; les cartes cadeaux ont leur page sur le site. */
   const externalProps = (label: string) => ({ target: '_blank', rel: 'noopener', 'aria-label': `${label} ${t.newWindow}` })
   const spaLink = (className: string, label: string, placement: string) => <a className={className} href={spaUrl(placement, lang)} {...externalProps(label)}>{label}<ArrowUpRight size={16} strokeWidth={1.25} /></a>
-  const giftLink = (className: string, label: string, size = 17) => <a className={className} href={GIFT_URL} {...externalProps(label)}>{label}<ArrowUpRight size={size} strokeWidth={1.25} /></a>
+  const giftLink = (className: string, label: string, size = 17) => <Link className={className} to={giftPaths[lang]}>{label}<ArrowRight size={size} strokeWidth={1.25} /></Link>
 
   return (
     <LangContext.Provider value={lang}>
@@ -299,11 +300,11 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
       <footer className="site-footer"><div className="footer-main page-width">
         <div className="footer-brand"><a href="#accueil" aria-label={t.backToTop}><Brand sketch /></a><p className="footer-keyword"><Link to={paths.home[lang]}>{t.homeKeywordLink}</Link></p><p>{t.footerTagline[0]}<br />{t.footerTagline[1]}</p><p className="ancv"><img src="/images/ancv.svg" alt="ANCV" width="45" height="25" loading="lazy" />{t.ancv}</p></div>
         <div className="footer-column"><h3>{t.footerHouse}</h3><a href="#domaine">{t.menuLinks.domaine}</a><a href="#les-suites">{t.menuLinks.suites}</a>{spaLink('footer-external', t.menuLinks.spa, 'footer')}<Link to={eventsPaths[lang]}>{t.menuLinks.evenements}</Link></div>
-        <div className="footer-column"><h3>{t.footerMoments}</h3><a href="#echappees">{t.menuLinks.echappees}</a>{giftLink('footer-external', t.footerGift, 16)}<a href="#galerie">{t.menuLinks.galerie}</a><a href="#infos">{t.menuLinks.infos}</a><Link to={guidesIndexPaths[lang]}>{t.guidesLink}</Link><button onClick={() => book()}>{t.footerPlan}</button></div>
+        <div className="footer-column"><h3>{t.footerMoments}</h3><a href="#echappees">{t.menuLinks.echappees}</a><Link to={giftPaths[lang]}>{t.footerGift}</Link><a href="#galerie">{t.menuLinks.galerie}</a><a href="#infos">{t.menuLinks.infos}</a><Link to={guidesIndexPaths[lang]}>{t.guidesLink}</Link><button onClick={() => book()}>{t.footerPlan}</button></div>
         <div className="footer-column footer-contact"><h3>{t.footerContact}</h3><address>{contact.address}<br />{contact.locality}</address><a href={`tel:${contact.phoneLink}`}>{contact.phone}</a><a className="footer-email" href={`mailto:${contact.email}`}>{contact.email}</a><a href={contact.map} target="_blank" rel="noopener noreferrer" className="footer-map">{t.directions} <ArrowUpRight size={14} /></a></div>
       </div><div className="footer-bottom page-width"><p>© {new Date().getFullYear()} Château Latour Ségur Suites & Spa</p><div><Link to={paths.legal[lang]}>{t.legal}</Link><Link to={paths.privacy[lang]}>{t.privacy}</Link><Link to={paths.home[other]} hrefLang={other} lang={other}>{t.switchLang}</Link></div><a className="instagram-link" href="https://www.instagram.com/chateaulatoursegur/" target="_blank" rel="noopener noreferrer" aria-label={t.instagramLabel}><Instagram size={17} strokeWidth={1.2} /><span>{t.instagramText}</span><ArrowUpRight size={13} /></a></div></footer>
 
-      {menuOpen && <Modal title={t.menuTitle} onClose={() => setMenuOpen(false)} className="mobile-menu"><Brand sketch /><p className="eyebrow">{t.menuWelcome}</p><nav aria-label={t.mobileNav}>{([['domaine', t.menuLinks.domaine], ['les-suites', t.menuLinks.suites], ['spa', t.menuLinks.spa], ['evenements', t.menuLinks.evenements], ['echappees', t.menuLinks.echappees], ['galerie', t.menuLinks.galerie], ['infos', t.menuLinks.infos]] as const).map(([id, text], index) => <button key={id} onClick={() => navigateFromMenu(id)}><span>0{index + 1}</span>{text}<ArrowUpRight size={18} strokeWidth={1.2} /></button>)}</nav><button className="button button-burgundy" onClick={() => book()}>{t.cta} <ArrowUpRight size={17} /></button><a className="mobile-menu-phone" href={`tel:${contact.phoneLink}`}>{contact.phone}</a><Link className="mobile-menu-lang" to={paths.home[other]} hrefLang={other} lang={other} onClick={() => setMenuOpen(false)}><Globe size={15} strokeWidth={1.25} />{t.switchLang}</Link></Modal>}
+      {menuOpen && <Modal title={t.menuTitle} onClose={() => setMenuOpen(false)} className="mobile-menu"><Brand sketch /><p className="eyebrow">{t.menuWelcome}</p><nav aria-label={t.mobileNav}>{([['domaine', t.menuLinks.domaine], ['les-suites', t.menuLinks.suites], ['spa', t.menuLinks.spa], ['evenements', t.menuLinks.evenements], ['echappees', t.menuLinks.echappees], ['galerie', t.menuLinks.galerie], ['infos', t.menuLinks.infos]] as const).map(([id, text], index) => <button key={id} onClick={() => navigateFromMenu(id)}><span>0{index + 1}</span>{text}<ArrowUpRight size={18} strokeWidth={1.2} /></button>)}<Link to={giftPaths[lang]} onClick={() => setMenuOpen(false)}><span>08</span>{t.footerGift}<ArrowUpRight size={18} strokeWidth={1.2} /></Link></nav><button className="button button-burgundy" onClick={() => book()}>{t.cta} <ArrowUpRight size={17} /></button><a className="mobile-menu-phone" href={`tel:${contact.phoneLink}`}>{contact.phone}</a><Link className="mobile-menu-lang" to={paths.home[other]} hrefLang={other} lang={other} onClick={() => setMenuOpen(false)}><Globe size={15} strokeWidth={1.25} />{t.switchLang}</Link></Modal>}
 
       {modal && <Modal key={modal.type} title={modal.type === 'booking' ? t.bookingModal : t.discoverModal} onClose={() => setModal(null)} className={`content-modal ${modal.type === 'booking' ? 'booking-modal' : ''}`}>
         {modal.type === 'booking' && <BookingForm initialUniverse={modal.universe} initialMessage={modal.message} initialSuite={modal.link?.suite} initialArrival={modal.link?.arrival} initialDeparture={modal.link?.departure} initialGuests={modal.link?.guests} />}
