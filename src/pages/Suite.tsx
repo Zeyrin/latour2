@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowLeft, ArrowRight, ArrowUpRight, Expand, Globe } from 'lucide-react'
+import { ArrowLeft, ArrowRight, ArrowUpRight, Expand, Globe, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Brand } from '../components/Brand'
 import { BookingForm } from '../components/BookingForm'
 import { Modal } from '../components/Modal'
 import { Picture } from '../components/Picture'
 import { Seo } from '../components/Seo'
-import { SITE_URL, spaUrl, contact, suiteCommon, suiteDetails, suiteIds, suitePhotos, suites, type SuiteId } from '../lib/content'
+import { SITE_URL, spaUrl, contact, ratingLabel, suiteCommon, suiteDetails, suiteIds, suitePhotos, suites, type SuiteId } from '../lib/content'
 import { LangContext, locales, paths, suitePaths, type Lang } from '../lib/i18n'
 import { MIN_NIGHTS, RATES, formatEuros } from '../lib/pricing'
 import { giftPaths } from '../lib/gifts'
@@ -185,6 +185,7 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
             <aside className="suite-book" aria-label={p.book}>
               <p className="suite-book-price"><span>{p.from}</span><strong>{formatEuros(rate.night, locales[lang])}</strong><span>{p.perNight}</span></p>
               {minNights > 1 && <p className="suite-book-min">{p.minNights(minNights)}</p>}
+              <p className="suite-rating"><Star size={12} strokeWidth={1.5} fill="currentColor" aria-hidden="true" />{ratingLabel(lang)}</p>
               <button className="button button-burgundy" onClick={() => setBooking(true)}>{p.book} <ArrowRight size={17} /></button>
               <p className="suite-note">{p.note}</p>
               <p className="ancv"><img src="/images/ancv.svg" alt="ANCV" width="45" height="25" loading="lazy" />{t.ancv}</p>

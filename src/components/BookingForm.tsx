@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ArrowRight, Check, Copy, Mail, Phone } from 'lucide-react'
 import { contact, suites, universes, type SuiteId, type UniverseId } from '../lib/content'
-import { locales, useLang, type Lang } from '../lib/i18n'
+import { Link } from 'react-router-dom'
+import { locales, paths, useLang, type Lang } from '../lib/i18n'
 import { bookingUi, payUi } from '../lib/ui'
 import { BREAKFAST_PER_GUEST_NIGHT, MIN_DAYS_BEFORE_ARRIVAL, RATES, formatEuros, isPricedSuite, parisToday, quote, type Quote } from '../lib/pricing'
 import { AvailabilityCalendar } from './AvailabilityCalendar'
@@ -151,6 +152,11 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
     setPayError('')
   }
 
+  function stepGuests(delta: number) {
+    setGuests(String(Math.min(maxGuests, Math.max(1, (Number(guests) || 1) + delta))))
+    setPayError('')
+  }
+
   function changeUniverse(next: UniverseId) {
     setUniverse(next)
     changeDates('', '')
@@ -287,7 +293,8 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
       <h2>{t.title[0]}<br /><em>{t.title[1]}</em></h2>
       <p className="booking-intro">{online ? p.intro : t.intro}</p>
       <form onSubmit={handleSubmit}>
-        <fieldset className="universe-fieldset">
+        {/* Choix suites / événements seulement si le visiteur n'a pas déjà dit ce qu'il venait réserver. */}
+        {!initialUniverse && <fieldset className="universe-fieldset">
           <legend>{t.comingFor}</legend>
           <div className="booking-universes">
             {universes[lang].filter((item) => item.id !== 'spa').map((item, index) => <label key={item.id} className={`universe-choice ${universe === item.id ? 'is-selected' : ''}`}>
@@ -297,7 +304,7 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
               <Check size={14} className="choice-check" />
             </label>)}
           </div>
-        </fieldset>
+        </fieldset>}
         {universe === 'suites' && <fieldset className="universe-fieldset" ref={suitesRef}>
           <legend>{t.mySuite} <span aria-hidden="true">*</span></legend>
           <div className="suite-choices">
@@ -329,12 +336,21 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
           {universe && availability === 'offline' && <p className="dates-note">{t.offline}</p>}
           {universe && universe !== 'suites' && <p className="dates-note">{t.optional}</p>}
         </fieldset>
+        {/* Nombre de personnes juste après les dates : il change le prix (taxe de séjour, petit-déjeuner) et les suites possibles. */}
+        <div className="guests-row">
+          <label htmlFor="booking-guests" className="guests-label">{t.guests} <span aria-hidden="true">*</span></label>
+          <div className="guests-stepper">
+            <button type="button" aria-label={t.fewerGuests} onClick={() => stepGuests(-1)} disabled={Number(guests) <= 1}>−</button>
+            <input id="booking-guests" name="guests" type="number" inputMode="numeric" autoComplete="off" data-1p-ignore data-lpignore="true" data-form-type="other" min="1" max={maxGuests} step="1" value={guests} onChange={(event) => { setGuests(event.target.value); setPayError('') }} required aria-describedby={online && Number(guests) > maxGuests ? 'guests-error' : undefined} />
+            <button type="button" aria-label={t.moreGuests} onClick={() => stepGuests(1)} disabled={Number(guests) >= maxGuests}>+</button>
+          </div>
+          {online && Number(guests) > maxGuests && <small id="guests-error" className="dates-error">{p.maxGuests(maxGuests)}</small>}
+        </div>
         <div className="form-grid">
           <label className="form-field"><span>{t.firstName} <span aria-hidden="true">*</span></span><input id="booking-given-name" name="given-name" autoComplete="given-name" required maxLength={50} defaultValue={savedValues['given-name'] || ''} placeholder={t.firstNamePlaceholder} /></label>
           <label className="form-field"><span>{t.lastName} <span aria-hidden="true">*</span></span><input id="booking-family-name" name="family-name" autoComplete="family-name" required maxLength={50} defaultValue={savedValues['family-name'] || ''} placeholder={t.lastNamePlaceholder} /></label>
           <label className="form-field"><span>{t.email} <span aria-hidden="true">*</span></span><input id="booking-email" name="email" type="email" autoComplete="email" required maxLength={200} defaultValue={savedValues.email || ''} placeholder={t.emailPlaceholder} /></label>
           <label className="form-field"><span>{t.phone}</span><input id="booking-tel" type="tel" name="phone" autoComplete="tel" maxLength={40} defaultValue={savedValues.phone || ''} placeholder={t.phonePlaceholder} /></label>
-          <label className="form-field"><span>{t.guests} <span aria-hidden="true">*</span></span><input id="booking-guests" name="guests" type="number" autoComplete="off" data-1p-ignore data-lpignore="true" data-form-type="other" min="1" max={maxGuests} step="1" value={guests} onChange={(event) => { setGuests(event.target.value); setPayError('') }} required aria-describedby={online && Number(guests) > maxGuests ? 'guests-error' : undefined} />{online && Number(guests) > maxGuests && <small id="guests-error" className="dates-error">{p.maxGuests(maxGuests)}</small>}</label>
           <label className="form-field form-field-wide"><span>{t.message}</span><textarea id="booking-message" name="message" autoComplete="off" rows={3} maxLength={2000} defaultValue={savedValues.message ?? initialMessage} placeholder={t.messagePlaceholder} /></label>
         </div>
         {universe === 'suites' && <fieldset className="universe-fieldset booking-options">
@@ -359,7 +375,7 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
           </label>
         </fieldset>}
         <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: 'absolute', left: '-9999px' }} />
-        <label className="consent"><input type="checkbox" name="consent" required defaultChecked={savedValues.consent === 'on'} /><span>{t.consent} <span aria-hidden="true">*</span></span></label>
+        <p className="form-note consent-note">{t.consent} <Link to={paths.privacy[lang]} target="_blank">{t.privacyLink}</Link></p>
         {online && currentQuote && <dl className="price-summary" aria-label={p.summary}>
           <div><dt>{p.lodging(currentQuote.nights)}</dt><dd>{money(currentQuote.lodging)}</dd></div>
           {currentQuote.breakfast > 0 && <div><dt>{p.breakfastSummary(currentQuote.guests, currentQuote.nights)}</dt><dd>{money(currentQuote.breakfast)}</dd></div>}

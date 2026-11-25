@@ -83,3 +83,21 @@
   .booking-option-text strong{font-size:16px}
   .booking-option-text small{font-size:13px}
 }
+
+/* Barre « Réserver » de l'accueil (apparaît après la photo d'accueil), même allure que celle des fiches suites. */
+@media (max-width:700px){
+  .home-book-bar{display:flex;align-items:center;gap:12px;position:fixed;left:0;right:0;bottom:0;z-index:25;padding:10px max(22px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(22px, env(safe-area-inset-left));background:#f8f6f2f5;backdrop-filter:blur(8px);border-top:1px solid var(--hairline)}
+  .home-book-bar>span{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;font-family:var(--sans);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--stone)}
+  .home-book-bar strong{font-family:Newsreader,Georgia,serif;font-weight:400;font-size:18px;letter-spacing:-.3px;text-transform:none;color:var(--wine)}
+  .home-book-bar .button{min-height:46px;padding:12px 24px;flex-shrink:0}
+  .home-book-phone{display:flex;align-items:center;justify-content:center;width:46px;height:46px;flex-shrink:0;border:1px solid var(--hairline);color:var(--wine)}
+  /* La notification « En ce moment » et le bas du pied de page passent au-dessus de la barre. */
+  .moment-notice{bottom:calc(78px + env(safe-area-inset-bottom))}
+  .site-footer{padding-bottom:calc(90px + env(safe-area-inset-bottom))}
+  /* Formulaire : on entre plus vite dans le choix de la suite et des dates. */
+  .booking-content>.eyebrow{display:none}
+  .booking-content h2{font-size:34px}
+  .booking-intro{font-size:15px;margin-bottom:22px}
+  .guests-label{font-size:10px}
+  .hero-rating{font-size:10px;letter-spacing:1.2px;margin-top:16px}
+}

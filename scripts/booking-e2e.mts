@@ -374,7 +374,7 @@ try {
   page.on('pageerror', (error) => pageErrors.push(error.message))
   await page.goto(`${APP}/`, { waitUntil: 'networkidle' })
   await page.locator('.header-cta').click()
-  await page.locator('input[name="universe"][value="suites"]').check()
+  assert(await page.locator('input[name="universe"]').count() === 0, 'Bouton « Réserver » : réservation des suites ouverte directement, sans « Je viens pour… »')
   await page.locator('label.suite-choice', { hasText: 'La Suite Eau' }).click()
   assert(await txt(page.locator('#suite-hint-eau')) === 'dès 195 € la nuit', 'Prix « dès … la nuit » affiché sur chaque suite')
   assert(await page.locator('label.suite-choice', { hasText: 'Sans préférence' }).count() === 0, 'Pas de choix « Sans préférence » : une suite est obligatoire')
@@ -403,7 +403,6 @@ try {
   await page.locator('input[name="given-name"]').fill('Camille')
   await page.locator('input[name="family-name"]').fill('Dupont')
   await page.locator('input[name="email"]').fill('camille@example.fr')
-  await page.locator('input[name="consent"]').check()
   await page.locator('.form-submit').click()
   await page.waitForURL(/127\.0\.0\.1:4183\/pay\//)
   assert(await txt(page.locator('#amount')) === '394.56 eur', 'Page de paiement Stripe au bon montant, calculé par le serveur')
@@ -424,7 +423,6 @@ try {
   assert((await blockedFor('eau')).some((block) => block.start_date === arrivalDate && block.end_date === addDays(arrivalDate, 2)), 'Dates payées indisponibles dans le calendrier')
   await page.goto(`${APP}/`, { waitUntil: 'networkidle' })
   await page.locator('.header-cta').click()
-  await page.locator('input[name="universe"][value="suites"]').check()
   await page.locator('label.suite-choice', { hasText: 'La Suite Eau' }).click()
   await page.waitForFunction(() => document.querySelectorAll('.calendar-day:not([aria-disabled])').length > 10)
   // Les disponibilités arrivent après l'affichage du calendrier : on attend qu'elles soient appliquées.
@@ -465,7 +463,6 @@ try {
   {
     await page.goto(`${APP}/`, { waitUntil: 'networkidle' })
     await page.locator('.header-cta').click()
-    await page.locator('input[name="universe"][value="suites"]').check()
     await page.locator('label.suite-choice', { hasText: 'La Suite Feu' }).click()
     await page.waitForFunction(() => document.querySelectorAll('.calendar-day:not([aria-disabled])').length > 10)
     const days = page.locator('.calendar-day:not([aria-disabled])')
@@ -475,7 +472,6 @@ try {
     await page.locator('input[name="given-name"]').fill('Alex')
     await page.locator('input[name="family-name"]').fill('Martin')
     await page.locator('input[name="email"]').fill('alex@example.fr')
-    await page.locator('input[name="consent"]').check()
     await page.locator('.form-submit').click()
     await page.waitForURL(/\/pay\//)
     const session = sessionOf(page.url())
@@ -491,8 +487,8 @@ try {
     const pay = await fetch(session.url, { method: 'POST', redirect: 'manual' })
     assert(pay.status === 410, 'Paiement impossible après annulation')
     await page.getByRole('link', { name: 'Choisir à nouveau mes dates' }).click()
-    await page.locator('input[name="universe"][value="suites"]').waitFor()
-    assert(await page.locator('input[name="universe"][value="suites"]').isChecked(), 'Lien « Choisir à nouveau mes dates » rouvre la réservation des suites')
+    await page.locator('label.suite-choice').first().waitFor()
+    assert(await page.locator('input[name="universe"]').count() === 0, 'Lien « Choisir à nouveau mes dates » rouvre directement la réservation des suites')
   }
 
   console.log('\n7. Paiement abandonné : expiration')
@@ -657,7 +653,6 @@ try {
     const offPage = await context.newPage()
     await offPage.goto(`${APP}/`, { waitUntil: 'networkidle' })
     await offPage.locator('.header-cta').click()
-    await offPage.locator('input[name="universe"][value="suites"]').check()
     assert((await txt(offPage.locator('.form-submit'))).includes('Préparer ma demande'), 'Sans paiement en ligne, le formulaire de demande d’origine est conservé')
     delete process.env.ONLINE_BOOKING
   }
@@ -698,7 +693,6 @@ try {
     const requestPage = await context.newPage()
     await requestPage.goto(`${APP}/`, { waitUntil: 'networkidle' })
     await requestPage.locator('.header-cta').click()
-    await requestPage.locator('input[name="universe"][value="suites"]').check()
     await requestPage.getByRole('button', { name: /Envoyez-nous plutôt une demande/ }).click()
     assert((await txt(requestPage.locator('.form-submit'))).includes('Préparer ma demande'), 'Demande sur mesure toujours possible pour les suites (sans paiement)')
   }

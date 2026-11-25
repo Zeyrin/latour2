@@ -1,6 +1,6 @@
 import { useState, type KeyboardEvent, type ReactNode } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { addDays, addMonths, freeResource, isBooked, monthStart, type AvailabilityBlock } from '../lib/availability'
+import { addDays, addMonths, freeResource, isBooked, monthStart, nightsBetween, type AvailabilityBlock } from '../lib/availability'
 import { locales, useLang, type Lang } from '../lib/i18n'
 import { bookingUi } from '../lib/ui'
 
@@ -41,7 +41,13 @@ function Month({ start, children }: { start: string; children: (day: string) => 
 export function AvailabilityCalendar({ mode, resources, blocks, min, arrival, departure, onChange }: AvailabilityCalendarProps) {
   const lang = useLang()
   const t = bookingUi[lang]
-  const [view, setView] = useState(() => monthStart(arrival || min))
+  const [view, setView] = useState(() => {
+    if (arrival) return monthStart(arrival)
+    const start = monthStart(min)
+    // Sur téléphone un seul mois s'affiche : en fin de mois (moins d'une semaine restante), ouvrir le suivant.
+    const oneMonth = typeof window !== 'undefined' && window.matchMedia('(max-width: 700px)').matches
+    return oneMonth && nightsBetween(min, addMonths(start, 1)) < 7 ? addMonths(start, 1) : start
+  })
   const firstMonth = monthStart(min)
   const lastMonth = addMonths(firstMonth, MONTHS_AHEAD - 1)
   const max = addDays(addMonths(lastMonth, 2), -1)

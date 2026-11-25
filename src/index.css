@@ -740,3 +740,21 @@ em{font-weight:300}
 .practical-grid>div{min-width:0}
 .hero-eyebrow>span.hero-h1-text{width:auto;height:auto;background:none;opacity:1;flex-shrink:1}
 @media(max-width:700px){.practical-table th,.practical-table td{white-space:normal;font-size:14px}.practical-table thead th{font-size:8px;letter-spacing:.8px}}
+
+/* Parcours de réservation (analyse UX, nov. 2026) : note Google, bouton du bloc « Réserver en direct », nombre de personnes, barre mobile. */
+.hero-rating{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:20px;font-family:var(--sans);font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:#f1eee7e6}
+.hero-rating svg{color:#e6c98f;flex-shrink:0}
+.suite-rating{display:flex;align-items:center;gap:7px;margin-top:6px;font-family:var(--sans);font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#786252}
+.suite-rating svg{color:#b8873b;flex-shrink:0}
+.practical-book{margin:6px 0 22px}
+.guests-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin:4px 0 30px}
+.guests-label{font-family:var(--sans);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--wine)}
+.guests-stepper{display:inline-flex;align-items:stretch;border:1px solid var(--hairline);background:#fffdf9}
+.guests-stepper button{width:44px;min-height:44px;font-size:20px;line-height:1;color:var(--wine);background:none;border:0;cursor:pointer}
+.guests-stepper button:disabled{color:#c9beb2;cursor:default}
+.guests-stepper input{width:52px;border:0;border-inline:1px solid var(--hairline);background:none;text-align:center;font:inherit;font-size:18px;color:var(--wine);-moz-appearance:textfield;appearance:textfield}
+.guests-stepper input::-webkit-outer-spin-button,.guests-stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.guests-row .dates-error{flex-basis:100%}
+.consent-note{margin:18px 0 0}
+.consent-note a{color:inherit;text-decoration:underline}
+.home-book-bar{display:none}
