@@ -18,14 +18,16 @@ export interface SuiteRate {
   maxGuests: number
   /** Durée minimum du séjour, en nuits. Sinon `MIN_NIGHTS`. */
   minNights?: number
+  /** Petit-déjeuner offert, compris dans le prix de la nuit (ajouté d'office, sans supplément). */
+  breakfastIncluded?: boolean
 }
 
 export const RATES: Record<PricedSuite, SuiteRate> = {
   terre: { night: 24000, maxGuests: 3, minNights: 2 },
-  eau: { night: 19500, maxGuests: 2 },
+  eau: { night: 19500, maxGuests: 2, breakfastIncluded: true },
   metal: { night: 39500, maxGuests: 4, minNights: 2 },
   feu: { night: 24000, maxGuests: 2, minNights: 2 },
-  bois: { night: 19500, maxGuests: 2, minNights: 2 },
+  bois: { night: 19500, maxGuests: 2, breakfastIncluded: true },
 }
 
 /** Durée minimum d'un séjour par défaut, en nuits. */
@@ -39,6 +41,11 @@ export const MIN_DAYS_BEFORE_ARRIVAL = 1
 
 /** Petit-déjeuner en option, en centimes, par personne et par nuit (0 pour ne plus le proposer). */
 export const BREAKFAST_PER_GUEST_NIGHT = 1800
+
+/** Vrai si le petit-déjeuner est offert avec cette suite. */
+export function breakfastIncluded(suite: unknown) {
+  return isPricedSuite(suite) && Boolean(RATES[suite].breakfastIncluded)
+}
 
 export const CURRENCY = 'eur'
 
@@ -64,8 +71,10 @@ export interface Quote {
   guests: number
   /** Hébergement, en centimes. */
   lodging: number
-  /** Petit-déjeuner (option), en centimes. 0 s'il n'est pas choisi. */
+  /** Petit-déjeuner (option), en centimes. 0 s'il n'est pas choisi ou s'il est offert. */
   breakfast: number
+  /** Petit-déjeuner offert avec la suite (compris dans l'hébergement). */
+  breakfastIncluded: boolean
   /** Taxe de séjour, en centimes. */
   touristTax: number
   /** Total à payer, en centimes. */
@@ -118,9 +127,10 @@ export function quote(suite: unknown, arrival: string, departure: string, guests
     lodging += isWeekendNight(day) && rate.weekend ? rate.weekend : rate.night
   }
   if (nights < (rate.minNights ?? MIN_NIGHTS)) return { error: 'too-short' }
-  const breakfast = options.breakfast ? BREAKFAST_PER_GUEST_NIGHT * guests * nights : 0
+  const included = Boolean(rate.breakfastIncluded)
+  const breakfast = options.breakfast && !included ? BREAKFAST_PER_GUEST_NIGHT * guests * nights : 0
   const touristTax = TOURIST_TAX_PER_GUEST_NIGHT * guests * nights
-  return { suite, arrival, departure, nights, guests, lodging, breakfast, touristTax, total: lodging + breakfast + touristTax }
+  return { suite, arrival, departure, nights, guests, lodging, breakfast, breakfastIncluded: included, touristTax, total: lodging + breakfast + touristTax }
 }
 
 /** Date du jour à Paris (aaaa-mm-jj). */

@@ -5,7 +5,7 @@ import { AvailabilityCalendar } from '../components/AvailabilityCalendar'
 import { addDays, freeResource, type AvailabilityBlock } from '../lib/availability'
 import { suites } from '../lib/content'
 import { locales, paths, type Lang } from '../lib/i18n'
-import { MIN_DAYS_BEFORE_ARRIVAL, RATES, formatEuros, isPricedSuite, parisToday, quote } from '../lib/pricing'
+import { MIN_DAYS_BEFORE_ARRIVAL, RATES, breakfastIncluded, formatEuros, isPricedSuite, parisToday, quote } from '../lib/pricing'
 import { bookingUi, manageUi, payUi } from '../lib/ui'
 import { CallUs, Layout, Summary, type BookingView } from './BookingReturn'
 
@@ -52,7 +52,7 @@ function ChangeForm({ booking, blocks, token, lang, onDone, onBack }: {
   const [error, setError] = useState('')
   const money = (cents: number) => formatEuros(cents, locales[lang])
   const firstBookable = addDays(parisToday(), MIN_DAYS_BEFORE_ARRIVAL)
-  const priced = arrival && departure ? quote(suite, arrival, departure, Number(guests), parisToday(), { breakfast: Boolean(booking.breakfast) }) : null
+  const priced = arrival && departure ? quote(suite, arrival, departure, Number(guests), parisToday(), { breakfast: Boolean(booking.breakfast) && !breakfastIncluded(booking.suite) }) : null
   const next = priced && !('error' in priced) ? priced : null
   const difference = next ? next.total - booking.amount_total : 0
   const unchanged = suite === booking.suite && arrival === booking.arrival && departure === booking.departure && Number(guests) === booking.guests
@@ -93,7 +93,7 @@ function ChangeForm({ booking, blocks, token, lang, onDone, onBack }: {
           return <label key={item.id} className={`suite-choice ${suite === item.id ? 'is-selected' : ''} ${taken ? 'is-taken' : ''}`}>
             <input type="radio" name="suite" value={item.id} checked={suite === item.id} onChange={() => changeSuite(item.id)} disabled={taken} />
             {item.label}
-            {isPricedSuite(item.id) && <small className="suite-choice-hint">{taken ? p.suiteTaken : p.fromPerNight(money(RATES[item.id].night))}</small>}
+            {isPricedSuite(item.id) && <small className="suite-choice-hint">{taken ? p.suiteTaken : `${p.fromPerNight(money(RATES[item.id].night))}${breakfastIncluded(item.id) ? ` · ${p.withBreakfast}` : ''}`}</small>}
           </label>
         })}
       </div>

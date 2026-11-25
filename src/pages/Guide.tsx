@@ -97,7 +97,7 @@ function SuiteCard({ id, note, lang, onBook }: { id: SuiteId; note: string; lang
       <Link to={suitePaths(id)[lang]} className="guide-suite-image" tabIndex={-1} aria-hidden="true">{cover && <img src={cover} alt="" loading="lazy" decoding="async" />}</Link>
       <div className="guide-suite-copy">
         <h3><Link to={suitePaths(id)[lang]}>{label}</Link></h3>
-        <p className="guide-suite-facts">{detail.surface} · {detail.guests} · {t.night(rate.minNights ?? MIN_NIGHTS)} · {ui[lang].suitePage.fromPerNight(formatEuros(rate.night, locales[lang]))}</p>
+        <p className="guide-suite-facts">{detail.surface} · {detail.guests} · {t.night(rate.minNights ?? MIN_NIGHTS)} · {ui[lang].suitePage.fromPerNight(formatEuros(rate.night, locales[lang]))}{rate.breakfastIncluded ? ` · ${ui[lang].suitePage.breakfastOffered.toLowerCase()}` : ''}</p>
         <p>{note}</p>
         <div className="guide-suite-actions">
           <button className="button button-burgundy" onClick={() => onBook(id)}>{t.bookSuite} <ArrowRight size={16} /></button>

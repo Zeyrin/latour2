@@ -325,3 +325,50 @@ export function sendOwnerRequestAlert(request: RequestFields, requestKey: string
     idempotencyKey: `owner-request/${requestKey}`,
   })
 }
+
+export interface QuoteFields {
+  /** Libellé en français (Séminaire, Réception privée…). */
+  type: string
+  start: string | null
+  end: string | null
+  flexible: boolean
+  participants: number
+  /** Libellés en français des options cochées. */
+  options: string[]
+  organisation: string | null
+  name: string
+  email: string
+  phone: string | null
+  message: string | null
+  lang: 'fr' | 'en'
+}
+
+/** Alerte au château pour une demande de devis de la page « Séminaires & événements ». */
+export function sendOwnerQuoteAlert(quote: QuoteFields, requestKey: string) {
+  const to = ownerTo()
+  if (!to) return
+  const rows: [string, string][] = [
+    ['Événement', quote.type],
+    ['Personnes', String(quote.participants)],
+    ['Date', quote.start ? formatDate(quote.start, 'fr-FR') : 'À définir'],
+    ...(quote.end ? [['Jusqu’au', formatDate(quote.end, 'fr-FR')] as [string, string]] : []),
+    ...(quote.flexible ? [['Dates', 'Flexibles'] as [string, string]] : []),
+    ['Souhaite', quote.options.length ? quote.options.join(', ') : '—'],
+    ['Nom', quote.name],
+    ...(quote.organisation ? [['Organisation', quote.organisation] as [string, string]] : []),
+    ['E-mail', quote.email],
+    ['Téléphone', quote.phone ?? '—'],
+    ['Langue', quote.lang === 'en' ? 'anglais' : 'français'],
+    ['Message', quote.message ?? '—'],
+  ]
+  const title = `Demande de devis · ${quote.type}`
+  const intro = 'Une demande de devis vient d’arriver par la page Séminaires &amp; événements. Répondez directement à cet e-mail pour écrire au client.'
+  return send('owner-quote', {
+    to,
+    replyTo: quote.email,
+    subject: `Devis ${quote.type.toLowerCase()} : ${quote.organisation ? `${quote.organisation}, ` : ''}${quote.name}, ${quote.participants} pers.`,
+    html: layout(title, intro, rows, ''),
+    text: plain(title, rows, 'Répondez directement à cet e-mail pour écrire au client.'),
+    idempotencyKey: `owner-quote/${requestKey}`,
+  })
+}
