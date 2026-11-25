@@ -646,7 +646,9 @@ em{font-weight:300}
 .manage-change .form-grid{grid-template-columns:minmax(0,160px);margin-top:4px}
 .manage-change .price-summary{max-width:none;margin:22px 0 14px}
 .manage-change>.text-link{display:flex;width:fit-content;margin:16px auto 0}
-.request-toggle{margin-top:14px;text-align:left}
+.suite-breakfast-note{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:16px;line-height:1.4;color:var(--wine)}
+.suite-breakfast-note svg{flex:none}
+.booking-offline{margin:0 0 14px}
 
 /* Bloc suites de l'accueil (SuitesShowcase) */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
