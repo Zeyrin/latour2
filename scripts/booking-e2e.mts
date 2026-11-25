@@ -394,6 +394,7 @@ try {
   const oneNightBois = quote('bois', arrivalDate, addDays(arrivalDate, 1), 2, today)
   assert(!('error' in oneNightBois) && oneNightBois.nights === 1 && oneNightBois.breakfastIncluded, 'Cabane Bois : réservable pour 1 nuit, petit-déjeuner offert')
   const breakfastOption = page.locator('label.booking-option', { hasText: 'Petit-déjeuner' })
+  assert((await txt(page.locator('.suite-breakfast-note'))).includes('Petit-déjeuner offert avec cette suite'), 'Choix de la Suite Eau : message « petit-déjeuner offert » sous les suites')
   assert(await breakfastOption.locator('input').isChecked() && await breakfastOption.locator('input').isDisabled() && (await txt(breakfastOption)).includes('Offert avec cette suite'), 'Petit-déjeuner coché d’office et marqué offert')
   assert((await txt(page.locator('.price-summary'))).includes('Petit-déjeuner · 2 pers. × 2 nuits') && (await txt(page.locator('.price-summary'))).includes('offert') && await txt(page.locator('.form-submit')) === submitBefore, 'Récapitulatif : petit-déjeuner offert, total inchangé')
   await page.screenshot({ path: 'artifacts/booking-pay-form.png' })
@@ -659,7 +660,8 @@ try {
     await offPage.goto(`${APP}/`, { waitUntil: 'networkidle' })
     await offPage.locator('.header-cta').click()
     await offPage.locator('input[name="universe"][value="suites"]').check()
-    assert((await txt(offPage.locator('.form-submit'))).includes('Préparer ma demande'), 'Sans paiement en ligne, le formulaire de demande d’origine est conservé')
+    await offPage.locator('.booking-offline').waitFor()
+    assert(await offPage.locator('.form-submit').isDisabled() && !(await txt(offPage.locator('form'))).includes('Préparer ma demande'), 'Sans paiement en ligne : pas de demande pour les suites, message « appelez-nous » et bouton désactivé')
     delete process.env.ONLINE_BOOKING
   }
 
@@ -700,8 +702,9 @@ try {
     await requestPage.goto(`${APP}/`, { waitUntil: 'networkidle' })
     await requestPage.locator('.header-cta').click()
     await requestPage.locator('input[name="universe"][value="suites"]').check()
-    await requestPage.getByRole('button', { name: /Envoyez-nous plutôt une demande/ }).click()
-    assert((await txt(requestPage.locator('.form-submit'))).includes('Préparer ma demande'), 'Demande sur mesure toujours possible pour les suites (sans paiement)')
+    assert(await requestPage.getByRole('button', { name: /Envoyez-nous plutôt une demande/ }).count() === 0 && (await txt(requestPage.locator('.form-submit'))).includes('Réserver et payer'), 'Suites : réservation et paiement en ligne uniquement, plus de « demande »')
+    await requestPage.locator('input[name="universe"][value="evenements"]').check()
+    assert((await txt(requestPage.locator('.form-submit'))).includes('Préparer ma demande'), 'Événements et séminaires : demande toujours possible')
   }
 
   console.log('\n21. Beds24 (fermeture des dates sur Airbnb, Booking…)')

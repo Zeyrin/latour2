@@ -103,11 +103,11 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
   const [blocks, setBlocks] = useState<AvailabilityBlock[]>([])
   const [availability, setAvailability] = useState<'loading' | 'ready' | 'offline'>('loading')
   const [dateError, setDateError] = useState('')
-  const [payOnline, setPayOnline] = useState(false)
+  // Réservation en ligne coupée côté serveur (ou injoignable) : on invite à appeler, il n'y a plus de demande sans paiement pour les suites.
+  const [onlineOff, setOnlineOff] = useState(false)
   const [paying, setPaying] = useState(false)
   const [payError, setPayError] = useState('')
   const [guests, setGuests] = useState(initialGuests)
-  const [requestMode, setRequestMode] = useState(false)
   const [breakfast, setBreakfast] = useState(false)
   const [spaCallback, setSpaCallback] = useState(false)
   const p = payUi[lang]
@@ -117,7 +117,7 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   const resources = resourcesFor(universe, suite)
   const nights = arrival && departure ? nightsBetween(arrival, departure) : 0
-  const online = payOnline && universe === 'suites' && !requestMode
+  const online = universe === 'suites'
   // Même date du jour que le serveur (heure de Paris), quel que soit le fuseau du visiteur.
   const firstBookable = addDays(parisToday(), MIN_DAYS_BEFORE_ARRIVAL)
   const maxGuests = online && isPricedSuite(suite) ? RATES[suite].maxGuests : 500
@@ -136,7 +136,7 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
       // Dates venues d'un lien : retirées si la suite n'est plus libre.
       if (linkDatesOk && result && !freeResource(result, resourcesFor(initialUniverse, initialSuite ?? ''), initialArrival, initialDeparture || addDays(initialArrival, 1))) changeDates('', '')
     })
-    void loadOnlineBooking().then((enabled) => { if (active) setPayOnline(enabled) })
+    void loadOnlineBooking().then((enabled) => { if (active) setOnlineOff(!enabled) })
     return () => { active = false }
   // eslint-disable-next-line react-hooks/exhaustive-deps -- une seule fois, au chargement du formulaire
   }, [])
@@ -218,30 +218,27 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
     }
     const values = new FormData(event.currentTarget)
     if (online) {
+      if (onlineOff) return setPayError(p.unavailable)
       if (priced && 'error' in priced) return setPayError(p.errors[priced.error] ?? p.errors.default)
       void pay(values)
       return
     }
-    void saveRequest(values, universe, suite)
+    void saveRequest(values, universe)
     setSavedValues(Object.fromEntries(Array.from(values.entries()).map(([key, value]) => [key, String(value)])))
     setCopied(false)
     setCopyError(false)
     const name = fullName(values)
     setGuestName(name)
     const category = universes[lang].find((item) => item.id === universe)?.label || t.defaultCategory
-    const suiteLabel = suites[lang].find((item) => item.id === suite)?.label || t.noPreference
     const sep = lang === 'fr' ? ' : ' : ': '
+    // Demande (sans paiement) : seulement pour les événements et séminaires. Les suites se réservent et se paient en ligne.
     const message = [
       t.greeting,
       '',
-      universe === 'suites' ? t.wantStay(category) : t.wantVisit(category),
+      t.wantVisit(category),
       '',
-      ...(universe === 'suites'
-        ? [`${t.suite}${sep}${suiteLabel}`, `${t.arrival}${sep}${dateLabel(arrival, lang)}`, `${t.departure}${sep}${dateLabel(departure, lang)} (${t.nightsCount(nights)})`]
-        : [`${t.wishedDate}${sep}${dateLabel(arrival, lang)}`]),
+      `${t.wishedDate}${sep}${dateLabel(arrival, lang)}`,
       `${t.guestsLine}${sep}${values.get('guests')}`,
-      ...(breakfastFree ? [t.breakfastOfferedLine] : universe === 'suites' && breakfast ? [t.breakfastLine(money(BREAKFAST_PER_GUEST_NIGHT))] : []),
-      ...(universe === 'suites' && spaCallback ? [t.spaLine] : []),
       '',
       String(values.get('message') || t.defaultMessage),
       '',
@@ -313,6 +310,7 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
               </label>
             })}
           </div>
+          {breakfastFree && <p className="suite-breakfast-note" role="status"><Check size={15} strokeWidth={1.6} aria-hidden="true" /> {p.breakfastNote}</p>}
         </fieldset>}
         <fieldset className="universe-fieldset dates-fieldset" ref={datesRef}>
           <legend>{universe === 'suites' ? <>{t.myStayDates} <span aria-hidden="true">*</span></> : t.myDate}</legend>
@@ -372,11 +370,11 @@ export function BookingForm({ initialUniverse, initialMessage = '', initialSuite
         </dl>}
         {online && currentQuote && <p className="form-note booking-cancellation">{p.cancellation}</p>}
         <div role="status" className="form-status pay-error">{payError}</div>
-        <button className="button button-burgundy form-submit" type="submit" disabled={paying} aria-busy={paying || undefined}>
+        {online && onlineOff && <p className="dates-error booking-offline">{p.unavailable}</p>}
+        <button className="button button-burgundy form-submit" type="submit" disabled={paying || (online && onlineOff)} aria-busy={paying || undefined}>
           {online ? (paying ? p.submitting : currentQuote ? p.submit(money(currentQuote.total)) : p.submit('').trim()) : t.submit} <ArrowRight size={17} />
         </button>
         <p className="form-note">{online ? p.note : t.formNote}</p>
-        {payOnline && universe === 'suites' && <button type="button" className="text-link request-toggle" onClick={() => { setRequestMode(!requestMode); setPayError('') }}>{requestMode ? p.payInstead : p.requestInstead} <ArrowRight size={16} /></button>}
       </form>
       <a className="booking-phone" href={`tel:${contact.phoneLink}`}><Phone size={15} strokeWidth={1.25} /> {t.callUs} <span>{contact.phone}</span></a>
     </div>
