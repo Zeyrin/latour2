@@ -13,7 +13,7 @@
 // Clé Stripe : en plus de « Checkout Sessions : écriture », il faut « Refunds : écriture » (remboursements).
 
 import type Stripe from 'stripe'
-import { CURRENCY, manageDeadline, parisToday, quote, type QuoteError } from '../../src/lib/pricing.js'
+import { CURRENCY, breakfastIncluded, manageDeadline, parisToday, quote, type QuoteError } from '../../src/lib/pricing.js'
 import { cancelInBeds24, paymentIntentId, updateInBeds24 } from './bookings.js'
 import { sendGuestManageEmail, sendOwnerManageAlert } from './email.js'
 import { getStripe } from './stripe.js'
@@ -22,6 +22,9 @@ import { rpc, type BookingRow, type Payment, type RefundOrder } from './supabase
 /** Mêmes chemins que paths.manageBooking dans src/lib/i18n.ts. */
 export const MANAGE_PATHS = { fr: '/reservation/gerer', en: '/en/booking/manage' } as const
 const SESSION_MINUTES = 31
+
+/** Petit-déjeuner payé en option (pas celui offert avec la suite Eau ou Bois), repris dans le prix d'une modification. */
+const paidBreakfast = (booking: BookingRow) => Boolean(booking.breakfast) && !breakfastIncluded(booking.suite)
 
 export const isManageToken = (value: unknown): value is string => typeof value === 'string' && /^[0-9a-f]{32,128}$/.test(value)
 
@@ -126,7 +129,7 @@ async function afterChange(booking: BookingRow, previous: Previous, refunds: Ref
 export async function changeByGuest(booking: BookingRow, change: ChangeRequest, origin: string):
   Promise<{ booking: BookingRow } | { url: string } | { error: ManageError }> {
   if (!canManage(booking)) return { error: booking.status === 'paid' && !booking.cancelled_at ? 'deadline' : 'status' }
-  const priced = quote(change.suite, String(change.arrival ?? ''), String(change.departure ?? ''), Number(change.guests), parisToday(), { breakfast: Boolean(booking.breakfast) })
+  const priced = quote(change.suite, String(change.arrival ?? ''), String(change.departure ?? ''), Number(change.guests), parisToday(), { breakfast: paidBreakfast(booking) })
   if ('error' in priced) return { error: priced.error }
   if (priced.suite === booking.suite && priced.arrival === booking.arrival && priced.departure === booking.departure && priced.guests === booking.guests) return { error: 'same' }
   if (!await rpc<boolean>('change_available', { p_id: booking.id, p_suite: priced.suite, p_arrival: priced.arrival, p_departure: priced.departure })) return { error: 'unavailable' }

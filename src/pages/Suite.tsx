@@ -9,7 +9,7 @@ import { Picture } from '../components/Picture'
 import { Seo } from '../components/Seo'
 import { SITE_URL, spaUrl, contact, suiteCommon, suiteDetails, suiteIds, suitePhotos, suites, type SuiteId } from '../lib/content'
 import { LangContext, locales, paths, suitePaths, type Lang } from '../lib/i18n'
-import { MIN_NIGHTS, RATES, formatEuros } from '../lib/pricing'
+import { MIN_NIGHTS, RATES, breakfastIncluded, formatEuros } from '../lib/pricing'
 import { giftPaths } from '../lib/gifts'
 import { ui } from '../lib/ui'
 import { guidesIndexPaths } from '../lib/guides'
@@ -180,10 +180,11 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
               <h2 className="suite-subheading">{p.features}</h2>
               <ul className="suite-features">{detail.features.map((feature) => <li key={feature}>{feature}</li>)}</ul>
               <h2 className="suite-subheading">{p.common}</h2>
-              <p className="suite-common">{suiteCommon[lang].join(' · ')}</p>
+              <p className="suite-common">{suiteCommon[lang].map((item) => rate.breakfastIncluded && /petit-déjeuner|breakfast/i.test(item) ? p.breakfastOffered : item).join(' · ')}</p>
             </div>
             <aside className="suite-book" aria-label={p.book}>
               <p className="suite-book-price"><span>{p.from}</span><strong>{formatEuros(rate.night, locales[lang])}</strong><span>{p.perNight}</span></p>
+              {rate.breakfastIncluded && <p className="suite-book-min suite-book-breakfast">{p.breakfastOffered}</p>}
               {minNights > 1 && <p className="suite-book-min">{p.minNights(minNights)}</p>}
               <button className="button button-burgundy" onClick={() => setBooking(true)}>{p.book} <ArrowRight size={17} /></button>
               <p className="suite-note">{p.note}</p>
@@ -194,7 +195,7 @@ export function SuitePage({ id, lang = 'fr' }: { id: SuiteId; lang?: Lang }) {
 
           <nav className="suite-others" aria-labelledby="suite-others-heading">
             <h2 id="suite-others-heading" className="page-width">{p.others}</h2>
-            <ul>{suites[lang].filter((suite) => suite.id !== id).map((suite) => { const cover = suitePhotos[suite.id][0]; const otherDetail = suiteDetails[lang][suite.id]; return <li key={suite.id}><Link to={suitePaths(suite.id)[lang]}><span className="suite-others-image">{cover && <img src={cover} alt="" loading="lazy" decoding="async" />}</span><span className="suite-others-name">{suite.label}<ArrowUpRight size={18} strokeWidth={1.25} /></span><span className="suite-others-facts">{otherDetail.surface} · {otherDetail.guests} · {p.fromPerNight(formatEuros(RATES[suite.id].night, locales[lang]))}</span></Link></li> })}</ul>
+            <ul>{suites[lang].filter((suite) => suite.id !== id).map((suite) => { const cover = suitePhotos[suite.id][0]; const otherDetail = suiteDetails[lang][suite.id]; return <li key={suite.id}><Link to={suitePaths(suite.id)[lang]}><span className="suite-others-image">{cover && <img src={cover} alt="" loading="lazy" decoding="async" />}</span><span className="suite-others-name">{suite.label}<ArrowUpRight size={18} strokeWidth={1.25} /></span><span className="suite-others-facts">{otherDetail.surface} · {otherDetail.guests} · {p.fromPerNight(formatEuros(RATES[suite.id].night, locales[lang]))}{breakfastIncluded(suite.id) ? ` · ${p.breakfastOffered.toLowerCase()}` : ''}</span></Link></li> })}</ul>
           </nav>
         </main>
 

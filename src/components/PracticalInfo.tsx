@@ -5,6 +5,7 @@ import { faqItems } from '../lib/faq'
 import { guidesIndexPaths } from '../lib/guides'
 import { locales, suitePaths, type Lang } from '../lib/i18n'
 import { MIN_NIGHTS, RATES, formatEuros } from '../lib/pricing'
+import { ui } from '../lib/ui'
 
 /**
  * Bloc « En pratique » de l'accueil : situation, tarifs des suites, réservation et questions fréquentes.
@@ -69,7 +70,7 @@ export function PracticalInfo({ lang }: { lang: Lang }) {
                     <th scope="row"><Link to={suitePaths(suite.id)[lang]}>{suite.label}</Link></th>
                     <td>{detail.surface}</td>
                     <td>{rate.maxGuests}</td>
-                    <td>{formatEuros(rate.night, locale)}</td>
+                    <td>{formatEuros(rate.night, locale)}{rate.breakfastIncluded && <small className="practical-breakfast">{ui[lang].suitePage.breakfastOffered}</small>}</td>
                     <td>{nightsLabel(lang, rate.minNights ?? MIN_NIGHTS)}</td>
                   </tr>
                 })}</tbody>
