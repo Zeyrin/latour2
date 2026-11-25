@@ -203,11 +203,11 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
         {loading && <motion.div className="preloader" aria-hidden="true" initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reducedMotion ? 0.1 : 0.6 }}><ChateauSketch /><Brand /><span className="preloader-line" /></motion.div>}
       </AnimatePresence>
 
-      <a href="#suites" className="skip-link">{t.skip}</a>
+      <a href="#univers" className="skip-link">{t.skip}</a>
       <header className={`site-header ${scrolled ? 'is-scrolled' : ''}`}>
         <a href="#accueil" className="header-brand" aria-label={t.homeLabel}><Brand /></a>
         <nav className="desktop-nav" aria-label={t.mainNav}>
-          <a href="#suites">{t.nav.suites}</a>
+          <a href="#univers">{t.nav.univers}</a>
           <a href="#domaine">{t.nav.domaine}</a>
           <a href="#spa">{t.nav.spa}</a>
           <a href="#echappees">{t.nav.echappees}</a>
@@ -229,17 +229,32 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
             <p className="hero-title">{t.heroTitle[0]}<br /><em>{t.heroTitle[1]}</em></p>
             <p className="hero-subtitle">{t.heroSubtitle[0]}{' '}<br />{t.heroSubtitle[1]}</p>
             <p className="hero-rating"><Star size={12} strokeWidth={1.5} fill="currentColor" aria-hidden="true" />{ratingLabel(lang)}</p>
-            <a href="#suites" className="hero-discover">{t.heroDiscover} <ArrowDown size={15} strokeWidth={1.5} /></a>
+            <a href="#univers" className="hero-discover">{t.heroDiscover} <ArrowDown size={15} strokeWidth={1.5} /></a>
           </motion.div>
           <div className="hero-bottom">
             <span className="hero-location"><MapPin size={14} strokeWidth={1.25} />{t.heroLocation}</span>
-            <a href="#suites" className="scroll-cue" aria-label={t.scrollCue}><span>{t.scrollCueText}</span><span className="scroll-line" /></a>
+            <a href="#univers" className="scroll-cue" aria-label={t.scrollCue}><span>{t.scrollCueText}</span><span className="scroll-line" /></a>
             <div className="heritage-mark"><ChateauSketch /><span>{t.heritage[0]}<br /><span>{t.heritage[1]}</span></span></div>
           </div>
         </section>
 
-        {/* Les suites juste après l'accueil : c'est ce que la plupart des visiteurs viennent chercher. */}
-        <SuitesShowcase universe={langUniverses.find((universe) => universe.id === 'suites')!} lang={lang} />
+        <section className="universes-section section-space" id="univers" aria-labelledby="universes-heading">
+          <div className="page-width">
+            <Reveal className="section-heading triptych-heading">
+              <div><p className="eyebrow">{t.universesEyebrow}</p><h2 id="universes-heading">{t.universesTitle[0]}<br className="mobile-break" /> <em>{t.universesTitle[1]}</em></h2></div>
+              <p className="section-intro">{t.universesIntro[0]}{' '}<br />{t.universesIntro[1]}</p>
+            </Reveal>
+            <div className="triptych">
+              {langUniverses.map((universe, index) => <Reveal key={universe.id} delay={index * 0.1} className="triptych-reveal"><a href={universe.id === 'spa' ? spaUrl('carte-univers', lang) : `#${universe.id}`} {...(universe.id === 'spa' ? externalProps(`${universe.title.join(' ')} — ${t.spaSite}`) : {})} className={`universe-card universe-${universe.id}`}>
+                <Picture name={universe.image} alt={universe.imageAlt} sizes="(max-width: 700px) 100vw, 33vw" />
+                <div className="universe-shade" />
+                <div className="universe-top"><span>{universe.number}</span><span>{universe.art}</span></div>
+                <div className="universe-bottom"><h3>{universe.title[0]}<br /><em>{universe.title[1]}</em></h3><p>{universe.tagline}</p><span className="universe-link">{t.discoverUniverse} <span className="arrow-circle"><ArrowUpRight size={21} strokeWidth={1.2} /></span></span></div>
+              </a></Reveal>)}
+            </div>
+            <Reveal className="triptych-footnote"><span />{t.triptychNote}<span /></Reveal>
+          </div>
+        </section>
 
         <section className="domain-section section-space" id="domaine" aria-labelledby="domain-heading">
           <div className="domain-grid page-width">
@@ -258,6 +273,7 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
         </section>
 
         <div className="chapters">{langUniverses.map((universe) => <Fragment key={universe.id}>
+          {universe.id === 'suites' && <SuitesShowcase universe={universe} lang={lang} />}
           {universe.id === 'spa' && <Chapter universe={universe} caption={t.photoCaption} href={spaUrl('chapitre', lang)} external newWindow={t.newWindow} />}
           {universe.id === 'evenements' && <Chapter universe={universe} caption={t.photoCaption} onDiscover={() => setModal({ type: 'universe', id: universe.id })} newWindow={t.newWindow} />}
         </Fragment>)}</div>
