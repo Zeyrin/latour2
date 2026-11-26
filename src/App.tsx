@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'framer-motion'
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, ChevronDown, Globe, Instagram, MapPin, Menu, Plus } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, ChevronDown, Globe, Instagram, MapPin, Menu, Phone, Plus, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
@@ -13,9 +13,9 @@ import { MomentNotice } from './components/MomentNotice'
 import { SuitesShowcase } from './components/SuitesShowcase'
 import { PracticalInfo } from './components/PracticalInfo'
 import { faqItems } from './lib/faq'
-import { SITE_URL, SPA_URL, spaUrl, contact, escapes, galleryPhotos, suiteCommon, suitePhotos, suites, universes, type SuiteId, type GalleryFilter, type GalleryPhoto, type Universe, type UniverseId } from './lib/content'
+import { SITE_URL, SPA_URL, spaUrl, contact, ratingLabel, escapes, galleryPhotos, suiteCommon, suitePhotos, suites, universes, type SuiteId, type GalleryFilter, type GalleryPhoto, type Universe, type UniverseId } from './lib/content'
 import { LangContext, paths, suitePaths, type Lang } from './lib/i18n'
-import { RATES } from './lib/pricing'
+import { RATES, formatEuros } from './lib/pricing'
 import { ui } from './lib/ui'
 import { readBookingLink, type BookingLink } from './lib/deeplink'
 import { guidesIndexPaths } from './lib/guides'
@@ -104,6 +104,8 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
   const [loading, setLoading] = useState(true)
   const [galleryExpanded, setGalleryExpanded] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  // Barre « Réserver » du bas d'écran sur mobile : affichée une fois la photo d'accueil dépassée.
+  const [pastHero, setPastHero] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [modal, setModal] = useState<ModalState>(null)
   const [filter, setFilter] = useState<GalleryFilter>('tous')
@@ -130,7 +132,7 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
     Promise.allSettled([heroImage?.decode(), document.fonts.ready, minimum]).then(() => {
       if (!cancelled) { window.clearTimeout(timeout); setLoading(false) }
     })
-    const onScroll = () => setScrolled(window.scrollY > 45)
+    const onScroll = () => { setScrolled(window.scrollY > 45); setPastHero(window.scrollY > window.innerHeight * 0.7) }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -214,7 +216,7 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
         </nav>
         <div className="header-actions">
           <Link to={paths.home[other]} className="lang-switch" hrefLang={other} lang={other} aria-label={t.switchLang}><Globe size={14} strokeWidth={1.25} />{t.switchLabel}</Link>
-          <button className="button header-cta" onClick={() => book()}>{t.cta} <ArrowUpRight size={15} strokeWidth={1.5} /></button>
+          <button className="button header-cta" onClick={() => book('suites')}>{t.cta} <ArrowUpRight size={15} strokeWidth={1.5} /></button>
           <button className="menu-toggle" onClick={() => setMenuOpen(true)} aria-label={t.openMenu} aria-expanded={menuOpen}><span>{t.menu}</span><Menu size={25} strokeWidth={1.2} /></button>
         </div>
       </header>
@@ -227,6 +229,7 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
             <h1 className="eyebrow hero-eyebrow" id="hero-heading"><span /><span className="hero-h1-text">{t.heroH1.split(/(Saint-Émilion)/).map((part, i) => i % 2 ? <span key={i} className="nowrap">{part}</span> : part)}</span><span /></h1>
             <p className="hero-title">{t.heroTitle[0]}<br /><em>{t.heroTitle[1]}</em></p>
             <p className="hero-subtitle">{t.heroSubtitle[0]}{' '}<br />{t.heroSubtitle[1]}</p>
+            <p className="hero-rating"><Star size={12} strokeWidth={1.5} fill="currentColor" aria-hidden="true" />{ratingLabel(lang)}</p>
             <a href="#univers" className="hero-discover">{t.heroDiscover} <ArrowDown size={15} strokeWidth={1.5} /></a>
           </motion.div>
           <div className="hero-bottom">
@@ -292,7 +295,7 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
           <p className="gallery-note">{t.galleryNote}</p>
         </div></section>
 
-        <PracticalInfo lang={lang} />
+        <PracticalInfo lang={lang} onBook={() => book('suites')} />
 
         <section className="closing-section" id="contact" aria-labelledby="closing-heading"><ChateauSketch className="closing-sketch" /><Reveal className="closing-content"><p className="eyebrow">{t.closingEyebrow}</p><h2 id="closing-heading">{t.closingTitle[0]}<br /><em>{t.closingTitle[1]}</em></h2><p>{t.closingText[0]}<br />{t.closingText[1]}</p><div className="closing-choices">{langUniverses.map((universe) => universe.id === 'spa' ? <a key={universe.id} href={spaUrl('contact', lang)} {...externalProps(t.closingChoices[universe.id])}>{t.closingChoices[universe.id]}<ArrowUpRight size={17} strokeWidth={1.25} /></a> : universe.id === 'evenements' ? <Link key={universe.id} to={`${eventsPaths[lang]}#devis`}>{t.closingChoices[universe.id]}<ArrowUpRight size={17} strokeWidth={1.25} /></Link> : <button key={universe.id} onClick={() => book(universe.id)}>{t.closingChoices[universe.id]}<ArrowUpRight size={17} strokeWidth={1.25} /></button>)}</div><span className="closing-signature">Corinne & André</span></Reveal></section>
       </main>
@@ -300,11 +303,11 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
       <footer className="site-footer"><div className="footer-main page-width">
         <div className="footer-brand"><a href="#accueil" aria-label={t.backToTop}><Brand sketch /></a><p className="footer-keyword"><Link to={paths.home[lang]}>{t.homeKeywordLink}</Link></p><p>{t.footerTagline[0]}<br />{t.footerTagline[1]}</p><p className="ancv"><img src="/images/ancv.svg" alt="ANCV" width="45" height="25" loading="lazy" />{t.ancv}</p></div>
         <div className="footer-column"><h3>{t.footerHouse}</h3><a href="#domaine">{t.menuLinks.domaine}</a><a href="#les-suites">{t.menuLinks.suites}</a>{spaLink('footer-external', t.menuLinks.spa, 'footer')}<Link to={eventsPaths[lang]}>{t.menuLinks.evenements}</Link></div>
-        <div className="footer-column"><h3>{t.footerMoments}</h3><a href="#echappees">{t.menuLinks.echappees}</a><Link to={giftPaths[lang]}>{t.footerGift}</Link><a href="#galerie">{t.menuLinks.galerie}</a><a href="#infos">{t.menuLinks.infos}</a><Link to={guidesIndexPaths[lang]}>{t.guidesLink}</Link><button onClick={() => book()}>{t.footerPlan}</button></div>
+        <div className="footer-column"><h3>{t.footerMoments}</h3><a href="#echappees">{t.menuLinks.echappees}</a><Link to={giftPaths[lang]}>{t.footerGift}</Link><a href="#galerie">{t.menuLinks.galerie}</a><a href="#infos">{t.menuLinks.infos}</a><Link to={guidesIndexPaths[lang]}>{t.guidesLink}</Link><button onClick={() => book('suites')}>{t.footerPlan}</button></div>
         <div className="footer-column footer-contact"><h3>{t.footerContact}</h3><address>{contact.address}<br />{contact.locality}</address><a href={`tel:${contact.phoneLink}`}>{contact.phone}</a><a className="footer-email" href={`mailto:${contact.email}`}>{contact.email}</a><a href={contact.map} target="_blank" rel="noopener noreferrer" className="footer-map">{t.directions} <ArrowUpRight size={14} /></a></div>
       </div><div className="footer-bottom page-width"><p>© {new Date().getFullYear()} Château Latour Ségur Suites & Spa</p><div><Link to={paths.legal[lang]}>{t.legal}</Link><Link to={paths.privacy[lang]}>{t.privacy}</Link><Link to={paths.home[other]} hrefLang={other} lang={other}>{t.switchLang}</Link></div><a className="instagram-link" href="https://www.instagram.com/chateaulatoursegur/" target="_blank" rel="noopener noreferrer" aria-label={t.instagramLabel}><Instagram size={17} strokeWidth={1.2} /><span>{t.instagramText}</span><ArrowUpRight size={13} /></a></div></footer>
 
-      {menuOpen && <Modal title={t.menuTitle} onClose={() => setMenuOpen(false)} className="mobile-menu"><Brand sketch /><p className="eyebrow">{t.menuWelcome}</p><nav aria-label={t.mobileNav}>{([['domaine', t.menuLinks.domaine], ['les-suites', t.menuLinks.suites], ['spa', t.menuLinks.spa], ['evenements', t.menuLinks.evenements], ['echappees', t.menuLinks.echappees], ['galerie', t.menuLinks.galerie], ['infos', t.menuLinks.infos]] as const).map(([id, text], index) => <button key={id} onClick={() => navigateFromMenu(id)}><span>0{index + 1}</span>{text}<ArrowUpRight size={18} strokeWidth={1.2} /></button>)}<Link to={giftPaths[lang]} onClick={() => setMenuOpen(false)}><span>08</span>{t.footerGift}<ArrowUpRight size={18} strokeWidth={1.2} /></Link></nav><button className="button button-burgundy" onClick={() => book()}>{t.cta} <ArrowUpRight size={17} /></button><a className="mobile-menu-phone" href={`tel:${contact.phoneLink}`}>{contact.phone}</a><Link className="mobile-menu-lang" to={paths.home[other]} hrefLang={other} lang={other} onClick={() => setMenuOpen(false)}><Globe size={15} strokeWidth={1.25} />{t.switchLang}</Link></Modal>}
+      {menuOpen && <Modal title={t.menuTitle} onClose={() => setMenuOpen(false)} className="mobile-menu"><Brand sketch /><p className="eyebrow">{t.menuWelcome}</p><nav aria-label={t.mobileNav}>{([['domaine', t.menuLinks.domaine], ['les-suites', t.menuLinks.suites], ['spa', t.menuLinks.spa], ['evenements', t.menuLinks.evenements], ['echappees', t.menuLinks.echappees], ['galerie', t.menuLinks.galerie], ['infos', t.menuLinks.infos]] as const).map(([id, text], index) => <button key={id} onClick={() => navigateFromMenu(id)}><span>0{index + 1}</span>{text}<ArrowUpRight size={18} strokeWidth={1.2} /></button>)}<Link to={giftPaths[lang]} onClick={() => setMenuOpen(false)}><span>08</span>{t.footerGift}<ArrowUpRight size={18} strokeWidth={1.2} /></Link></nav><button className="button button-burgundy" onClick={() => book('suites')}>{t.cta} <ArrowUpRight size={17} /></button><a className="mobile-menu-phone" href={`tel:${contact.phoneLink}`}>{contact.phone}</a><Link className="mobile-menu-lang" to={paths.home[other]} hrefLang={other} lang={other} onClick={() => setMenuOpen(false)}><Globe size={15} strokeWidth={1.25} />{t.switchLang}</Link></Modal>}
 
       {modal && <Modal key={modal.type} title={modal.type === 'booking' ? t.bookingModal : t.discoverModal} onClose={() => setModal(null)} className={`content-modal ${modal.type === 'booking' ? 'booking-modal' : ''}`}>
         {modal.type === 'booking' && <BookingForm initialUniverse={modal.universe} initialMessage={modal.message} initialSuite={modal.link?.suite} initialArrival={modal.link?.arrival} initialDeparture={modal.link?.departure} initialGuests={modal.link?.guests} />}
@@ -312,6 +315,12 @@ function App({ lang = 'fr' }: { lang?: Lang }) {
         {modal.type === 'escape' && (() => { const escape = escapes[lang].find((item) => item.id === modal.id)!; return <><div className="detail-image"><Picture name={escape.image} alt={escape.alt} /></div><div className="detail-body"><p className="eyebrow">{escape.label}</p><h2>{escape.title}</h2><p>{escape.text}</p><p>{t.escapeText}</p><p className="detail-note">{t.escapeNote}</p><button className="button button-burgundy" onClick={() => book(escape.universe, escape.request)}>{t.composeEscape} <ArrowRight size={17} /></button></div></> })()}
         {modal.type === 'story' && <><div className="detail-image"><Picture name="domaine" alt={t.storyAlt} /></div><div className="detail-body"><p className="eyebrow">{t.storyEyebrow}</p><h2>{t.storyTitle[0]}<br /><em>{t.storyTitle[1]}</em></h2>{t.story.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}<span className="story-signature">{t.storySignature}</span><button className="button button-burgundy" onClick={() => book()}>{t.storyCta} <ArrowRight size={17} /></button></div></>}
       </Modal>}
+
+      {pastHero && !menuOpen && !modal && !lightbox && <aside className="home-book-bar" aria-label={t.cta}>
+        <a className="home-book-phone" href={`tel:${contact.phoneLink}`} aria-label={`${t.callLabel} ${contact.phone}`}><Phone size={18} strokeWidth={1.25} /></a>
+        <span><strong>{t.bookBarTitle}</strong>{t.bookBarFrom(formatEuros(Math.min(...Object.values(RATES).map((rate) => rate.night)), lang === 'fr' ? 'fr-FR' : 'en-GB'))}</span>
+        <button className="button button-burgundy" onClick={() => book('suites')}>{t.cta}</button>
+      </aside>}
 
       <MomentNotice lang={lang} onBook={book} />
 
